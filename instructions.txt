@@ -1,0 +1,1036 @@
+Project Structure
+text
+ims-gamified-training/
+├── backend/
+│   ├── server.js
+│   ├── package.json
+│   ├── .env
+│   ├── models/
+│   │   ├── User.js
+│   │   └── Topic.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   └── user.js
+│   └── config/
+│       └── db.js
+└── frontend/
+    ├── public/
+    ├── src/
+    │   ├── components/
+    │   │   ├── Login.js
+    │   │   └── Register.js
+    │   ├── App.js
+    │   └── index.js
+    └── package.json
+Backend Setup
+1. backend/package.json
+json
+{
+  "name": "ims-training-backend",
+  "version": "1.0.0",
+  "description": "Gamified IMS Training Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "express-validator": "^7.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": "20.17.0"
+  }
+}
+2. backend/.env
+env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/ims_training
+JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
+NODE_ENV=development
+3. backend/config/db.js
+javascript
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('MongoDB Connected...');
+    } catch (err) {
+        console.error('MongoDB connection error:', err.message);
+        process.exit(1);
+    }
+};
+
+module.exports = connectDB;
+4. backend/models/User.js
+javascript
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+const UserSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    role: {
+        type: String,
+        enum: ['employee', 'admin'],
+        default: 'employee'
+    },
+    xp: {
+        type: Number,
+        default: 0
+    },
+    level: {
+        type: Number,
+        default: 1
+    },
+    badges: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Badge'
+    }],
+    completedTopics: [{
+        topicId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Topic'
+        },
+        completedAt: Date,
+        score: Number,
+        passed: Boolean
+    }],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+// Hash password before saving
+UserSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Method to compare passwords
+UserSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
+
+module.exports = mongoose.model('User', UserSchema);
+5. backend/routes/auth.js
+javascript
+const express = require('express');
+const router = express.Router();
+const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
+const User = require('../models/User');
+
+// @route   POST /api/auth/register
+// @desc    Register user
+router.post('/register', [
+    body('username').not().isEmpty().withMessage('Username is required'),
+    body('email').isEmail().withMessage('Please include a valid email'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('role').optional().isIn(['employee', 'admin'])
+], async (req, res) => {
+    // Validate input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { username, email, password, role } = req.body;
+
+    try {
+        // Check if user exists
+        let user = await User.findOne({ $or: [{ email }, { username }] });
+        if (user) {
+            return res.status(400).json({ 
+                errors: [{ 
+                    msg: user.email === email ? 'Email already exists' : 'Username already exists' 
+                }] 
+            });
+        }
+
+        // Create user
+        user = new User({
+            username,
+            email,
+            password,
+            role: role || 'employee'
+        });
+
+        await user.save();
+
+        // Create JWT payload
+        const payload = {
+            user: {
+                id: user.id,
+                role: user.role,
+                username: user.username
+            }
+        };
+
+        // Sign token
+        jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' },
+            (err, token) => {
+                if (err) throw err;
+                res.json({ 
+                    token,
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        role: user.role,
+                        xp: user.xp,
+                        level: user.level
+                    }
+                });
+            }
+        );
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// @route   POST /api/auth/login
+// @desc    Authenticate user & get token
+router.post('/login', [
+    body('username').not().isEmpty().withMessage('Username is required'),
+    body('password').exists().withMessage('Password is required')
+], async (req, res) => {
+    // Validate input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { username, password } = req.body;
+
+    try {
+        // Check if user exists
+        let user = await User.findOne({ username }).select('+password');
+        if (!user) {
+            return res.status(400).json({ 
+                errors: [{ msg: 'Invalid credentials' }] 
+            });
+        }
+
+        // Check password
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.status(400).json({ 
+                errors: [{ msg: 'Invalid credentials' }] 
+            });
+        }
+
+        // Create JWT payload
+        const payload = {
+            user: {
+                id: user.id,
+                role: user.role,
+                username: user.username
+            }
+        };
+
+        // Sign token
+        jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' },
+            (err, token) => {
+                if (err) throw err;
+                res.json({ 
+                    token,
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        role: user.role,
+                        xp: user.xp,
+                        level: user.level
+                    }
+                });
+            }
+        );
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+module.exports = router;
+6. backend/server.js
+javascript
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('./config/db');
+
+const app = express();
+
+// Connect Database
+connectDB();
+
+// Init Middleware
+app.use(express.json({ extended: false }));
+app.use(cors());
+
+// Define Routes
+app.use('/api/auth', require('./routes/auth'));
+
+// Test route
+app.get('/', (req, res) => {
+    res.json({ msg: 'IMS Gamified Training API' });
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`Server started on port ${PORT}`);
+    console.log(`Node.js version: ${process.version}`);
+});
+Frontend Setup
+1. frontend/package.json
+json
+{
+  "name": "ims-training-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "axios": "^1.5.0",
+    "react-router-dom": "^6.15.0",
+    "bootstrap": "^5.3.1",
+    "react-bootstrap": "^2.8.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "proxy": "http://localhost:5000",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+2. frontend/src/App.js
+javascript
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import Register from './components/Register';
+import './App.css';
+
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  const setAuth = (boolean) => {
+    setIsAuthenticated(boolean);
+  };
+
+  const setUserData = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  return (
+    <Router>
+      <div className="App retro-bg">
+        <Routes>
+          <Route 
+            path="/" 
+            element={isAuthenticated ? <Navigate to="/home" /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/login" 
+            element={
+              <Login 
+                setAuth={setAuth} 
+                setUserData={setUserData} 
+              />
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+              <Register 
+                setAuth={setAuth} 
+                setUserData={setUserData} 
+              />
+            } 
+          />
+          <Route 
+            path="/home" 
+            element={
+              isAuthenticated ? (
+                <div className="container mt-5">
+                  <h1>Welcome, {user?.username}!</h1>
+                  <p>Your XP: {user?.xp} | Level: {user?.level}</p>
+                  <button 
+                    className="btn btn-warning"
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('user');
+                      setIsAuthenticated(false);
+                      setUser(null);
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <Navigate to="/login" />
+              )
+            } 
+          />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+3. frontend/src/components/Login.js
+javascript
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './Login.css';
+
+const Login = ({ setAuth, setUserData }) => {
+    const [formData, setFormData] = useState({
+        username: '',
+        password: ''
+    });
+    const [errors, setErrors] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    const { username, password } = formData;
+
+    const onChange = e => setFormData({
+        ...formData,
+        [e.target.name]: e.target.value
+    });
+
+    const onSubmit = async e => {
+        e.preventDefault();
+        setLoading(true);
+        setErrors([]);
+
+        try {
+            const res = await axios.post('/api/auth/login', formData);
+            
+            localStorage.setItem('token', res.data.token);
+            setAuth(true);
+            setUserData(res.data.user);
+            navigate('/home');
+        } catch (err) {
+            setLoading(false);
+            if (err.response?.data?.errors) {
+                setErrors(err.response.data.errors.map(error => error.msg));
+            } else {
+                setErrors(['Login failed. Please try again.']);
+            }
+        }
+    };
+
+    return (
+        <div className="login-container">
+            <div className="retro-login-box">
+                <div className="retro-header">
+                    <h1 className="retro-title">🕹️ IMS TRAINING</h1>
+                    <p className="retro-subtitle">Gamified Security Portal</p>
+                </div>
+                
+                <form onSubmit={onSubmit} className="retro-form">
+                    <div className="form-group">
+                        <label className="retro-label">Username</label>
+                        <input
+                            type="text"
+                            className="retro-input"
+                            name="username"
+                            value={username}
+                            onChange={onChange}
+                            required
+                            placeholder="Enter your username"
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label className="retro-label">Password</label>
+                        <input
+                            type="password"
+                            className="retro-input"
+                            name="password"
+                            value={password}
+                            onChange={onChange}
+                            required
+                            placeholder="Enter your password"
+                        />
+                    </div>
+                    
+                    {errors.length > 0 && (
+                        <div className="retro-alert">
+                            {errors.map((error, index) => (
+                                <p key={index} className="mb-0">⚠️ {error}</p>
+                            ))}
+                        </div>
+                    )}
+                    
+                    <button 
+                        type="submit" 
+                        className="retro-btn"
+                        disabled={loading}
+                    >
+                        {loading ? 'LOADING...' : 'START GAME'}
+                    </button>
+                </form>
+                
+                <div className="retro-footer">
+                    <p className="mb-2">
+                        New Player? <Link to="/register" className="retro-link">Create Account</Link>
+                    </p>
+                    <p className="small-text">
+                        v1.0 | Node v20.17.0
+                    </p>
+                </div>
+            </div>
+            
+            <div className="retro-terminal">
+                <div className="terminal-header">
+                    <span className="terminal-dot red"></span>
+                    <span className="terminal-dot yellow"></span>
+                    <span className="terminal-dot green"></span>
+                    <span className="terminal-title">SYSTEM TERMINAL</span>
+                </div>
+                <div className="terminal-body">
+                    <p>$> Initializing IMS Training System...</p>
+                    <p>$> Loading security protocols...</p>
+                    <p>$> Welcome to Gamified Training v1.0</p>
+                    <p>$> Authentication required...</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Login;
+4. frontend/src/components/Login.css
+css
+/* Retro theme styles */
+.retro-bg {
+    background: linear-gradient(45deg, #0a0a0a 0%, #1a1a2e 100%);
+    min-height: 100vh;
+    font-family: 'Courier New', monospace;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    gap: 40px;
+}
+
+.retro-login-box {
+    background: #000;
+    border: 4px solid #00ff00;
+    border-radius: 0;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 
+        0 0 20px #00ff00,
+        inset 0 0 20px rgba(0, 255, 0, 0.1);
+    animation: glitch 3s infinite;
+}
+
+.retro-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.retro-title {
+    color: #00ff00;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 
+        0 0 10px #00ff00,
+        0 0 20px #00ff00;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.retro-subtitle {
+    color: #ff00ff;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.retro-form {
+    margin-top: 30px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.retro-label {
+    display: block;
+    color: #00ff00;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.retro-input {
+    width: 100%;
+    padding: 12px;
+    background: #111;
+    border: 2px solid #00ff00;
+    border-radius: 0;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.retro-input:focus {
+    outline: none;
+    border-color: #ff00ff;
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+.retro-btn {
+    width: 100%;
+    padding: 15px;
+    background: #ff00ff;
+    border: 2px solid #00ff00;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 20px;
+}
+
+.retro-btn:hover:not(:disabled) {
+    background: #00ff00;
+    color: #000;
+    box-shadow: 0 0 20px #00ff00;
+    transform: translateY(-2px);
+}
+
+.retro-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.retro-footer {
+    margin-top: 30px;
+    text-align: center;
+    color: #00ff00;
+    font-size: 0.9rem;
+}
+
+.retro-link {
+    color: #ff00ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.retro-link:hover {
+    text-decoration: underline;
+    color: #00ff00;
+}
+
+.retro-alert {
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid #ff0000;
+    color: #ff0000;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.retro-terminal {
+    background: #000;
+    border: 4px solid #ff00ff;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+}
+
+.terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #00ff00;
+}
+
+.terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.terminal-dot.red { background: #ff0000; }
+.terminal-dot.yellow { background: #ffff00; }
+.terminal-dot.green { background: #00ff00; }
+
+.terminal-title {
+    color: #00ff00;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.terminal-body {
+    line-height: 1.6;
+}
+
+.terminal-body p {
+    margin-bottom: 10px;
+    color: #00ff00;
+}
+
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+    }
+    20% {
+        transform: translate(-2px, 2px);
+    }
+    40% {
+        transform: translate(-2px, -2px);
+    }
+    60% {
+        transform: translate(2px, 2px);
+    }
+    80% {
+        transform: translate(2px, -2px);
+    }
+    100% {
+        transform: translate(0);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .retro-login-box,
+    .retro-terminal {
+        max-width: 100%;
+    }
+}
+5. frontend/src/components/Register.js
+javascript
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './Login.css';
+
+const Register = ({ setAuth, setUserData }) => {
+    const [formData, setFormData] = useState({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'employee'
+    });
+    const [errors, setErrors] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    const { username, email, password, confirmPassword, role } = formData;
+
+    const onChange = e => setFormData({
+        ...formData,
+        [e.target.name]: e.target.value
+    });
+
+    const onSubmit = async e => {
+        e.preventDefault();
+        
+        if (password !== confirmPassword) {
+            setErrors(['Passwords do not match']);
+            return;
+        }
+
+        setLoading(true);
+        setErrors([]);
+
+        try {
+            const res = await axios.post('/api/auth/register', {
+                username,
+                email,
+                password,
+                role
+            });
+            
+            localStorage.setItem('token', res.data.token);
+            setAuth(true);
+            setUserData(res.data.user);
+            navigate('/home');
+        } catch (err) {
+            setLoading(false);
+            if (err.response?.data?.errors) {
+                setErrors(err.response.data.errors.map(error => error.msg));
+            } else {
+                setErrors(['Registration failed. Please try again.']);
+            }
+        }
+    };
+
+    return (
+        <div className="login-container">
+            <div className="retro-login-box">
+                <div className="retro-header">
+                    <h1 className="retro-title">🎮 CREATE ACCOUNT</h1>
+                    <p className="retro-subtitle">Join the IMS Training</p>
+                </div>
+                
+                <form onSubmit={onSubmit} className="retro-form">
+                    <div className="form-group">
+                        <label className="retro-label">Username</label>
+                        <input
+                            type="text"
+                            className="retro-input"
+                            name="username"
+                            value={username}
+                            onChange={onChange}
+                            required
+                            placeholder="Choose a username"
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label className="retro-label">Email</label>
+                        <input
+                            type="email"
+                            className="retro-input"
+                            name="email"
+                            value={email}
+                            onChange={onChange}
+                            required
+                            placeholder="Enter your email"
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label className="retro-label">Password (min 6 chars)</label>
+                        <input
+                            type="password"
+                            className="retro-input"
+                            name="password"
+                            value={password}
+                            onChange={onChange}
+                            required
+                            minLength="6"
+                            placeholder="Enter password"
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label className="retro-label">Confirm Password</label>
+                        <input
+                            type="password"
+                            className="retro-input"
+                            name="confirmPassword"
+                            value={confirmPassword}
+                            onChange={onChange}
+                            required
+                            placeholder="Confirm password"
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label className="retro-label">Role</label>
+                        <select
+                            className="retro-input"
+                            name="role"
+                            value={role}
+                            onChange={onChange}
+                        >
+                            <option value="employee">Employee</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    
+                    {errors.length > 0 && (
+                        <div className="retro-alert">
+                            {errors.map((error, index) => (
+                                <p key={index} className="mb-0">⚠️ {error}</p>
+                            ))}
+                        </div>
+                    )}
+                    
+                    <button 
+                        type="submit" 
+                        className="retro-btn"
+                        disabled={loading}
+                    >
+                        {loading ? 'CREATING...' : 'CREATE ACCOUNT'}
+                    </button>
+                </form>
+                
+                <div className="retro-footer">
+                    <p className="mb-2">
+                        Already have an account? <Link to="/login" className="retro-link">Login</Link>
+                    </p>
+                    <p className="small-text">
+                        Employee role = Training Participant
+                    </p>
+                </div>
+            </div>
+            
+            <div className="retro-terminal">
+                <div className="terminal-header">
+                    <span className="terminal-dot red"></span>
+                    <span className="terminal-dot yellow"></span>
+                    <span className="terminal-dot green"></span>
+                    <span className="terminal-title">REGISTRATION TERMINAL</span>
+                </div>
+                <div className="terminal-body">
+                    <p>$> New user registration initialized...</p>
+                    <p>$> Employee: Complete training modules</p>
+                    <p>$> Admin: Manage system content</p>
+                    <p>$> Choose role wisely...</p>
+                    <p>$> All fields required...</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Register;
+6. frontend/src/index.js
+javascript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+7. frontend/src/App.css
+css
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    overflow-x: hidden;
+}
+
+.small-text {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+Installation & Running Instructions
+Backend Setup:
+bash
+# Navigate to backend directory
+cd backend
+
+# Install dependencies
+npm install
+
+# Start MongoDB service (if not running)
+# On macOS:
+brew services start mongodb-community
+# On Windows:
+# Start MongoDB service from Services
+
+# Run the backend server
+npm run dev
+Frontend Setup:
+bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start React development server
+npm start
