@@ -5,7 +5,7 @@ const {body, validationResult} = require('express-validator');
 const User = require('../models/User');
 
 router.post('/register', [
-    body('username').not().isEmpty.withMessage('Username is required'),
+    body('username').not().isEmpty().withMessage('Username is required'),
     body('email').isEmail().withMessage('Please enter a valid email'),
     body('password').isLength({ min: 3}).withMessage('Password must be atleast 3 characters'),
     body('role').optional().isIn(['employee', 'admin'])
