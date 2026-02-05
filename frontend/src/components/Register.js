@@ -35,7 +35,10 @@ const Register = ({ setAuth, setUserData }) => {
 
         try {
             const res = await axios.post('/api/auth/register', {
-                username, email, password, role
+                username, 
+                email, 
+                password, 
+                role
             });
 
             localStorage.setItem('token', res.data.token);

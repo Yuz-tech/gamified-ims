@@ -1,8 +1,18 @@
 /* RETRO */
+@font-face {
+    font-family: 'Retro';
+    src: url('../../public/fonts/PressStart2P-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+* {
+    font-family: 'Retro';
+}
+
 .retro-bg {
     background: linear-gradient(45 deg, #0a0a0a, #1a1a2e 100%);
     min-height: 100vh;
-    font-family: 'Courier New', monospace;
 }
 
 .login-container {
@@ -74,7 +84,6 @@
     border: 2px solid #00ff00;
     border-radius: 0;
     color: #00ff00;
-    font-family: 'Courier New', monospace;
     font-size: 1rem;
     transition: all 0.3s;
 }
@@ -91,7 +100,6 @@
     background: #ff00ff;
     border: 2px solid #00ff00;
     color: #000;
-    font-family: 'Courier New', monospace;
     font-size: 1.2rem;
     font-weight: bold;
     text-transform: uppercase;
@@ -147,7 +155,6 @@
     width: 100%;
     max-width: 400px;
     color: #00ff00;
-    font-family: 'Courier New', monospace;
 }
 
 .terminal-header {
