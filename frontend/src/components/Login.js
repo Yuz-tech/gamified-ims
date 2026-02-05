@@ -1,3 +1,19 @@
+/**
+ * LOGIN IMPROVEMENTS
+ * 1. Cannot register nor create new User immediately
+ * 2. Change "register" to "request" an account
+ * 3.a. Condition 1: Request an account:
+ * (username, first name, last name, zimbra account?, google account?, no password yet)
+ * Condition 2: Admin gets notification:
+ * (verifies account request -> if legit=provide password or set password for the user)
+ * 3.b. Condition 2: If account was successfully requested -> change password in profile
+ * 4. Passwords created will be encrypted but given in true form
+ * 5. Create 2 admin accounts? or perhaps 3? 1 super user
+ * 6. Admin powers
+ * -> edit topics, quiz, questions, answers, accounts?
+ * -> handle employees credentials
+ */
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
