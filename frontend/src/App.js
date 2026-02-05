@@ -44,12 +44,14 @@ function App() {
             />
           }
           />
+          {/* HOMEPAGE */}
+
           <Route path = "/home" element={
             isAuthenticated ? (
               <div className="container mt-5">
                 <h1>Konnichiwa, {user?.username}!</h1>
                 <p>Your XP: {user?.xp} | Level: {user?.level} </p>
-                <button className = "btn btn-warning" onClick={() =>{
+                <button className = "btn btn-warning" id="logout" onClick={() =>{
                   localStorage.removeItem('token');
                   localStorage.removeItem('user');
                   setisAuthenticated(false);
@@ -60,6 +62,8 @@ function App() {
               <Navigate to="/login"></Navigate>
             )
           }
+
+
           />
         </Routes>
       </div>
