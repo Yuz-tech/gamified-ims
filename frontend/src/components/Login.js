@@ -90,7 +90,7 @@ const Login = ({ setAuth, setUserData }) => {
                         className="retro-btn"
                         disabled={loading}
                     >
-                        {loading ? 'LOADING...' : 'START GAME'}
+                        {loading ? 'LOADING...' : 'LOGIN'}
                     </button>
                 </form>
                 
@@ -99,7 +99,7 @@ const Login = ({ setAuth, setUserData }) => {
                         New Player? <Link to="/register" className="retro-link">Create Account</Link>
                     </p>
                     <p className="small-text">
-                        v1.0 | Node v20.17.0
+                        v1.0 | 2026
                     </p>
                 </div>
             </div>
@@ -109,13 +109,12 @@ const Login = ({ setAuth, setUserData }) => {
                     <span className="terminal-dot red"></span>
                     <span className="terminal-dot yellow"></span>
                     <span className="terminal-dot green"></span>
-                    <span className="terminal-title">SYSTEM TERMINAL</span>
+                    <span className="terminal-title">こんにちは</span>
                 </div>
                 <div className="terminal-body">
-                    <p>Initializing IMS Training System...</p>
-                    <p>Loading security protocols...</p>
-                    <p>Welcome to Gamified Training v1.0</p>
-                    <p>Authentication required...</p>
+                    <br></br>
+                    <p>"Quality is not an act, it is a habit."</p>
+                    <p><i>---Aristotle</i></p>
                 </div>
             </div>
         </div>

@@ -26,11 +26,11 @@
 
 .retro-login-box {
     background: #000;
-    border: 4px solid #00ff00;
+    border: 4px solid #0092a6;
     border-radius: 0;
     padding: 40px;
     width: 100%;
-    max-width: 400px;
+    max-width: 800px;
     box-shadow:
         0 0 20px #00ff00,
         inset 0 0 20px rgba (0, 255, 0, 0.1);
@@ -48,14 +48,14 @@
     text-transform: uppercase;
     letter-spacing: 3px;
     text-shadow: 
-        0 0 10px #00ff00,
-        0 0 20px #00ff00;
+        0 0 10px #ff00ff,
+        0 0 20px #5b0099;
     margin-bottom: 10px;
     font-weight: bold;
 }
 
 .retro-subtitle {
-    color: #ff00ff;
+    color: #f5df95;
     font-size: 1rem;
     letter-spacing: 2px;
 }
@@ -136,7 +136,7 @@
 
 .retro-link:hover {
     text-decoration: underline;
-    color: #00ff00;
+    color: #0092a6;
 }
 
 .retro-alert {
