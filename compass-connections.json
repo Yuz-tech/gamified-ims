@@ -1,0 +1,26 @@
+{
+  "type": "Compass Connections",
+  "version": {
+    "$numberInt": "1"
+  },
+  "connections": [
+    {
+      "id": "a76058ad-78ea-4dee-9f2c-380231d1fe62",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1770255921835"
+        }
+      },
+      "favorite": {
+        "name": "gamified-ims"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb://192.168.232.247:27017/",
+        "oidc": {
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjoxLCJzdGF0ZSI6W119"
+        }
+      }
+    }
+  ]
+}
