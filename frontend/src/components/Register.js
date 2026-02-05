@@ -64,7 +64,7 @@ const Register = ({ setAuth, setUserData }) => {
                 <form onSubmit={onSubmit} className="retro-form">
                     <div className="form-group">
                         <label className="retro-label">Username</label>
-                        <input type="text" className="retro-input" name="username" value={username} onChange={onchange} required placeholder="Choose a username" />
+                        <input type="text" className="retro-input" name="username" value={username} onChange={onChange} required placeholder="Choose a username" />
                     </div>
                     <div className = "form-group">
                         <label className = "retro-label">Email</label>
@@ -76,7 +76,7 @@ const Register = ({ setAuth, setUserData }) => {
                     </div>
                     <div className = "form-group">
                         <label className = "retro-label">Confirm Password</label>
-                        <input type = "password" className="retro-input" name="confirmPassword" value={confirmPassword} onchange={onChange} required placeholder="Confirm password" />
+                        <input type = "password" className="retro-input" name="confirmPassword" value={confirmPassword} onChange={onChange} required placeholder="Confirm password" />
                     </div>
                     
                     <div className="form-group">
