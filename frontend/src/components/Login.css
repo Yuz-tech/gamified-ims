@@ -1,0 +1,227 @@
+/* RETRO */
+.retro-bg {
+    background: linear-gradient(45 deg, #0a0a0a, #1a1a2e 100%);
+    min-height: 100vh;
+    font-family: 'Courier New', monospace;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    gap: 40px;
+}
+
+.retro-login-box {
+    background: #000;
+    border: 4px solid #00ff00;
+    border-radius: 0;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow:
+        0 0 20px #00ff00,
+        inset 0 0 20px rgba (0, 255, 0, 0.1);
+    animation: glitch 3s infinite;
+}
+
+.retro-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.retro-title {
+    color: #00ff00;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 
+        0 0 10px #00ff00,
+        0 0 20px #00ff00;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.retro-subtitle {
+    color: #ff00ff;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.retro-form {
+    margin-top: 30px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.retro-label {
+    display: block;
+    color: #00ff00;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.retro-input {
+    width: 100%;
+    padding: 12px;
+    background: #111;
+    border: 2px solid #00ff00;
+    border-radius: 0;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.retro-input:focus {
+    outline: none;
+    border-color: #ff00ff;
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+.retro-btn {
+    width: 100%;
+    padding: 15px;
+    background: #ff00ff;
+    border: 2px solid #00ff00;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 20px;
+}
+
+.retro-btn:hover:not(:disabled) {
+    background: #00ff00;
+    color: #000;
+    box-shadow: 0 0 20px #00ff00;
+    transform: translateY(-2px);
+}
+
+.retro-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.retro-footer {
+    margin-top: 30px;
+    text-align: center;
+    color: #00ff00;
+    font-size: 0.9rem;
+}
+
+.retro-link {
+    color: #ff00ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.retro-link:hover {
+    text-decoration: underline;
+    color: #00ff00;
+}
+
+.retro-alert {
+    background: rgba(255,0,0,0.1);
+    border: 2px solid #ff0000;
+    color: #ff0000;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.retro-terminal {
+    background: #000;
+    border: 4px solid #ff00ff;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+}
+
+.terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #00ff00;
+}
+
+.terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.terminal-dot.red {
+    background: #ff0000;
+}
+
+.terminal-dot.yellow {
+    background: #ffff00;
+}
+
+.terminal-dot.green {
+    background: #00ff00;
+}
+
+.terminal-title {
+    color: #00ff00;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.terminal-body {
+    line-height: 1.6;
+}
+
+.terminal-body p {
+    margin-bottom: 10px;
+    color: #00ff00;
+}
+
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+    }
+    20% {
+        transform: translate(-2px, 2px);
+    }
+    40% {
+        transform: translate(-2px, -2px);
+    }
+    60% {
+        transform: translate(2px, 2px);
+    }
+    80% {
+        transform: translate(2px, -2px);
+    }
+    100% {
+        transform: translate(0);
+    }
+}
+
+/* RESPONSIVENESS */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .retro-login-box,
+    .retro-terminal {
+        max-width: 100%;
+    }
+}
