@@ -1,13 +1,18 @@
+@font-face {
+  font-family: 'retro-font';
+  src: url('../public/fonts/PressStart2P-Regular.ttf');
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'retro-font';
 }
 
 body {
   background: #000;
   color: #00ff00;
-  font-family: 'Courier New', monospace;
   overflow-x: hidden;
 }
 

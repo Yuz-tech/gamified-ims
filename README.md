@@ -66,3 +66,6 @@ b. After a successful login, the user will be directed to a homepage
 c. The homepage has the following: 
 - a carousel showing webpage details, information, and instructions
 - Navbar containing the ff. (Home, Topics, Achievements, )
+
+d. Domain hosting server awsys
+e. MIS -> domain accounts?
