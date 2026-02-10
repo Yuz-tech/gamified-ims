@@ -9,7 +9,7 @@ const createAdmin = async() => {
         await mongoose.connect(process.env.MONGODB_URI).then(() => console.log('MongoDB Connected')).catch((err) => console.error('MongoDB Connection Error:', err));
 
         const admin = new User({
-            username: 'amdin',
+            username: 'admin',
             email: 'admin@sample.com',
             password: 'admin123',
             role: 'admin',

@@ -55,3 +55,14 @@ NOTE: react install might take a while...I mean a WHILE
 ========INITIAL CODES========
 1. cd backend
 2. create the Server.js, config/db.js, and routes/auth.js
+
+PROPOSED GAMIFIED IMS AWARENESS TRAINING
+1. There are two users of the system -- employees and admin. The main users are the employees that needs to take the annual IMS Awareness training.
+2. For the app, there are three main components -> review topics, take the quiz, earn achievements.
+3. FLOW OF THE SYSTEM ->
+
+a. User logs in(assuming he/she has an approved account)
+b. After a successful login, the user will be directed to a homepage
+c. The homepage has the following: 
+- a carousel showing webpage details, information, and instructions
+- Navbar containing the ff. (Home, Topics, Achievements, )

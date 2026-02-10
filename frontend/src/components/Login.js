@@ -112,7 +112,7 @@ const Login = ({ setAuth, setUserData }) => {
                 
                 <div className="retro-footer">
                     <p className="mb-2">
-                        New Player? <Link to="/register" className="retro-link">Create Account</Link>
+                        No Account yet? <Link to="/register" className="retro-link">Request Account Here</Link>
                     </p>
                     <p className="small-text">
                         v1.0 | 2026
