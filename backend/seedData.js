@@ -63,7 +63,7 @@ const seedData = async() => {
         const badge1 = await Badge.create({
             name: 'Quality Maestro',
             description: 'Completed ISO 9001',
-            imageUrl: ''
+            imageUrl: String,
             topicId: topic1._id
         });
 

@@ -77,6 +77,7 @@ const Login = ({ setAuth, setUserData }) => {
                             onChange={onChange}
                             required
                             placeholder="Enter your username"
+                            autoComplete='off'
                         />
                     </div>
                     
