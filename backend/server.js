@@ -51,6 +51,10 @@ app.use((req,res) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
+app.use('/home',(req,res) => {
+    console.log('Konnichiwa baby');
+})
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
