@@ -3,8 +3,9 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
-//import topicRoutes from './routes/topics.js';
+import topicRoutes from './routes/topics.js';
 import adminRoutes from './routes/admin.js';
+import leaderboardRoutes from './routes/leaderboard.js'
 
 dotenv.config();
 
@@ -25,8 +26,8 @@ mongoose.connect(process.env.MONGODB_URI).then(() => console.log('MongoDB Connec
 
 //Routes
 app.use('/api/auth', authRoutes);
-//app.use('/api/topics', topicRoutes);
-//app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/topics', topicRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', (req,res) => {
