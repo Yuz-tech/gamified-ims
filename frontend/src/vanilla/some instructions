@@ -1,0 +1,11 @@
+1. Build the project folder structure
+Modern file structures for MERN stack projects are as follows:
+ROOT FOLDER:
+backend(or server)
+-middleware
+-models
+-utils
+-package.json
+-package-lock.json
+-routes
+-

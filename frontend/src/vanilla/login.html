@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+    <h2>IMS AWARENESS TRAINING</h2>
+
+    <div class="container" id="container">
+        <div class="form-container request-container">
+            <form action="#">
+                <h1>Request for an Account</h1>
+                <input type="text" placeholder="Username" />
+                <input type="email" placeholder="Email" />
+                <button>Request Account</button>
+            </form>
+        </div>
+
+        <div class="form-container login-container">
+            <form action="#">
+                <h1>Log In</h1>
+                <input type="text" placeholder="Username" />
+                <input type="password" placeholder="Password" />
+                <button>Log In</button>
+                <a href="#"><u>Forgot password?</u></a>
+            </form>
+        </div>
+
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>WELCOME BACK!</h1>
+                    <button class="ghost" id="login">LOG IN</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>NO ACCOUNT YET?</h1>
+                    <p>Enter your account details</p>
+                    <button class="ghost" id="request">Register Here</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+
+<script src="login.js"></script>
+</html>
