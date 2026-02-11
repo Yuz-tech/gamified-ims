@@ -1,0 +1,289 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --neon-green: #00ff00;
+  --neon-pink: #ff00ff;
+  --neon-cyan: #00ffff;
+  --neon-yellow: #ffff00;
+  --neon-red: #ff0000;
+  --dark-bg: #0a0a0a;
+  --darker-bg: #000000;
+  --grid-color: #1a1a1a;
+  --text-primary: #00ff00;
+  --text-secondary: #00ffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--dark-bg);
+  color: var(--text-primary);
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 20px 20px;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--darker-bg);
+  border: 1px solid var(--neon-green);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neon-green);
+  border: 2px solid var(--darker-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-cyan);
+}
+
+/* Retro Container */
+.retro-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Neon text effect */
+.neon-text {
+  text-shadow: 
+    0 0 5px currentColor,
+    0 0 10px currentColor,
+    0 0 20px currentColor,
+    0 0 40px currentColor;
+  animation: flicker 2s infinite alternate;
+}
+
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.8;
+  }
+}
+
+/* Retro Button */
+.retro-btn {
+  background: var(--darker-bg);
+  color: var(--neon-green);
+  border: 3px solid var(--neon-green);
+  padding: 12px 24px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+  box-shadow: 
+    0 0 10px var(--neon-green),
+    inset 0 0 10px rgba(0, 255, 0, 0.1);
+}
+
+.retro-btn:hover {
+  background: var(--neon-green);
+  color: var(--darker-bg);
+  box-shadow: 
+    0 0 20px var(--neon-green),
+    0 0 40px var(--neon-green),
+    inset 0 0 20px rgba(0, 255, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.retro-btn:active {
+  transform: translateY(0);
+}
+
+.retro-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.retro-btn.secondary {
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+  box-shadow: 
+    0 0 10px var(--neon-cyan),
+    inset 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+.retro-btn.secondary:hover {
+  background: var(--neon-cyan);
+  box-shadow: 
+    0 0 20px var(--neon-cyan),
+    0 0 40px var(--neon-cyan);
+}
+
+.retro-btn.danger {
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+  box-shadow: 
+    0 0 10px var(--neon-red),
+    inset 0 0 10px rgba(255, 0, 0, 0.1);
+}
+
+.retro-btn.danger:hover {
+  background: var(--neon-red);
+  box-shadow: 
+    0 0 20px var(--neon-red),
+    0 0 40px var(--neon-red);
+}
+
+/* Retro Card */
+.retro-card {
+  background: var(--darker-bg);
+  border: 3px solid var(--neon-green);
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 
+    0 0 20px rgba(0, 255, 0, 0.3),
+    inset 0 0 20px rgba(0, 255, 0, 0.05);
+  position: relative;
+}
+
+.retro-card::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan), var(--neon-pink));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.retro-card:hover::before {
+  opacity: 0.3;
+}
+
+/* Retro Input */
+.retro-input {
+  background: var(--darker-bg);
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+  padding: 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  width: 100%;
+  box-shadow: 
+    0 0 10px rgba(0, 255, 0, 0.2),
+    inset 0 0 10px rgba(0, 255, 0, 0.1);
+}
+
+.retro-input:focus {
+  outline: none;
+  border-color: var(--neon-cyan);
+  box-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.5),
+    inset 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+.retro-input::placeholder {
+  color: rgba(0, 255, 0, 0.5);
+}
+
+/* Scanline effect */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.1) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(4px);
+  }
+}
+
+/* Pixel corners */
+.pixel-corners {
+  position: relative;
+}
+
+.pixel-corners::before,
+.pixel-corners::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--neon-green);
+}
+
+.pixel-corners::before {
+  top: -3px;
+  left: -3px;
+  box-shadow: 
+    0 10px 0 var(--neon-green),
+    10px 0 0 var(--neon-green);
+}
+
+.pixel-corners::after {
+  bottom: -3px;
+  right: -3px;
+  box-shadow: 
+    0 -10px 0 var(--neon-green),
+    -10px 0 0 var(--neon-green);
+}
+
+/* Loading animation */
+.loading {
+  text-align: center;
+  font-size: 24px;
+  color: var(--neon-green);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    font-size: 10px;
+  }
+
+  .retro-btn {
+    font-size: 10px;
+    padding: 10px 20px;
+  }
+
+  .retro-input {
+    font-size: 10px;
+  }
+}
