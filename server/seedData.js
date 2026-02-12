@@ -16,53 +16,53 @@ const seedData = async () => {
 
     // Create Topic 1
     const topic1 = await Topic.create({
-      title: 'Introduction to IMS',
-      description: 'Learn the fundamentals of Integrated Management Systems',
+      title: 'ISO 9001',
+      description: 'A standard for Quality Management Systems',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 180,
       order: 1,
       xpReward: 100,
-      passingScore: 70,
+      passingScore: 75,
       questions: [
         {
-          question: 'What does IMS stand for?',
+          question: 'What is the aim of ISO 9001?',
           options: [
-            'Integrated Management System',
-            'Information Management System',
-            'Internal Monitoring System',
-            'Industrial Manufacturing Standard'
+            'To help secure information systems',
+            'To enhance information delivery to partner organizations',
+            'To ensure quality in the delivery of products/services',
+            'To strengthen stakeholder trust and communication'
+          ],
+          correctAnswer: 2,
+          points: 25
+        },
+        {
+          question: 'Which principle is not associated to ISO 9001?',
+          options: [
+            'Customer Focus',
+            'Cryptography',
+            'Process Approach',
+            'All of the above'
+          ],
+          correctAnswer: 1,
+          points: 25
+        },
+        {
+          question: 'What is the main benefit of ISO 9001?',
+          options: [
+            'Compliance to Quality principles',
+            'To satisfy customer wants',
+            'Have a single audit process',
+            'To secure information throughout the business'
           ],
           correctAnswer: 0,
           points: 25
         },
         {
-          question: 'Which standards are commonly integrated in IMS?',
+          question: 'ISO 9001 helps organizations to:',
           options: [
-            'ISO 9001, ISO 14001, ISO 45001',
-            'ISO 27001, ISO 22000',
-            'ISO 50001, ISO 31000',
-            'All of the above'
-          ],
-          correctAnswer: 3,
-          points: 25
-        },
-        {
-          question: 'What is the main benefit of IMS?',
-          options: [
-            'Cost reduction',
-            'Improved efficiency',
-            'Single audit process',
-            'All of the above'
-          ],
-          correctAnswer: 3,
-          points: 25
-        },
-        {
-          question: 'IMS helps organizations to:',
-          options: [
-            'Meet regulatory requirements',
-            'Improve customer satisfaction',
-            'Reduce environmental impact',
+            'Standardize processes',
+            'Meeting customer needs',
+            'Reduce cost',
             'All of the above'
           ],
           correctAnswer: 3,
@@ -74,8 +74,8 @@ const seedData = async () => {
 
     // Create Topic 2
     const topic2 = await Topic.create({
-      title: 'Quality Management',
-      description: 'Understanding ISO 9001 and quality principles',
+      title: 'ISO 27001',
+      description: 'Understanding information security compliance',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 240,
       order: 2,
@@ -83,58 +83,58 @@ const seedData = async () => {
       passingScore: 75,
       questions: [
         {
-          question: 'What is ISO 9001?',
+          question: 'What is ISO 27001 about?',
           options: [
             'Environmental management standard',
             'Quality management standard',
             'Safety management standard',
             'Information security standard'
           ],
+          correctAnswer: 3,
+          points: 20
+        },
+        {
+          question: 'Which of the following is NOT a key benefit of ISO 27001?',
+          options: [
+            'Risk, Mitigation, & Security',
+            'Mitigate Security Threats',
+            'Competitive Advantage',
+            'Plan, Design, Construct, Audit'
+          ],
+          correctAnswer: 3,
+          points: 20
+        },
+        {
+          question: 'Which of the following is a key component of ISO 27001?',
+          options: [
+            'Risk Assessment',
+            'Product Lifecycle management',
+            'Customer Satisfaction Surveys',
+            'Financial Auditing'
+          ],
+          correctAnswer: 0,
+          points: 20
+        },
+        {
+          question: 'Which principle is NOT directly addressed by ISO 27001',
+          options: [
+            'Confidentiality',
+            'Profitability',
+            'Availability',
+            'Integrity'
+          ],
           correctAnswer: 1,
           points: 20
         },
         {
-          question: 'What does PDCA cycle stand for?',
+          question: 'What document is central to ISO 27001 implementation?',
           options: [
-            'Plan, Do, Check, Act',
-            'Prepare, Deliver, Control, Analyze',
-            'Process, Define, Create, Approve',
-            'Plan, Design, Construct, Audit'
-          ],
-          correctAnswer: 0,
-          points: 20
-        },
-        {
-          question: 'Customer focus is a principle of:',
-          options: [
-            'ISO 14001',
-            'ISO 45001',
-            'ISO 9001',
-            'ISO 27001'
+            'Annual Financial Report',
+            'Customer Service Charter',
+            'Information Security Policy',
+            'Environmental Impact Statement'
           ],
           correctAnswer: 2,
-          points: 20
-        },
-        {
-          question: 'Continuous improvement is also known as:',
-          options: [
-            'Kaizen',
-            'Six Sigma',
-            'Lean',
-            'All of the above'
-          ],
-          correctAnswer: 0,
-          points: 20
-        },
-        {
-          question: 'Internal audits are conducted to:',
-          options: [
-            'Punish employees',
-            'Find non-conformities',
-            'Ensure compliance',
-            'Both B and C'
-          ],
-          correctAnswer: 3,
           points: 20
         }
       ],
