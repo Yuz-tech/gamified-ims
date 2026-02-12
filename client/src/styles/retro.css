@@ -10,12 +10,21 @@
   --neon-cyan: #00ffff;
   --neon-yellow: #ffff00;
   --neon-red: #ff0000;
-  --dark-bg: #0a0a0a;
-  --darker-bg: #000000;
+  --dark-bg: #503197;
+  --darker-bg: #18215d;
   --grid-color: #1a1a1a;
-  --text-primary: #00ff00;
-  --text-secondary: #00ffff;
+  --text-primary: #f6e0c8;
+  --text-secondary: #efaaa5;
+/* GrapeSoda Arcade theme 
+  --dark-blue: #18215d;
+  --dark-purple: #503197;
+  --mid-purple: #bf53c9;
+  --light-purple: #e17cb7;
+  --mister-grape: #efaaa5;
+  --light-grape: #f6e0c8;*/
 }
+
+
 
 body {
   margin: 0;
@@ -67,6 +76,11 @@ body {
   animation: flicker 2s infinite alternate;
 }
 
+.neon-text2 {
+  font-size: 35px;
+  animation: flicker 2.5s infinite alternate;
+}
+
 @keyframes flicker {
   0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
     opacity: 1;
@@ -114,6 +128,7 @@ body {
 }
 
 .retro-btn.secondary {
+  width: 100%;
   border-color: var(--neon-cyan);
   color: var(--neon-cyan);
   box-shadow: 
@@ -146,12 +161,12 @@ body {
 /* Retro Card */
 .retro-card {
   background: var(--darker-bg);
-  border: 3px solid var(--neon-green);
+  border: 3px solid var(#bf53c9);
   padding: 20px;
   margin: 20px 0;
   box-shadow: 
-    0 0 20px rgba(0, 255, 0, 0.3),
-    inset 0 0 20px rgba(0, 255, 0, 0.05);
+    0 0 20px #f6e0c8,
+    inset 0 0 20px #efaaa5;
   position: relative;
 }
 
@@ -175,14 +190,14 @@ body {
 /* Retro Input */
 .retro-input {
   background: var(--darker-bg);
-  border: 2px solid var(--neon-green);
+  border: 2px solid var(#bf53c9);
   color: var(--neon-green);
   padding: 12px;
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
   width: 100%;
   box-shadow: 
-    0 0 10px rgba(0, 255, 0, 0.2),
+    0 0 10px #e17cb7,
     inset 0 0 10px rgba(0, 255, 0, 0.1);
 }
 
@@ -195,7 +210,8 @@ body {
 }
 
 .retro-input::placeholder {
-  color: rgba(0, 255, 0, 0.5);
+  color: rgba(135, 135, 135, 0.5);
+  opacity: 1;
 }
 
 /* Scanline effect */
@@ -236,23 +252,16 @@ body {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: var(--neon-green);
 }
 
 .pixel-corners::before {
   top: -3px;
   left: -3px;
-  box-shadow: 
-    0 10px 0 var(--neon-green),
-    10px 0 0 var(--neon-green);
 }
 
 .pixel-corners::after {
   bottom: -3px;
   right: -3px;
-  box-shadow: 
-    0 -10px 0 var(--neon-green),
-    -10px 0 0 var(--neon-green);
 }
 
 /* Loading animation */

@@ -65,6 +65,21 @@ const Login = () => {
         transition={{ type: 'spring', stiffness: 100 }}
         style={{ width: '100%', maxWidth: '500px' }}
       >
+        <div>
+          <h1 className="neon-text2"
+            style = {{
+            textAlign:'center',
+            marginBottom: '0px'
+          }}>
+            IMS AWARENESS TRAINING
+          </h1>
+          <br />
+          <p style = {{
+            textAlign:'center',
+            marginBottom: '26px'
+          }}>Advanced World Solutions, Inc.</p>
+        </div>
+
         <div className="retro-card pixel-corners">
           <h1 
             className="neon-text" 
@@ -72,10 +87,10 @@ const Login = () => {
               textAlign: 'center', 
               marginBottom: '30px',
               fontSize: '24px',
-              color: 'var(--neon-yellow)'
+              color: '#67ca16'
             }}
           >
-            {isLogin ? '🎮 LOGIN' : '📝 REQUEST ACCOUNT'}
+            {isLogin ? 'はじめ' : 'はいる'}
           </h1>
 
           {error && (
@@ -118,7 +133,7 @@ const Login = () => {
                 display: 'block', 
                 marginBottom: '10px', 
                 fontSize: '12px',
-                color: 'var(--neon-cyan)'
+                color: '#D1BBAD'
               }}>
                 USERNAME
               </label>
@@ -128,7 +143,8 @@ const Login = () => {
                 value={formData.username}
                 onChange={handleChange}
                 className="retro-input"
-                placeholder="ENTER_USERNAME"
+                placeholder="username"
+                autoComplete='off'
                 required
               />
             </div>
@@ -139,7 +155,7 @@ const Login = () => {
                   display: 'block', 
                   marginBottom: '10px', 
                   fontSize: '12px',
-                  color: 'var(--neon-cyan)'
+                  color: '#D1BBAD'
                 }}>
                   EMAIL
                 </label>
@@ -149,7 +165,8 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="retro-input"
-                  placeholder="YOUR@EMAIL.COM"
+                  placeholder="use company email"
+                  autoComplete='off'
                   required
                 />
               </div>
@@ -161,7 +178,7 @@ const Login = () => {
                   display: 'block', 
                   marginBottom: '10px', 
                   fontSize: '12px',
-                  color: 'var(--neon-cyan)'
+                  color: '#D1BBAD'
                 }}>
                   PASSWORD
                 </label>
@@ -171,21 +188,21 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   className="retro-input"
-                  placeholder="••••••••"
+                  placeholder="******"
                   required
                 />
               </div>
             )}
 
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.95 }}
               type="submit"
               className="retro-btn"
               style={{ width: '100%', marginBottom: '20px' }}
               disabled={loading}
             >
-              {loading ? 'LOADING...' : (isLogin ? 'PRESS START' : 'SUBMIT REQUEST')}
+              {loading ? 'LOADING...' : (isLogin ? 'LOG IN' : 'SUBMIT REQUEST')}
             </motion.button>
 
             <div style={{ textAlign: 'center' }}>
@@ -198,7 +215,7 @@ const Login = () => {
                   setFormData({ username: '', email: '', password: '' });
                 }}
                 className="retro-btn secondary"
-                style={{ fontSize: '10px' }}
+                style={{ fontSize: '10px', color: 'white' }}
               >
                 {isLogin ? 'REQUEST NEW ACCOUNT' : 'BACK TO LOGIN'}
               </button>
@@ -208,14 +225,11 @@ const Login = () => {
           <div style={{ 
             marginTop: '30px', 
             padding: '15px', 
-            border: '1px solid var(--grid-color)',
             fontSize: '8px',
             textAlign: 'center',
             color: 'var(--text-secondary)'
           }}>
-            🎮 IMS TRAINING ARCADE v1.0
-            <br />
-            PRESS START TO BEGIN YOUR JOURNEY
+            v1.0 by Julius Galejo
           </div>
         </div>
       </motion.div>

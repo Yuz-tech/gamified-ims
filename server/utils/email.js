@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
-  secure: false,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
@@ -14,7 +14,7 @@ export const sendPasswordEmail = async (email, username, password) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'IMS Training - Your Account Credentials',
+    subject: 'IMS Awareness Training - Your Account Credentials',
     html: `
       <div style="font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; border: 2px solid #0f0;">
         <h1 style="color: #ff0; text-shadow: 2px 2px #f00;">🎮 IMS TRAINING ARCADE 🎮</h1>

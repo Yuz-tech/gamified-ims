@@ -50,7 +50,7 @@ const Navbar = () => {
           color: 'var(--neon-yellow)',
           textShadow: '0 0 10px var(--neon-yellow)'
         }}>
-          🎮 IMS ARCADE
+          GAMIFIED IMS AWARENESS TRAINING
         </div>
 
         <div style={{ 

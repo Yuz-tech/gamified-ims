@@ -37,8 +37,14 @@ app.use('/api/admin', adminRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: '🕹️ IMS Training Arcade is running!',
+    message: 'Tumatakbo na ang API',
     timestamp: new Date()
+  });
+});
+
+app.get('/wp-admin', (req,res) => {
+  res.json({
+    message: 'Hello there, I am Julius and I "created" this app'
   });
 });
 
@@ -61,12 +67,10 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`
   ╔════════════════════════════════════════╗
-  ║   🎮 IMS TRAINING ARCADE SERVER 🎮    ║
+  ║         IMS AWARENESS TRAINING         ║
   ║                                        ║
-  ║   Server running on port ${PORT}        ║
-  ║   Environment: ${process.env.NODE_ENV || 'development'}              ║
+  ║      Server running on port ${PORT}       ║
   ║                                        ║
-  ║   PRESS START TO CONTINUE...          ║
   ╚════════════════════════════════════════╝
   `);
 });
