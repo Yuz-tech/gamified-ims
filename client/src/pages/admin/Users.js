@@ -123,7 +123,7 @@ const Users = () => {
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--neon-yellow)'
+          color: 'var(--orange-accent)'
         }}
       >
         👥 USER MANAGEMENT
@@ -145,12 +145,12 @@ const Users = () => {
           className="retro-card"
           style={{ marginBottom: '40px' }}
         >
-          <h3 style={{ fontSize: '14px', color: 'var(--neon-pink)', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '14px', color: 'var(--sky-blue)', marginBottom: '20px' }}>
             CREATE NEW USER
           </h3>
           <form onSubmit={handleCreateUser}>
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 USERNAME
               </label>
               <input
@@ -162,7 +162,7 @@ const Users = () => {
               />
             </div>
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 EMAIL
               </label>
               <input
@@ -174,7 +174,7 @@ const Users = () => {
               />
             </div>
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 PASSWORD
               </label>
               <input
@@ -186,7 +186,7 @@ const Users = () => {
               />
             </div>
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 ROLE
               </label>
               <select
@@ -213,25 +213,25 @@ const Users = () => {
           className="retro-card"
           style={{ marginBottom: '40px' }}
         >
-          <h3 style={{ fontSize: '14px', color: 'var(--neon-pink)', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '14px', color: 'var(--sky-blue)', marginBottom: '20px' }}>
             ⏳ PENDING REQUESTS ({pendingUsers.length})
           </h3>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', fontSize: '10px' }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--neon-yellow)' }}>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>USERNAME</th>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>EMAIL</th>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>REQUESTED</th>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>ACTIONS</th>
+                <tr style={{ borderBottom: '2px solid var(--orange-accent)' }}>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>USERNAME</th>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>EMAIL</th>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>REQUESTED</th>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {pendingUsers.map((user) => (
                   <tr key={user._id} style={{ borderBottom: '1px solid var(--grid-color)' }}>
-                    <td style={{ padding: '10px', color: 'var(--neon-cyan)' }}>{user.username}</td>
-                    <td style={{ padding: '10px', color: 'var(--neon-green)' }}>{user.email}</td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-pink)' }}>
+                    <td style={{ padding: '10px', color: 'var(--light-blue)' }}>{user.username}</td>
+                    <td style={{ padding: '10px', color: 'var(--bright-blue)' }}>{user.email}</td>
+                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--sky-blue)' }}>
                       {new Date(user.requestedAt).toLocaleDateString()}
                     </td>
                     <td style={{ padding: '10px', textAlign: 'center' }}>
@@ -257,31 +257,31 @@ const Users = () => {
         animate={{ opacity: 1 }}
         className="retro-card"
       >
-        <h3 style={{ fontSize: '14px', color: 'var(--neon-pink)', marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '14px', color: 'var(--sky-blue)', marginBottom: '20px' }}>
           ALL USERS ({users.length})
         </h3>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', fontSize: '10px' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--neon-green)' }}>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>USERNAME</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>EMAIL</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>ROLE</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>LEVEL</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>XP</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>ACTIONS</th>
+              <tr style={{ borderBottom: '2px solid var(--bright-blue)' }}>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>USERNAME</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>EMAIL</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>ROLE</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>LEVEL</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>XP</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
                 <tr key={user._id} style={{ borderBottom: '1px solid var(--grid-color)' }}>
-                  <td style={{ padding: '10px', color: 'var(--neon-cyan)' }}>{user.username}</td>
-                  <td style={{ padding: '10px', color: 'var(--neon-green)' }}>{user.email}</td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: user.role === 'admin' ? 'var(--neon-yellow)' : 'var(--neon-cyan)' }}>
+                  <td style={{ padding: '10px', color: 'var(--light-blue)' }}>{user.username}</td>
+                  <td style={{ padding: '10px', color: 'var(--bright-blue)' }}>{user.email}</td>
+                  <td style={{ padding: '10px', textAlign: 'center', color: user.role === 'admin' ? 'var(--orange-accent)' : 'var(--light-blue)' }}>
                     {user.role.toUpperCase()}
                   </td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-pink)' }}>{user.level}</td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-cyan)' }}>{user.xp}</td>
+                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--sky-blue)' }}>{user.level}</td>
+                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--light-blue)' }}>{user.xp}</td>
                   <td style={{ padding: '10px', textAlign: 'center' }}>
                     <button
                       onClick={() => setEditingUser(user)}
@@ -321,11 +321,11 @@ const Users = () => {
           padding: '20px'
         }}>
           <div className="retro-card pixel-corners" style={{ maxWidth: '500px', width: '100%' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--neon-yellow)', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--orange-accent)', marginBottom: '20px' }}>
               APPROVE USER: {showApproveModal.username}
             </h3>
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 SET PASSWORD
               </label>
               <input
@@ -376,12 +376,12 @@ const Users = () => {
           overflowY: 'auto'
         }}>
           <div className="retro-card pixel-corners" style={{ maxWidth: '500px', width: '100%', margin: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--neon-yellow)', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--orange-accent)', marginBottom: '20px' }}>
               EDIT USER: {editingUser.username}
             </h3>
             <form onSubmit={handleUpdateUser}>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   USERNAME
                 </label>
                 <input
@@ -392,7 +392,7 @@ const Users = () => {
                 />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   EMAIL
                 </label>
                 <input
@@ -403,7 +403,7 @@ const Users = () => {
                 />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   ROLE
                 </label>
                 <select
@@ -416,7 +416,7 @@ const Users = () => {
                 </select>
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   XP
                 </label>
                 <input
@@ -427,7 +427,7 @@ const Users = () => {
                 />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   LEVEL
                 </label>
                 <input

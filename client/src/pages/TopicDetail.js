@@ -107,7 +107,7 @@ const TopicDetail = () => {
       <div className="retro-container" style={{ paddingTop: '40px' }}>
         <div className="retro-card" style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>❌</div>
-          <div style={{ fontSize: '14px', color: 'var(--neon-red)' }}>
+          <div style={{ fontSize: '14px', color: 'var(--error-red)' }}>
             TOPIC NOT FOUND
           </div>
         </div>
@@ -129,11 +129,11 @@ const TopicDetail = () => {
           <h1 className="neon-text" style={{ 
             fontSize: '24px', 
             marginBottom: '20px',
-            color: 'var(--neon-yellow)'
+            color: 'var(--orange-accent)'
           }}>
             ALREADY COMPLETED!
           </h1>
-          <p style={{ fontSize: '12px', color: 'var(--neon-cyan)', marginBottom: '30px' }}>
+          <p style={{ fontSize: '12px', color: 'var(--light-blue)', marginBottom: '30px' }}>
             You've already mastered this topic!
           </p>
           <button
@@ -167,14 +167,14 @@ const TopicDetail = () => {
         <h1 className="neon-text" style={{ 
           fontSize: '24px', 
           marginBottom: '20px',
-          color: 'var(--neon-yellow)'
+          color: 'var(--orange-accent)'
         }}>
           {topic.title}
         </h1>
 
         <p style={{ 
           fontSize: '12px', 
-          color: 'var(--neon-cyan)',
+          color: 'var(--light-blue)',
           marginBottom: '30px',
           lineHeight: '1.8'
         }}>
@@ -188,14 +188,14 @@ const TopicDetail = () => {
             animate={{ opacity: 1 }}
           >
             <div style={{
-              background: 'var(--darker-bg)',
-              border: '3px solid var(--neon-green)',
+              background: 'var(--primary-navy)',
+              border: '3px solid var(--bright-blue)',
               padding: '20px',
               marginBottom: '30px'
             }}>
               <h3 style={{
                 fontSize: '14px',
-                color: 'var(--neon-pink)',
+                color: 'var(--sky-blue)',
                 marginBottom: '20px'
               }}>
                 📺 TRAINING VIDEO
@@ -206,8 +206,8 @@ const TopicDetail = () => {
                 paddingBottom: '56.25%',
                 height: 0,
                 overflow: 'hidden',
-                background: 'var(--dark-bg)',
-                border: '2px solid var(--neon-cyan)'
+                background: 'var(--bg-dark)',
+                border: '2px solid var(--light-blue)'
               }}>
                 <iframe
                   src={topic.videoUrl}
@@ -231,10 +231,10 @@ const TopicDetail = () => {
                 background: videoWatched 
                   ? 'rgba(0, 255, 0, 0.1)' 
                   : 'rgba(255, 255, 0, 0.1)',
-                border: `2px solid ${videoWatched ? 'var(--neon-green)' : 'var(--neon-yellow)'}`,
+                border: `2px solid ${videoWatched ? 'var(--bright-blue)' : 'var(--orange-accent)'}`,
                 textAlign: 'center',
                 fontSize: '10px',
-                color: videoWatched ? 'var(--neon-green)' : 'var(--neon-yellow)'
+                color: videoWatched ? 'var(--bright-blue)' : 'var(--orange-accent)'
               }}>
                 {videoWatched 
                   ? '✓ VIDEO WATCHED - QUIZ UNLOCKED!' 
@@ -269,14 +269,14 @@ const TopicDetail = () => {
             animate={{ opacity: 1, x: 0 }}
           >
             <div style={{
-              background: 'var(--darker-bg)',
-              border: '3px solid var(--neon-cyan)',
+              background: 'var(--primary-navy)',
+              border: '3px solid var(--light-blue)',
               padding: '20px',
               marginBottom: '30px'
             }}>
               <h3 style={{
                 fontSize: '14px',
-                color: 'var(--neon-pink)',
+                color: 'var(--sky-blue)',
                 marginBottom: '20px'
               }}>
                 🎯 QUIZ - {topic.questions.length} QUESTIONS
@@ -285,10 +285,10 @@ const TopicDetail = () => {
               <div style={{
                 padding: '15px',
                 background: 'rgba(255, 255, 0, 0.1)',
-                border: '2px solid var(--neon-yellow)',
+                border: '2px solid var(--orange-accent)',
                 marginBottom: '30px',
                 fontSize: '10px',
-                color: 'var(--neon-yellow)'
+                color: 'var(--orange-accent)'
               }}>
                 ⚠️ PASSING SCORE: {topic.passingScore}% | XP REWARD: {topic.xpReward}
               </div>
@@ -299,13 +299,13 @@ const TopicDetail = () => {
                   style={{
                     marginBottom: '30px',
                     padding: '20px',
-                    border: '2px solid var(--neon-green)',
+                    border: '2px solid var(--bright-blue)',
                     background: 'rgba(0, 255, 0, 0.05)'
                   }}
                 >
                   <div style={{
                     fontSize: '12px',
-                    color: 'var(--neon-cyan)',
+                    color: 'var(--light-blue)',
                     marginBottom: '20px',
                     lineHeight: '1.6'
                   }}>
@@ -322,8 +322,8 @@ const TopicDetail = () => {
                           padding: '15px',
                           border: `2px solid ${
                             answers[qIndex] === oIndex 
-                              ? 'var(--neon-cyan)' 
-                              : 'var(--neon-green)'
+                              ? 'var(--light-blue)' 
+                              : 'var(--bright-blue)'
                           }`,
                           background: answers[qIndex] === oIndex 
                             ? 'rgba(0, 255, 255, 0.2)' 
@@ -331,8 +331,8 @@ const TopicDetail = () => {
                           cursor: 'pointer',
                           fontSize: '10px',
                           color: answers[qIndex] === oIndex 
-                            ? 'var(--neon-cyan)' 
-                            : 'var(--neon-green)',
+                            ? 'var(--light-blue)' 
+                            : 'var(--bright-blue)',
                           transition: 'all 0.3s',
                           boxShadow: answers[qIndex] === oIndex 
                             ? '0 0 20px rgba(0, 255, 255, 0.5)' 
@@ -401,14 +401,14 @@ const TopicDetail = () => {
                 <h2 className="neon-text" style={{
                   fontSize: '28px',
                   marginBottom: '20px',
-                  color: result.passed ? 'var(--neon-green)' : 'var(--neon-red)'
+                  color: result.passed ? 'var(--bright-blue)' : 'var(--error-red)'
                 }}>
                   {result.passed ? 'CONGRATULATIONS!' : 'TRY AGAIN'}
                 </h2>
 
                 <div style={{
                   fontSize: '48px',
-                  color: result.passed ? 'var(--neon-cyan)' : 'var(--neon-yellow)',
+                  color: result.passed ? 'var(--light-blue)' : 'var(--orange-accent)',
                   marginBottom: '20px'
                 }}>
                   {result.score}%
@@ -416,7 +416,7 @@ const TopicDetail = () => {
 
                 <div style={{
                   fontSize: '12px',
-                  color: 'var(--neon-green)',
+                  color: 'var(--bright-blue)',
                   marginBottom: '30px'
                 }}>
                   {result.correctAnswers} / {result.totalQuestions} CORRECT
@@ -425,25 +425,25 @@ const TopicDetail = () => {
                 {result.passed && (
                   <div style={{
                     padding: '20px',
-                    border: '2px solid var(--neon-yellow)',
+                    border: '2px solid var(--orange-accent)',
                     background: 'rgba(255, 255, 0, 0.1)',
                     marginBottom: '30px'
                   }}>
-                    <div style={{ fontSize: '10px', color: 'var(--neon-yellow)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--orange-accent)' }}>
                       ⭐ XP EARNED: +{result.xpEarned}
                     </div>
-                    <div style={{ fontSize: '10px', color: 'var(--neon-cyan)', marginTop: '10px' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--light-blue)', marginTop: '10px' }}>
                       🆙 NEW LEVEL: {result.newLevel}
                     </div>
                     {result.badgeEarned && (
-                      <div style={{ fontSize: '10px', color: 'var(--neon-pink)', marginTop: '10px' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--sky-blue)', marginTop: '10px' }}>
                         🏆 BADGE EARNED: {result.badgeEarned}
                       </div>
                     )}
                     {result.allBadgesCollected && (
                       <div style={{ 
                         fontSize: '10px', 
-                        color: 'var(--neon-green)', 
+                        color: 'var(--bright-blue)', 
                         marginTop: '10px',
                         fontWeight: 'bold'
                       }}>
@@ -456,11 +456,11 @@ const TopicDetail = () => {
                 {!result.passed && (
                   <div style={{
                     padding: '20px',
-                    border: '2px solid var(--neon-red)',
+                    border: '2px solid var(--error-red)',
                     background: 'rgba(255, 0, 0, 0.1)',
                     marginBottom: '30px',
                     fontSize: '10px',
-                    color: 'var(--neon-red)'
+                    color: 'var(--error-red)'
                   }}>
                     REQUIRED SCORE: {result.requiredScore}%
                     <br />

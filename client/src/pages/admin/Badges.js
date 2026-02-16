@@ -112,7 +112,7 @@ const Badges = () => {
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--neon-yellow)'
+          color: 'var(--orange-accent)'
         }}
       >
         🏆 BADGE MANAGEMENT
@@ -134,12 +134,12 @@ const Badges = () => {
           className="retro-card"
           style={{ marginBottom: '40px' }}
         >
-          <h3 style={{ fontSize: '14px', color: 'var(--neon-pink)', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '14px', color: 'var(--sky-blue)', marginBottom: '20px' }}>
             {editingBadge ? 'EDIT BADGE' : 'CREATE NEW BADGE'}
           </h3>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 NAME
               </label>
               <input
@@ -152,7 +152,7 @@ const Badges = () => {
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 DESCRIPTION
               </label>
               <textarea
@@ -165,7 +165,7 @@ const Badges = () => {
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 BADGE ICON (Emoji)
               </label>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
@@ -176,7 +176,7 @@ const Badges = () => {
                     style={{
                       width: '50px',
                       height: '50px',
-                      border: `2px solid ${formData.imageUrl === emoji ? 'var(--neon-cyan)' : 'var(--neon-green)'}`,
+                      border: `2px solid ${formData.imageUrl === emoji ? 'var(--light-blue)' : 'var(--bright-blue)'}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -201,7 +201,7 @@ const Badges = () => {
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 LINKED TOPIC
               </label>
               <select
@@ -254,16 +254,16 @@ const Badges = () => {
               fontSize: '64px',
               marginBottom: '15px',
               padding: '20px',
-              border: '3px solid var(--neon-yellow)',
-              background: 'var(--darker-bg)',
-              boxShadow: '0 0 20px var(--neon-yellow)'
+              border: '3px solid var(--orange-accent)',
+              background: 'var(--primary-navy)',
+              boxShadow: '0 0 20px var(--orange-accent)'
             }}>
               {badge.imageUrl}
             </div>
 
             <h4 style={{
               fontSize: '12px',
-              color: 'var(--neon-cyan)',
+              color: 'var(--light-blue)',
               marginBottom: '10px'
             }}>
               {badge.name}
@@ -271,7 +271,7 @@ const Badges = () => {
 
             <p style={{
               fontSize: '9px',
-              color: 'var(--neon-green)',
+              color: 'var(--bright-blue)',
               marginBottom: '15px',
               lineHeight: '1.5'
             }}>
@@ -281,10 +281,10 @@ const Badges = () => {
             <div style={{
               padding: '10px',
               background: 'rgba(0, 255, 0, 0.05)',
-              border: '1px solid var(--neon-green)',
+              border: '1px solid var(--bright-blue)',
               marginBottom: '15px',
               fontSize: '9px',
-              color: 'var(--neon-pink)'
+              color: 'var(--sky-blue)'
             }}>
               TOPIC: {badge.topicId?.title || 'N/A'}
             </div>
@@ -312,10 +312,10 @@ const Badges = () => {
       {badges.length === 0 && (
         <div className="retro-card" style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>🏆</div>
-          <div style={{ fontSize: '14px', color: 'var(--neon-cyan)' }}>
+          <div style={{ fontSize: '14px', color: 'var(--light-blue)' }}>
             NO BADGES YET
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--neon-green)', marginTop: '10px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--bright-blue)', marginTop: '10px' }}>
             Create badges to reward topic completion!
           </div>
         </div>

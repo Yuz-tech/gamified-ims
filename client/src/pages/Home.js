@@ -93,14 +93,14 @@ const Home = () => {
           <h2 className="neon-text" style={{ 
             fontSize: '18px', 
             marginBottom: '20px',
-            color: 'var(--neon-yellow)'
+            color: 'var(--orange-accent)'
           }}>
             {carouselContent[currentSlide].title}
           </h2>
           <p style={{ 
             fontSize: '10px', 
             lineHeight: '1.8',
-            color: 'var(--neon-cyan)'
+            color: 'var(--light-blue)'
           }}>
             {carouselContent[currentSlide].text}
           </p>
@@ -119,10 +119,10 @@ const Home = () => {
               style={{
                 width: '15px',
                 height: '15px',
-                border: `2px solid ${index === currentSlide ? 'var(--neon-cyan)' : 'var(--neon-green)'}`,
-                background: index === currentSlide ? 'var(--neon-cyan)' : 'transparent',
+                border: `2px solid ${index === currentSlide ? 'var(--light-blue)' : 'var(--bright-blue)'}`,
+                background: index === currentSlide ? 'var(--light-blue)' : 'transparent',
                 cursor: 'pointer',
-                boxShadow: index === currentSlide ? '0 0 15px var(--neon-cyan)' : 'none'
+                boxShadow: index === currentSlide ? '0 0 15px var(--light-blue)' : 'none'
               }}
             />
           ))}
@@ -143,8 +143,8 @@ const Home = () => {
           <h3 style={{ 
             fontSize: '14px', 
             marginBottom: '20px',
-            color: 'var(--neon-pink)',
-            textShadow: '0 0 10px var(--neon-pink)'
+            color: 'var(--sky-blue)',
+            textShadow: '0 0 10px var(--sky-blue)'
           }}>
             ⭐ YOUR PROGRESS
           </h3>
@@ -155,31 +155,31 @@ const Home = () => {
               justifyContent: 'space-between',
               fontSize: '12px',
               marginBottom: '10px',
-              color: 'var(--neon-cyan)'
+              color: 'var(--light-blue)'
             }}>
               <span>LEVEL {user?.level || 1}</span>
               <span>LEVEL {(user?.level || 1) + 1}</span>
             </div>
             <div style={{
-              background: 'var(--darker-bg)',
-              border: '2px solid var(--neon-green)',
+              background: 'var(--primary-navy)',
+              border: '2px solid var(--bright-blue)',
               height: '30px',
               position: 'relative',
               overflow: 'hidden'
             }}>
               <div style={{
-                background: 'linear-gradient(90deg, var(--neon-green), var(--neon-cyan))',
+                background: 'linear-gradient(90deg, var(--bright-blue), var(--light-blue))',
                 height: '100%',
                 width: `${Math.min(progressPercentage, 100)}%`,
                 transition: 'width 0.5s ease',
-                boxShadow: '0 0 20px var(--neon-green)'
+                boxShadow: '0 0 20px var(--bright-blue)'
               }} />
             </div>
             <div style={{ 
               textAlign: 'center', 
               marginTop: '10px',
               fontSize: '10px',
-              color: 'var(--neon-green)'
+              color: 'var(--bright-blue)'
             }}>
               {user?.xp || 0} / {xpToNextLevel} XP
             </div>
@@ -193,25 +193,25 @@ const Home = () => {
           }}>
             <div style={{ 
               padding: '15px',
-              border: '2px solid var(--neon-green)',
+              border: '2px solid var(--bright-blue)',
               textAlign: 'center'
             }}>
-              <div style={{ color: 'var(--neon-yellow)', marginBottom: '5px' }}>
+              <div style={{ color: 'var(--orange-accent)', marginBottom: '5px' }}>
                 🏅 BADGES
               </div>
-              <div style={{ fontSize: '24px', color: 'var(--neon-green)' }}>
+              <div style={{ fontSize: '24px', color: 'var(--bright-blue)' }}>
                 {badges.length}
               </div>
             </div>
             <div style={{ 
               padding: '15px',
-              border: '2px solid var(--neon-cyan)',
+              border: '2px solid var(--light-blue)',
               textAlign: 'center'
             }}>
-              <div style={{ color: 'var(--neon-yellow)', marginBottom: '5px' }}>
+              <div style={{ color: 'var(--orange-accent)', marginBottom: '5px' }}>
                 ✅ TOPICS
               </div>
-              <div style={{ fontSize: '24px', color: 'var(--neon-cyan)' }}>
+              <div style={{ fontSize: '24px', color: 'var(--light-blue)' }}>
                 {user?.completedTopics?.length || 0}
               </div>
             </div>
@@ -227,8 +227,8 @@ const Home = () => {
           <h3 style={{ 
             fontSize: '14px', 
             marginBottom: '20px',
-            color: 'var(--neon-pink)',
-            textShadow: '0 0 10px var(--neon-pink)'
+            color: 'var(--sky-blue)',
+            textShadow: '0 0 10px var(--sky-blue)'
           }}>
             🏆 YOUR BADGES
           </h3>
@@ -248,14 +248,14 @@ const Home = () => {
                   style={{
                     width: '80px',
                     height: '80px',
-                    border: '3px solid var(--neon-yellow)',
+                    border: '3px solid var(--orange-accent)',
                     padding: '5px',
-                    background: 'var(--darker-bg)',
+                    background: 'var(--primary-navy)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '40px',
-                    boxShadow: '0 0 20px var(--neon-yellow)',
+                    boxShadow: '0 0 20px var(--orange-accent)',
                     cursor: 'pointer'
                   }}
                   title={badge.badgeId?.name}
@@ -267,7 +267,7 @@ const Home = () => {
               <div style={{ 
                 textAlign: 'center', 
                 padding: '40px',
-                color: 'var(--neon-cyan)',
+                color: 'var(--light-blue)',
                 fontSize: '10px'
               }}>
                 NO BADGES YET!
@@ -288,8 +288,8 @@ const Home = () => {
           <h3 style={{ 
             fontSize: '14px', 
             marginBottom: '20px',
-            color: 'var(--neon-pink)',
-            textShadow: '0 0 10px var(--neon-pink)'
+            color: 'var(--sky-blue)',
+            textShadow: '0 0 10px var(--sky-blue)'
           }}>
             👑 LEADERBOARD
           </h3>
@@ -297,14 +297,14 @@ const Home = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', fontSize: '10px' }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--neon-green)' }}>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>RANK</th>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>
+                <tr style={{ borderBottom: '2px solid var(--bright-blue)' }}>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>RANK</th>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>
                     PLAYER
                   </th>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>LEVEL</th>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>XP</th>
-                  <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>BADGES</th>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>LEVEL</th>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>XP</th>
+                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>BADGES</th>
                 </tr>
               </thead>
               <tbody>
@@ -321,25 +321,25 @@ const Home = () => {
                     <td style={{ 
                       padding: '10px', 
                       textAlign: 'center',
-                      color: player.rank === 1 ? 'var(--neon-yellow)' : 'var(--neon-green)'
+                      color: player.rank === 1 ? 'var(--orange-accent)' : 'var(--bright-blue)'
                     }}>
                       {player.rank === 1 && '👑'} #{player.rank}
                     </td>
                     <td style={{ 
                       padding: '10px',
                       color: player.username === user?.username 
-                        ? 'var(--neon-cyan)' 
-                        : 'var(--neon-green)'
+                        ? 'var(--light-blue)' 
+                        : 'var(--bright-blue)'
                     }}>
                       {player.username}
                     </td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-pink)' }}>
+                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--sky-blue)' }}>
                       {player.level}
                     </td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-cyan)' }}>
+                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--light-blue)' }}>
                       {player.xp}
                     </td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-yellow)' }}>
+                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--orange-accent)' }}>
                       {player.badgeCount}
                     </td>
                   </tr>

@@ -48,7 +48,7 @@ const Topics = () => {
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--neon-yellow)'
+          color: 'var(--orange-accent)'
         }}
       >
         📚 TRAINING TOPICS
@@ -79,12 +79,12 @@ const Topics = () => {
                 position: 'absolute',
                 top: '10px',
                 right: '10px',
-                background: 'var(--neon-green)',
-                color: 'var(--darker-bg)',
+                background: 'var(--bright-blue)',
+                color: 'var(--primary-navy)',
                 padding: '5px 10px',
                 fontSize: '10px',
                 fontWeight: 'bold',
-                boxShadow: '0 0 10px var(--neon-green)'
+                boxShadow: '0 0 10px var(--bright-blue)'
               }}>
                 ✓ COMPLETED
               </div>
@@ -93,8 +93,8 @@ const Topics = () => {
             <div style={{
               width: '100%',
               height: '150px',
-              background: 'linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%)',
-              border: '2px solid var(--neon-green)',
+              background: 'linear-gradient(135deg, var(--primary-navy) 0%, var(--bg-dark) 100%)',
+              border: '2px solid var(--bright-blue)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -107,16 +107,16 @@ const Topics = () => {
 
             <h3 style={{
               fontSize: '14px',
-              color: 'var(--neon-cyan)',
+              color: 'var(--light-blue)',
               marginBottom: '15px',
-              textShadow: '0 0 10px var(--neon-cyan)'
+              textShadow: '0 0 10px var(--light-blue)'
             }}>
               {topic.title}
             </h3>
 
             <p style={{
               fontSize: '10px',
-              color: 'var(--neon-green)',
+              color: 'var(--bright-blue)',
               lineHeight: '1.6',
               marginBottom: '20px'
             }}>
@@ -132,21 +132,21 @@ const Topics = () => {
             }}>
               <div style={{
                 padding: '10px',
-                border: '1px solid var(--neon-pink)',
+                border: '1px solid var(--sky-blue)',
                 textAlign: 'center'
               }}>
-                <div style={{ color: 'var(--neon-yellow)' }}>⭐ XP REWARD</div>
-                <div style={{ color: 'var(--neon-pink)', marginTop: '5px', fontSize: '14px' }}>
+                <div style={{ color: 'var(--orange-accent)' }}>⭐ XP REWARD</div>
+                <div style={{ color: 'var(--sky-blue)', marginTop: '5px', fontSize: '14px' }}>
                   {topic.xpReward}
                 </div>
               </div>
               <div style={{
                 padding: '10px',
-                border: '1px solid var(--neon-cyan)',
+                border: '1px solid var(--light-blue)',
                 textAlign: 'center'
               }}>
-                <div style={{ color: 'var(--neon-yellow)' }}>🎯 PASSING</div>
-                <div style={{ color: 'var(--neon-cyan)', marginTop: '5px', fontSize: '14px' }}>
+                <div style={{ color: 'var(--orange-accent)' }}>🎯 PASSING</div>
+                <div style={{ color: 'var(--light-blue)', marginTop: '5px', fontSize: '14px' }}>
                   {topic.passingScore}%
                 </div>
               </div>
@@ -158,10 +158,10 @@ const Topics = () => {
               background: topic.isCompleted 
                 ? 'rgba(0, 255, 0, 0.1)' 
                 : 'rgba(255, 255, 0, 0.1)',
-              border: `2px solid ${topic.isCompleted ? 'var(--neon-green)' : 'var(--neon-yellow)'}`,
+              border: `2px solid ${topic.isCompleted ? 'var(--bright-blue)' : 'var(--orange-accent)'}`,
               textAlign: 'center',
               fontSize: '10px',
-              color: topic.isCompleted ? 'var(--neon-green)' : 'var(--neon-yellow)'
+              color: topic.isCompleted ? 'var(--bright-blue)' : 'var(--orange-accent)'
             }}>
               {topic.isCompleted ? '✓ BADGE EARNED' : '🎮 CLICK TO START'}
             </div>
@@ -172,10 +172,10 @@ const Topics = () => {
       {topics.length === 0 && (
         <div className="retro-card" style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>📚</div>
-          <div style={{ fontSize: '14px', color: 'var(--neon-cyan)' }}>
+          <div style={{ fontSize: '14px', color: 'var(--light-blue)' }}>
             NO TOPICS AVAILABLE YET
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--neon-green)', marginTop: '10px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--bright-blue)', marginTop: '10px' }}>
             Check back soon for new training content!
           </div>
         </div>

@@ -142,7 +142,7 @@ const Topics = () => {
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--neon-yellow)'
+          color: 'var(--orange-accent)'
         }}
       >
         📚 TOPIC MANAGEMENT
@@ -164,12 +164,12 @@ const Topics = () => {
           className="retro-card"
           style={{ marginBottom: '40px' }}
         >
-          <h3 style={{ fontSize: '14px', color: 'var(--neon-pink)', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '14px', color: 'var(--sky-blue)', marginBottom: '20px' }}>
             {editingTopic ? 'EDIT TOPIC' : 'CREATE NEW TOPIC'}
           </h3>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 TITLE
               </label>
               <input
@@ -182,7 +182,7 @@ const Topics = () => {
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                 DESCRIPTION
               </label>
               <textarea
@@ -196,7 +196,7 @@ const Topics = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '20px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   VIDEO URL (YouTube Embed)
                 </label>
                 <input
@@ -209,7 +209,7 @@ const Topics = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   VIDEO DURATION (seconds)
                 </label>
                 <input
@@ -224,7 +224,7 @@ const Topics = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '20px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   ORDER
                 </label>
                 <input
@@ -236,7 +236,7 @@ const Topics = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   XP REWARD
                 </label>
                 <input
@@ -248,7 +248,7 @@ const Topics = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   PASSING SCORE (%)
                 </label>
                 <input
@@ -262,7 +262,7 @@ const Topics = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
                   ACTIVE
                 </label>
                 <select
@@ -279,7 +279,7 @@ const Topics = () => {
             {/* Questions */}
             <div style={{ marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <label style={{ fontSize: '10px', color: 'var(--neon-cyan)' }}>
+                <label style={{ fontSize: '10px', color: 'var(--light-blue)' }}>
                   QUIZ QUESTIONS
                 </label>
                 <button
@@ -297,13 +297,13 @@ const Topics = () => {
                   key={qIndex}
                   style={{
                     padding: '15px',
-                    border: '2px solid var(--neon-green)',
+                    border: '2px solid var(--bright-blue)',
                     marginBottom: '15px',
                     background: 'rgba(0, 255, 0, 0.05)'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--neon-yellow)' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--orange-accent)' }}>
                       QUESTION {qIndex + 1}
                     </span>
                     <button
@@ -343,7 +343,7 @@ const Topics = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '8px', color: 'var(--neon-cyan)' }}>
+                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '8px', color: 'var(--light-blue)' }}>
                         CORRECT ANSWER (0-3)
                       </label>
                       <input
@@ -357,7 +357,7 @@ const Topics = () => {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '8px', color: 'var(--neon-cyan)' }}>
+                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '8px', color: 'var(--light-blue)' }}>
                         POINTS
                       </label>
                       <input
@@ -396,31 +396,31 @@ const Topics = () => {
         animate={{ opacity: 1 }}
         className="retro-card"
       >
-        <h3 style={{ fontSize: '14px', color: 'var(--neon-pink)', marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '14px', color: 'var(--sky-blue)', marginBottom: '20px' }}>
           ALL TOPICS ({topics.length})
         </h3>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', fontSize: '10px' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--neon-green)' }}>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>ORDER</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>TITLE</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>XP</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>PASSING</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>QUESTIONS</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>ACTIVE</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>ACTIONS</th>
+              <tr style={{ borderBottom: '2px solid var(--bright-blue)' }}>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>ORDER</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>TITLE</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>XP</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>PASSING</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>QUESTIONS</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>ACTIVE</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {topics.map((topic) => (
                 <tr key={topic._id} style={{ borderBottom: '1px solid var(--grid-color)' }}>
-                  <td style={{ padding: '10px', color: 'var(--neon-cyan)' }}>{topic.order}</td>
-                  <td style={{ padding: '10px', color: 'var(--neon-green)' }}>{topic.title}</td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-pink)' }}>{topic.xpReward}</td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-cyan)' }}>{topic.passingScore}%</td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-yellow)' }}>{topic.questions.length}</td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: topic.isActive ? 'var(--neon-green)' : 'var(--neon-red)' }}>
+                  <td style={{ padding: '10px', color: 'var(--light-blue)' }}>{topic.order}</td>
+                  <td style={{ padding: '10px', color: 'var(--bright-blue)' }}>{topic.title}</td>
+                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--sky-blue)' }}>{topic.xpReward}</td>
+                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--light-blue)' }}>{topic.passingScore}%</td>
+                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--orange-accent)' }}>{topic.questions.length}</td>
+                  <td style={{ padding: '10px', textAlign: 'center', color: topic.isActive ? 'var(--bright-blue)' : 'var(--error-red)' }}>
                     {topic.isActive ? '✓' : '✗'}
                   </td>
                   <td style={{ padding: '10px', textAlign: 'center' }}>

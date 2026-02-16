@@ -46,7 +46,7 @@ const Dashboard = () => {
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--neon-yellow)'
+          color: 'var(--orange-accent)'
         }}
       >
         ⚙️ ADMIN DASHBOARD
@@ -66,10 +66,10 @@ const Dashboard = () => {
           style={{ textAlign: 'center' }}
         >
           <div style={{ fontSize: '48px', marginBottom: '10px' }}>👥</div>
-          <div style={{ fontSize: '36px', color: 'var(--neon-cyan)', marginBottom: '10px' }}>
+          <div style={{ fontSize: '36px', color: 'var(--light-blue)', marginBottom: '10px' }}>
             {stats?.totalUsers || 0}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--neon-green)' }}>
+          <div style={{ fontSize: '12px', color: 'var(--bright-blue)' }}>
             ACTIVE USERS
           </div>
         </motion.div>
@@ -82,10 +82,10 @@ const Dashboard = () => {
           style={{ textAlign: 'center' }}
         >
           <div style={{ fontSize: '48px', marginBottom: '10px' }}>⏳</div>
-          <div style={{ fontSize: '36px', color: 'var(--neon-yellow)', marginBottom: '10px' }}>
+          <div style={{ fontSize: '36px', color: 'var(--orange-accent)', marginBottom: '10px' }}>
             {stats?.pendingUsers || 0}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--neon-green)' }}>
+          <div style={{ fontSize: '12px', color: 'var(--bright-blue)' }}>
             PENDING REQUESTS
           </div>
         </motion.div>
@@ -98,10 +98,10 @@ const Dashboard = () => {
           style={{ textAlign: 'center' }}
         >
           <div style={{ fontSize: '48px', marginBottom: '10px' }}>📚</div>
-          <div style={{ fontSize: '36px', color: 'var(--neon-pink)', marginBottom: '10px' }}>
+          <div style={{ fontSize: '36px', color: 'var(--sky-blue)', marginBottom: '10px' }}>
             {stats?.totalTopics || 0}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--neon-green)' }}>
+          <div style={{ fontSize: '12px', color: 'var(--bright-blue)' }}>
             TOPICS
           </div>
         </motion.div>
@@ -114,10 +114,10 @@ const Dashboard = () => {
           style={{ textAlign: 'center' }}
         >
           <div style={{ fontSize: '48px', marginBottom: '10px' }}>🏆</div>
-          <div style={{ fontSize: '36px', color: 'var(--neon-green)', marginBottom: '10px' }}>
+          <div style={{ fontSize: '36px', color: 'var(--bright-blue)', marginBottom: '10px' }}>
             {stats?.totalBadges || 0}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--neon-green)' }}>
+          <div style={{ fontSize: '12px', color: 'var(--bright-blue)' }}>
             BADGES
           </div>
         </motion.div>
@@ -131,7 +131,7 @@ const Dashboard = () => {
       >
         <h3 style={{
           fontSize: '16px',
-          color: 'var(--neon-pink)',
+          color: 'var(--sky-blue)',
           marginBottom: '20px'
         }}>
           👑 TOP 10 USERS
@@ -140,34 +140,34 @@ const Dashboard = () => {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', fontSize: '10px' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--neon-green)' }}>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>RANK</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>USERNAME</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)', textAlign: 'left' }}>EMAIL</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>LEVEL</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>XP</th>
-                <th style={{ padding: '10px', color: 'var(--neon-yellow)' }}>BADGES</th>
+              <tr style={{ borderBottom: '2px solid var(--bright-blue)' }}>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>RANK</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>USERNAME</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>EMAIL</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>LEVEL</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>XP</th>
+                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>BADGES</th>
               </tr>
             </thead>
             <tbody>
               {stats?.topUsers?.map((user, index) => (
                 <tr key={user._id} style={{ borderBottom: '1px solid var(--grid-color)' }}>
-                  <td style={{ padding: '10px', color: 'var(--neon-green)' }}>
+                  <td style={{ padding: '10px', color: 'var(--bright-blue)' }}>
                     {index + 1 === 1 && '👑'} #{index + 1}
                   </td>
-                  <td style={{ padding: '10px', color: 'var(--neon-cyan)' }}>
+                  <td style={{ padding: '10px', color: 'var(--light-blue)' }}>
                     {user.username}
                   </td>
-                  <td style={{ padding: '10px', color: 'var(--neon-green)' }}>
+                  <td style={{ padding: '10px', color: 'var(--bright-blue)' }}>
                     {user.email}
                   </td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-pink)' }}>
+                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--sky-blue)' }}>
                     {user.level}
                   </td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-cyan)' }}>
+                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--light-blue)' }}>
                     {user.xp}
                   </td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--neon-yellow)' }}>
+                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--orange-accent)' }}>
                     {user.badges?.length || 0}
                   </td>
                 </tr>
