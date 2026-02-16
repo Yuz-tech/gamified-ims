@@ -133,11 +133,7 @@ const Login = () => {
                 display: 'block', 
                 marginBottom: '10px', 
                 fontSize: '12px',
-<<<<<<< HEAD
-                color: '#D1BBAD'
-=======
                 color: 'var(--light-blue)'
->>>>>>> home2
               }}>
                 USERNAME
               </label>
@@ -159,11 +155,7 @@ const Login = () => {
                   display: 'block', 
                   marginBottom: '10px', 
                   fontSize: '12px',
-<<<<<<< HEAD
-                  color: '#D1BBAD'
-=======
                   color: 'var(--light-blue)'
->>>>>>> home2
                 }}>
                   EMAIL
                 </label>
@@ -186,11 +178,7 @@ const Login = () => {
                   display: 'block', 
                   marginBottom: '10px', 
                   fontSize: '12px',
-<<<<<<< HEAD
-                  color: '#D1BBAD'
-=======
                   color: 'var(--light-blue)'
->>>>>>> home2
                 }}>
                   PASSWORD
                 </label>
