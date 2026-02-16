@@ -30,9 +30,9 @@ const Navbar = () => {
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        background: 'var(--darker-bg)',
-        borderBottom: '3px solid var(--neon-green)',
-        boxShadow: '0 0 20px rgba(0, 255, 0, 0.5)',
+        background: 'var(--primary-navy)',
+        borderBottom: '3px solid var(--bright-blue)',
+        boxShadow: '0 4px 12px var(--shadow-medium), 0 0 0 2px var(--bright-blue) inset',
         padding: '15px 20px'
       }}
     >
@@ -47,8 +47,8 @@ const Navbar = () => {
       }}>
         <div style={{ 
           fontSize: '14px', 
-          color: 'var(--neon-yellow)',
-          textShadow: '0 0 10px var(--neon-yellow)'
+          color: 'var(--orange-accent)',
+          textShadow: '0px 0px 0 var(--light-blue)'
         }}>
           GAMIFIED IMS AWARENESS TRAINING
         </div>
@@ -64,16 +64,16 @@ const Navbar = () => {
               key={item.path}
               to={item.path}
               style={({ isActive }) => ({
-                color: isActive ? 'var(--neon-cyan)' : 'var(--neon-green)',
+                color: isActive ? 'var(--light-blue)' : 'var(--bright-blue)',
                 textDecoration: 'none',
                 fontSize: '10px',
                 padding: '8px 12px',
-                border: `2px solid ${isActive ? 'var(--neon-cyan)' : 'var(--neon-green)'}`,
+                border: `2px solid ${isActive ? 'var(--light-blue)' : 'var(--bright-blue)'}`,
                 background: isActive ? 'rgba(0, 255, 255, 0.1)' : 'transparent',
                 transition: 'all 0.3s',
                 boxShadow: isActive 
-                  ? '0 0 15px var(--neon-cyan)' 
-                  : '0 0 5px var(--neon-green)'
+                  ? '0 0 15px var(--light-blue)' 
+                  : '0 0 5px var(--bright-blue)'
               })}
             >
               {item.label}
@@ -91,7 +91,7 @@ const Navbar = () => {
 
         <div style={{ 
           fontSize: '10px',
-          color: 'var(--neon-pink)',
+          color: 'var(--sky-blue)',
           display: 'flex',
           alignItems: 'center',
           gap: '10px'

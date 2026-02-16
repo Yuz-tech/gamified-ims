@@ -68,7 +68,7 @@ const Achievements = () => {
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--neon-yellow)'
+          color: 'var(--orange-accent)'
         }}
       >
         🏆 YOUR ACHIEVEMENTS
@@ -83,7 +83,7 @@ const Achievements = () => {
       >
         <h3 style={{
           fontSize: '14px',
-          color: 'var(--neon-pink)',
+          color: 'var(--sky-blue)',
           marginBottom: '20px',
           textAlign: 'center'
         }}>
@@ -94,32 +94,32 @@ const Achievements = () => {
           fontSize: '48px',
           textAlign: 'center',
           marginBottom: '20px',
-          color: 'var(--neon-cyan)'
+          color: 'var(--light-blue)'
         }}>
           {earnedCount} / {totalCount}
         </div>
 
         <div style={{
-          background: 'var(--darker-bg)',
-          border: '2px solid var(--neon-green)',
+          background: 'var(--primary-navy)',
+          border: '2px solid var(--bright-blue)',
           height: '40px',
           position: 'relative',
           overflow: 'hidden',
           marginBottom: '20px'
         }}>
           <div style={{
-            background: 'linear-gradient(90deg, var(--neon-green), var(--neon-cyan))',
+            background: 'linear-gradient(90deg, var(--bright-blue), var(--light-blue))',
             height: '100%',
             width: `${progressPercentage}%`,
             transition: 'width 1s ease',
-            boxShadow: '0 0 20px var(--neon-green)'
+            boxShadow: '0 0 20px var(--bright-blue)'
           }} />
         </div>
 
         <div style={{
           textAlign: 'center',
           fontSize: '12px',
-          color: 'var(--neon-yellow)'
+          color: 'var(--orange-accent)'
         }}>
           {progressPercentage === 100 
             ? '🎊 ALL BADGES COLLECTED! YOU ARE A MASTER! 🎊'
@@ -151,20 +151,20 @@ const Achievements = () => {
               width: '120px',
               height: '120px',
               margin: '0 auto 20px',
-              border: `3px solid ${badge.earned ? 'var(--neon-yellow)' : 'var(--grid-color)'}`,
+              border: `3px solid ${badge.earned ? 'var(--orange-accent)' : 'var(--grid-color)'}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '64px',
-              background: 'var(--darker-bg)',
-              boxShadow: badge.earned ? '0 0 30px var(--neon-yellow)' : 'none'
+              background: 'var(--primary-navy)',
+              boxShadow: badge.earned ? '0 0 30px var(--orange-accent)' : 'none'
             }}>
               {badge.earned ? '🏆' : '🔒'}
             </div>
 
             <h4 style={{
               fontSize: '12px',
-              color: badge.earned ? 'var(--neon-cyan)' : 'var(--grid-color)',
+              color: badge.earned ? 'var(--light-blue)' : 'var(--grid-color)',
               marginBottom: '10px'
             }}>
               {badge.topicTitle}
@@ -172,9 +172,9 @@ const Achievements = () => {
 
             <div style={{
               fontSize: '9px',
-              color: badge.earned ? 'var(--neon-green)' : 'var(--neon-red)',
+              color: badge.earned ? 'var(--bright-blue)' : 'var(--error-red)',
               padding: '5px 10px',
-              border: `1px solid ${badge.earned ? 'var(--neon-green)' : 'var(--neon-red)'}`
+              border: `1px solid ${badge.earned ? 'var(--bright-blue)' : 'var(--error-red)'}`
             }}>
               {badge.earned ? '✓ EARNED' : '✗ LOCKED'}
             </div>
@@ -185,10 +185,10 @@ const Achievements = () => {
       {allBadges.length === 0 && (
         <div className="retro-card" style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>🏆</div>
-          <div style={{ fontSize: '14px', color: 'var(--neon-cyan)' }}>
+          <div style={{ fontSize: '14px', color: 'var(--light-blue)' }}>
             NO ACHIEVEMENTS YET
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--neon-green)', marginTop: '10px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--bright-blue)', marginTop: '10px' }}>
             Complete topics to earn badges!
           </div>
         </div>

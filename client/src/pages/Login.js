@@ -87,7 +87,7 @@ const Login = () => {
               textAlign: 'center', 
               marginBottom: '30px',
               fontSize: '24px',
-              color: '#67ca16'
+              color: 'var(--orange-accent)'
             }}
           >
             {isLogin ? 'はじめ' : 'はいる'}
@@ -100,8 +100,8 @@ const Login = () => {
               style={{
                 padding: '15px',
                 marginBottom: '20px',
-                border: '2px solid var(--neon-red)',
-                color: 'var(--neon-red)',
+                border: '2px solid var(--error-red)',
+                color: 'var(--error-red)',
                 backgroundColor: 'rgba(255, 0, 0, 0.1)',
                 fontSize: '10px'
               }}
@@ -117,8 +117,8 @@ const Login = () => {
               style={{
                 padding: '15px',
                 marginBottom: '20px',
-                border: '2px solid var(--neon-green)',
-                color: 'var(--neon-green)',
+                border: '2px solid var(--bright-blue)',
+                color: 'var(--bright-blue)',
                 backgroundColor: 'rgba(0, 255, 0, 0.1)',
                 fontSize: '10px'
               }}
@@ -133,7 +133,11 @@ const Login = () => {
                 display: 'block', 
                 marginBottom: '10px', 
                 fontSize: '12px',
+<<<<<<< HEAD
                 color: '#D1BBAD'
+=======
+                color: 'var(--light-blue)'
+>>>>>>> home2
               }}>
                 USERNAME
               </label>
@@ -155,7 +159,11 @@ const Login = () => {
                   display: 'block', 
                   marginBottom: '10px', 
                   fontSize: '12px',
+<<<<<<< HEAD
                   color: '#D1BBAD'
+=======
+                  color: 'var(--light-blue)'
+>>>>>>> home2
                 }}>
                   EMAIL
                 </label>
@@ -178,7 +186,11 @@ const Login = () => {
                   display: 'block', 
                   marginBottom: '10px', 
                   fontSize: '12px',
+<<<<<<< HEAD
                   color: '#D1BBAD'
+=======
+                  color: 'var(--light-blue)'
+>>>>>>> home2
                 }}>
                   PASSWORD
                 </label>
