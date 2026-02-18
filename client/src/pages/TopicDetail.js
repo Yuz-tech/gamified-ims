@@ -435,11 +435,40 @@ const TopicDetail = () => {
                     <div style={{ fontSize: '10px', color: 'var(--light-blue)', marginTop: '10px' }}>
                       🆙 NEW LEVEL: {result.newLevel}
                     </div>
-                    {result.badgeEarned && (
-                      <div style={{ fontSize: '10px', color: 'var(--sky-blue)', marginTop: '10px' }}>
-                        🏆 BADGE EARNED: {result.badgeEarned}
-                      </div>
+
+                    {result.badgeEarned && result.badgeImage && (
+                      <div style = {{ marginTop: '20px'}}>
+                        <div sytle = {{
+                          width: '80px',
+                          height: '80px',
+                          margin: '0 auto',
+                          border: '3px solid var(--orange-accent)',
+                          padding: '5px',
+                          background: 'var(--bg-lightest)',
+                          boxShadow: '3px 3px 0 var(--primary-navy)',
+                          animation: 'badgePop 0.5s ease'
+                        }}>
+                          <img
+                             src={result.badgeImage}
+                             alt={result.badgeEarned}
+                             style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              imageRendering: 'pixelated'
+                             }}
+                             />
+                             </div>
+                             <div style = {{ 
+                              fontSize: '10px',
+                              color: 'var(--orange-accent)',
+                              marginTop: '10px'
+                             }}> BADGE EARNED: {result.badgeEarned}
+                             </div>
+                             </div>
                     )}
+
+
                     {result.allBadgesCollected && (
                       <div style={{ 
                         fontSize: '10px', 

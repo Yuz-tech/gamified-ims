@@ -12,19 +12,19 @@ const Home = () => {
 
   const carouselContent = [
     {
-      title: '🎮 WELCOME TO IMS TRAINING ARCADE',
-      text: 'Level up your IMS knowledge through interactive training modules!'
+      title: 'WELCOME TO THE GAMIFIED IMS AWARENESS TRAINING',
+      text: 'Level up your IMS knowledge through our training modules!'
     },
     {
-      title: '🏆 COLLECT BADGES',
+      title: 'COLLECT BADGES',
       text: 'Complete topics and quizzes to earn exclusive badges and XP!'
     },
     {
-      title: '📊 CLIMB THE LEADERBOARD',
+      title: 'CLIMB THE LEADERBOARD',
       text: 'Compete with your colleagues and become the top player!'
     },
     {
-      title: '🎯 MASTER YOUR SKILLS',
+      title: 'MASTER YOUR SKILLS',
       text: 'Watch videos, pass quizzes, and prove your expertise!'
     }
   ];
@@ -230,7 +230,7 @@ const Home = () => {
             color: 'var(--sky-blue)',
             textShadow: '0 0 10px var(--sky-blue)'
           }}>
-            🏆 YOUR BADGES
+            YOUR BADGES
           </h3>
 
           <div style={{ 
@@ -255,12 +255,38 @@ const Home = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '40px',
-                    boxShadow: '0 0 20px var(--orange-accent)',
-                    cursor: 'pointer'
+                    boxShadow: '3px 3px 0 var(--primary-navy)',
+                    cursor: 'pointer',
+                    overflow: 'hidden'
                   }}
                   title={badge.badgeId?.name}
                 >
                   {badge.badgeId?.imageUrl}
+                  <img src = {badge.badgeId?.imageUrl}
+                       alt = {badge.badgeId?.name || 'Badge'}
+                       style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        imageRendering: 'pixelated'
+                       }}
+                       onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = '<div style = "font-size: 32px;">BADGE</div>';
+                       }}
+                       />
+
+                       {/*Shine effect */}
+                       <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: '-100%',
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+                          animation: 'shine 3s infinite'
+                       }} />
+
                 </motion.div>
               ))
             ) : (
@@ -325,6 +351,7 @@ const Home = () => {
                     }}>
                       {player.rank === 1 && '👑'} #{player.rank}
                     </td>
+
                     <td style={{ 
                       padding: '10px',
                       color: player.username === user?.username 
@@ -339,9 +366,40 @@ const Home = () => {
                     <td style={{ padding: '10px', textAlign: 'center', color: 'var(--light-blue)' }}>
                       {player.xp}
                     </td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--orange-accent)' }}>
-                      {player.badgeCount}
+
+                    <td style={{ padding: '10px', textAlign: 'center' }}>
+                      <div style = {{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px'
+                      }}>
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          background: 'var(--orange-accent)',
+                          border: '2px solid var(--primary-navy)',
+                          borderRadius: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '10px',
+                          color: 'white',
+                          fontWeight: 'bold',
+                        }}>
+                          {player.badgeCount}
+                        </div>
+                        <span style={{
+                          fontSize: '16px',
+                          filter: player.badgeCount > 0 ? 'none' : 'grayscale(100%)',
+                          opacity: player.badgeCount > 0 ? 1 : 0.3
+                        }}>
+                          🏆
+                        </span>
+                      </div>
                     </td>
+
+
                   </tr>
                 ))}
               </tbody>

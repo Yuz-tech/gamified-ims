@@ -190,6 +190,7 @@ router.post('/:topicId/submit-quiz', async (req, res) => {
         newLevel: user.level,
         newXP: user.xp,
         badgeEarned: badge ? badge.name : null,
+        badgeImage: badge ? badge.imageUrl : null,
         allBadgesCollected,
         congratsLink: allBadgesCollected ? 'https://google.com' : null
       });

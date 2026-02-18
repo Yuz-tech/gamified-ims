@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root {
-  /* AWSYS-i Inspired Professional Palette */
   --primary-navy: #1B3A6B;
   --bright-blue: #3B82F6;
   --light-blue: #60A5FA;
@@ -55,7 +54,6 @@ body {
   position: relative;
 }
 
-/* Subtle grid pattern like AWSYS-i */
 body::before {
   content: '';
   position: fixed;
@@ -338,7 +336,7 @@ table tr:hover td {
   50%, 100% { opacity: 0.3; }
 }
 
-/* Scanlines Effect (Very Subtle) */
+/* Scanlines Effect*/
 .scanlines {
   position: fixed;
   top: 0;
@@ -642,7 +640,6 @@ a:hover {
 .border-light-blue { border-color: var(--light-blue); }
 .border-orange { border-color: var(--orange-accent); }
 
-/* Special AWSYS-i inspired card variant */
 .card-tech {
   background: linear-gradient(135deg, var(--bg-lightest) 0%, var(--bg-light) 100%);
   border-left: 5px solid var(--bright-blue);
@@ -662,4 +659,92 @@ a:hover {
   background: linear-gradient(270deg, var(--bright-blue), var(--light-blue), var(--sky-blue));
   background-size: 600% 600%;
   animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20% { left: 100%; }
+  100% { left: 100%; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes badgePop {
+  0% { tranform: scale(0)
+  rotate(-180deg); }
+  50% { transform: scale(1.2)
+  rotate(10deg); }
+  100% { transform: scale(1)
+  rotate(0deg); }
+}
+
+img.pixel-art,
+.badge-image,
+img[alt*="badge"],
+img[alt*="badge"] {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.badge-container {
+  position: relative;
+  display: inline-block;
+}
+
+.badge-container::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 15px;
+  height: 15px;
+  background: var(--orange-accent);
+  border: 2px solid var(--primary-navy);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ping 2s cubic-bezier(0,0,0.2,1) infinite;
+}
+
+.badge-container.new::after {
+  opacity: 1;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.badge-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.badge-shine::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255,255,255,0.8) 50%,
+    transparent 70%
+  );
+  animation: shine-sweep 3s infinite;
+}
+
+@keyframes shine-sweep {
+  0% { transform: translateX(-100%)
+    translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%)
+  translateY(100%) rotate(45deg); }
 }

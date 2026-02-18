@@ -71,7 +71,7 @@ const Achievements = () => {
           color: 'var(--orange-accent)'
         }}
       >
-        🏆 YOUR ACHIEVEMENTS
+        YOUR ACHIEVEMENTS
       </motion.h1>
 
       {/* Progress Card */}
@@ -134,7 +134,12 @@ const Achievements = () => {
         gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
         gap: '30px'
       }}>
-        {allBadges.map((badge, index) => (
+        {allBadges.map((badge, index) => {
+          const userBadge = user?.badges?.find(b => (
+            b.badgeId?._id || b.badgeId) === badge.topicId
+          );
+          const badgeData = userBadge?.badgeId;
+          return (
           <motion.div
             key={badge.topicId}
             initial={{ opacity: 0, scale: 0 }}
@@ -156,15 +161,50 @@ const Achievements = () => {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '64px',
-              background: 'var(--primary-navy)',
-              boxShadow: badge.earned ? '0 0 30px var(--orange-accent)' : 'none'
+              background: badge.earned ? 'var(--bg-lightest)' : 'var(--bg-medium)',
+              boxShadow: badge.earned ? '4px 4px 0 var(--primary-navy)' : '2px 2px 0 var(--border-color)',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              {badge.earned ? '🏆' : '🔒'}
+              {badge.earned && badgeData?.imageUrl?(
+                <>
+                  <img src = {badgeData.imageUrl}
+                       alt = {badgeData.name || badge.topicTitle}
+                       style = {{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                        imageRendering: 'pixelated'
+                       }}
+                       onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = '<div style = "font-size: 48px;">BADGE</div>';
+                       }}
+                       />
+                
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '150%',
+                  height: '150%',
+                  background: 'radial-gradient(circle, var(--light-blue) 0%, transparent 70%)',
+                  opacity: 0.3,
+                  animation: 'pulse 2s infinite'
+                }} />
+                </>
+              ) : (
+                <div style = {{
+                  fontSize: '48px',
+                  color: 'var(--text-lighter)'
+                }}> 🔒</div>
+              )}
             </div>
 
             <h4 style={{
               fontSize: '12px',
-              color: badge.earned ? 'var(--light-blue)' : 'var(--grid-color)',
+              color: badge.earned ? 'var(--primary-navy)' : 'var(--text-light)',
               marginBottom: '10px'
             }}>
               {badge.topicTitle}
@@ -172,14 +212,37 @@ const Achievements = () => {
 
             <div style={{
               fontSize: '9px',
-              color: badge.earned ? 'var(--bright-blue)' : 'var(--error-red)',
+              color: badge.earned ? 'var(--success-green)' : 'var(--error-red)',
               padding: '5px 10px',
-              border: `1px solid ${badge.earned ? 'var(--bright-blue)' : 'var(--error-red)'}`
+              border: `1px solid ${badge.earned ? 'var(--success-green)' : 'var(--error-red)'}`
             }}>
               {badge.earned ? '✓ EARNED' : '✗ LOCKED'}
             </div>
+
+            {badge.earned && badgeData?.name && (
+              <div style = {{
+                position: 'absolute',
+                bottom: '-40px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'var(--primary-navy)',
+                color: 'white',
+                padding: '5px 10px',
+                fontSize: '8px',
+                whiteSpace: 'nowrap',
+                opacity: 0,
+                pointerEvents: 'none',
+                transition: 'opacity 0.3s',
+                zIndex: 10
+              }}
+              className="badge-tooltip"
+              >
+                {badgeData.name}
+              </div>
+            )}
           </motion.div>
-        ))}
+        );
+      })}
       </div>
 
       {allBadges.length === 0 && (
