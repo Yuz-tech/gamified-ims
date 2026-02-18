@@ -143,58 +143,69 @@ const seedData = async () => {
 
     // Create Topic 3
     const topic3 = await Topic.create({
-      title: 'Environmental Management',
-      description: 'Learn about ISO 14001 and environmental responsibility',
+      title: 'Quality and Information Security',
+      description: 'Learn on delivering high quality services while maintaining data CIA',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 200,
       order: 3,
       xpReward: 150,
-      passingScore: 70,
+      passingScore: 80,
       questions: [
         {
-          question: 'What is ISO 14001?',
+          question: 'Which of the following is a principle of total quality management?',
           options: [
-            'Quality standard',
-            'Environmental management standard',
-            'Safety standard',
-            'IT security standard'
+            'Focus on short-term profits',
+            'Continuous improvement',
+            'Limiting customer involvement',
+            'Reducing employee participation'
           ],
           correctAnswer: 1,
-          points: 25
+          points: 20
         },
         {
-          question: 'EMS stands for:',
+          question: 'Which of the following is not part of the CIA triad?',
           options: [
-            'Emergency Management System',
-            'Environmental Monitoring Service',
-            'Environmental Management System',
-            'Energy Management Standard'
-          ],
-          correctAnswer: 2,
-          points: 25
-        },
-        {
-          question: 'Which is NOT a typical environmental aspect?',
-          options: [
-            'Waste generation',
-            'Employee satisfaction',
-            'Energy consumption',
-            'Water usage'
-          ],
-          correctAnswer: 1,
-          points: 25
-        },
-        {
-          question: 'Life cycle thinking considers:',
-          options: [
-            'Product development only',
-            'Manufacturing only',
-            'Disposal only',
-            'All stages of product life'
+            'Confidentiality',
+            'Integrity',
+            'Availability',
+            'Accountability'
           ],
           correctAnswer: 3,
-          points: 25
-        }
+          points: 20
+        },
+        {
+          question: 'Which type of attack involves tricking users into revealing sensitive information by pretending to be a trusted entity?',
+          options: [
+            'Phishing',
+            'SQL Injection',
+            'DDOS',
+            'Malware'
+          ],
+          correctAnswer: 0,
+          points: 20
+        },
+        {
+          question: 'What is the main purpose of a risk assessment?',
+          options: [
+            'To ensure compliance with financial regulations',
+            'To guarantee system availability',
+            'To eliminate all risks',
+            'To identify, evaluate, and prioritize risks'
+          ],
+          correctAnswer: 3,
+          points: 20
+        },
+        {
+          question: 'Which of the following is considered a preventive control?',
+          options: [
+            'Intrusion detection system',
+            'Audit logs',
+            'Security Awareness Training',
+            'CCTV installation'
+          ],
+          correctAnswer: 2,
+          points: 20
+        },
       ],
       isActive: true
     });
@@ -202,22 +213,22 @@ const seedData = async () => {
     // Create Badges
     const badge1 = await Badge.create({
       name: 'IMS Beginner',
-      description: 'Completed Introduction to IMS',
-      imageUrl: '🎖️',
+      description: 'ISO 9001',
+      imageUrl: '../elements/badges/iso 9001.png',
       topicId: topic1._id
     });
 
     const badge2 = await Badge.create({
-      name: 'Quality Master',
-      description: 'Mastered Quality Management',
-      imageUrl: '🏅',
+      name: 'IMS Novice',
+      description: 'ISO 27001',
+      imageUrl: '../elements/badges/iso 27001.png',
       topicId: topic2._id
     });
 
     const badge3 = await Badge.create({
-      name: 'Eco Warrior',
-      description: 'Completed Environmental Management',
-      imageUrl: '🌱',
+      name: 'Quality Master',
+      description: 'Quality and Information Security',
+      imageUrl: '../elements/badges/quality and information security.png',
       topicId: topic3._id
     });
 

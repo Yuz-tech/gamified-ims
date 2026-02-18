@@ -24,8 +24,8 @@ app.set('trust proxy', true);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('🎮 MongoDB Connected - Game On!'))
-  .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+  .then(() => console.log('MongoDB Connected!'))
+  .catch((err) => console.error('MongoDB Connection Error:', err));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -42,7 +42,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.get('/wp-admin', (req,res) => {
+app.get('/admin', (req,res) => {
   res.json({
     message: 'Hello there, I am Julius and I "created" this app'
   });
