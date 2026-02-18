@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { color, motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
@@ -91,16 +91,15 @@ const Home = () => {
           style={{ textAlign: 'center', padding: '40px 20px' }}
         >
           <h2 className="neon-text" style={{ 
-            fontSize: '18px', 
+            fontSize: '24px', 
             marginBottom: '20px',
-            color: 'var(--orange-accent)'
           }}>
             {carouselContent[currentSlide].title}
           </h2>
           <p style={{ 
-            fontSize: '10px', 
+            fontSize: '12px', 
             lineHeight: '1.8',
-            color: 'var(--light-blue)'
+            color: 'var(--text-light)'
           }}>
             {carouselContent[currentSlide].text}
           </p>
@@ -141,12 +140,11 @@ const Home = () => {
           className="retro-card"
         >
           <h3 style={{ 
-            fontSize: '14px', 
+            fontSize: '18px', 
             marginBottom: '20px',
-            color: 'var(--sky-blue)',
-            textShadow: '0 0 10px var(--sky-blue)'
+            color: 'var(--text-dark)'
           }}>
-            ⭐ YOUR PROGRESS
+            YOUR PROGRESS
           </h3>
 
           <div style={{ marginBottom: '20px' }}>
@@ -155,7 +153,7 @@ const Home = () => {
               justifyContent: 'space-between',
               fontSize: '12px',
               marginBottom: '10px',
-              color: 'var(--light-blue)'
+              color: 'var(--text-dark)'
             }}>
               <span>LEVEL {user?.level || 1}</span>
               <span>LEVEL {(user?.level || 1) + 1}</span>
@@ -168,7 +166,7 @@ const Home = () => {
               overflow: 'hidden'
             }}>
               <div style={{
-                background: 'linear-gradient(90deg, var(--bright-blue), var(--light-blue))',
+                background: '#4CAF50',
                 height: '100%',
                 width: `${Math.min(progressPercentage, 100)}%`,
                 transition: 'width 0.5s ease',
@@ -179,7 +177,7 @@ const Home = () => {
               textAlign: 'center', 
               marginTop: '10px',
               fontSize: '10px',
-              color: 'var(--bright-blue)'
+              color: 'var(--text-dark)'
             }}>
               {user?.xp || 0} / {xpToNextLevel} XP
             </div>
@@ -197,9 +195,9 @@ const Home = () => {
               textAlign: 'center'
             }}>
               <div style={{ color: 'var(--orange-accent)', marginBottom: '5px' }}>
-                🏅 BADGES
+                BADGES
               </div>
-              <div style={{ fontSize: '24px', color: 'var(--bright-blue)' }}>
+              <div style={{ fontSize: '24px', color: '#000000' }}>
                 {badges.length}
               </div>
             </div>
@@ -209,9 +207,9 @@ const Home = () => {
               textAlign: 'center'
             }}>
               <div style={{ color: 'var(--orange-accent)', marginBottom: '5px' }}>
-                ✅ TOPICS
+                TOPICS
               </div>
-              <div style={{ fontSize: '24px', color: 'var(--light-blue)' }}>
+              <div style={{ fontSize: '24px', color: '#000000' }}>
                 {user?.completedTopics?.length || 0}
               </div>
             </div>
@@ -225,10 +223,9 @@ const Home = () => {
           className="retro-card"
         >
           <h3 style={{ 
-            fontSize: '14px', 
+            fontSize: '18px', 
             marginBottom: '20px',
-            color: 'var(--sky-blue)',
-            textShadow: '0 0 10px var(--sky-blue)'
+            color: 'var(--text-dark)',
           }}>
             YOUR BADGES
           </h3>
@@ -312,25 +309,24 @@ const Home = () => {
           style={{ gridColumn: '1 / -1' }}
         >
           <h3 style={{ 
-            fontSize: '14px', 
+            fontSize: '18px', 
             marginBottom: '20px',
-            color: 'var(--sky-blue)',
-            textShadow: '0 0 10px var(--sky-blue)'
+            color: 'var(--text-dark)',
           }}>
-            👑 LEADERBOARD
+            LEADERBOARD
           </h3>
 
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', fontSize: '10px' }}>
+            <table style={{ width: '100%', fontSize: '12px' }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--bright-blue)' }}>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>RANK</th>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>
+                <tr style={{ borderBottom: '2px solid var(--dark-bg)' }}>
+                  <th style={{ padding: '10px', color: '#ffffff' }}>RANK</th>
+                  <th style={{ padding: '10px', color: '#ffffff', textAlign: 'left' }}>
                     PLAYER
                   </th>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>LEVEL</th>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>XP</th>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>BADGES</th>
+                  <th style={{ padding: '10px', color: '#ffffff' }}>LEVEL</th>
+                  <th style={{ padding: '10px', color: '#ffffff' }}>XP</th>
+                  <th style={{ padding: '10px', color: '#ffffff' }}>BADGES</th>
                 </tr>
               </thead>
               <tbody>
@@ -347,23 +343,23 @@ const Home = () => {
                     <td style={{ 
                       padding: '10px', 
                       textAlign: 'center',
-                      color: player.rank === 1 ? 'var(--orange-accent)' : 'var(--bright-blue)'
+                      color: player.rank === 1 ? 'var(--error-red)' : 'var(--bright-blue)'
                     }}>
-                      {player.rank === 1 && '👑'} #{player.rank}
+                      {player.rank === 1} #{player.rank}
                     </td>
 
                     <td style={{ 
-                      padding: '10px',
+                      padding: '12px',
                       color: player.username === user?.username 
-                        ? 'var(--light-blue)' 
-                        : 'var(--bright-blue)'
+                        ? 'var(--text-dark)' 
+                        : 'var(--text-light)'
                     }}>
                       {player.username}
                     </td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--sky-blue)' }}>
+                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--text-dark)' }}>
                       {player.level}
                     </td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--light-blue)' }}>
+                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--text-dark)' }}>
                       {player.xp}
                     </td>
 

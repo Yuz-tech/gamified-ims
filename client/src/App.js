@@ -45,16 +45,16 @@ const AdminLayout = ({ children }) => {
         flexWrap: 'wrap'
       }}>
         <NavLink to="/admin" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          📊 DASHBOARD
+          DASHBOARD
         </NavLink>
         <NavLink to="/admin/users" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          👥 USERS
+          USERS
         </NavLink>
         <NavLink to="/admin/topics" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          📚 TOPICS
+          TOPICS
         </NavLink>
         <NavLink to="/admin/badges" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          🏆 BADGES
+          BADGES
         </NavLink>
       </div>
       {children}

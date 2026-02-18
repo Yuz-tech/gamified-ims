@@ -16,7 +16,7 @@
   --darker-bg: #D1D5DB;
   
   /* Text colors */
-  --text-dark: #1F2937;
+  --text-dark: #01060e;
   --text-medium: #4B5563;
   --text-light: #6B7280;
   --text-lighter: #9CA3AF;
@@ -85,17 +85,12 @@ code {
 
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--primary-navy);
-  text-shadow: 2px 2px 0px var(--shadow-light);
+  color: var(--text-dark);
+  text-shadow: 0px 1px 0px var(--text-light);
 }
 
 .neon-text {
-  color: var(--primary-navy);
-  text-shadow: 
-    0 0 10px var(--light-blue),
-    0 0 20px var(--bright-blue),
-    2px 2px 0px var(--shadow-medium);
-  animation: glow 2s ease-in-out infinite alternate;
+  color: var(--text-dark);
 }
 
 @keyframes glow {
@@ -180,7 +175,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 12px 24px;
   border: 3px solid var(--primary-navy);
   background: var(--bright-blue);
-  color: white;
+  color: rgb(0, 0, 0);
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: uppercase;
@@ -221,7 +216,7 @@ h1, h2, h3, h4, h5, h6 {
 .retro-btn.secondary {
   background: var(--bg-lightest);
   border-color: var(--bright-blue);
-  color: var(--bright-blue);
+  color: var(--text-dark);
   box-shadow: 
     3px 3px 0 var(--bright-blue);
 }
@@ -484,12 +479,12 @@ a:hover {
 
   /* Navbar Mobile */
   nav > div {
-    flex-direction: column !important;
-    gap: 10px !important;
+    flex-direction: row !important;
+    transition: all 0.3s ease-in-out;
   }
 
   nav > div > div:first-child {
-    font-size: 12px !important;
+    font-size: 8px !important;
   }
 
   nav > div > div:last-child {

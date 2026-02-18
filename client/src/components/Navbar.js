@@ -13,13 +13,13 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { path: '/', label: '🏠 HOME' },
-    { path: '/topics', label: '📚 TOPICS' },
-    { path: '/achievements', label: '🏆 ACHIEVEMENTS' }
+    { path: '/', label: 'HOME' },
+    { path: '/topics', label: 'TOPICS' },
+    { path: '/achievements', label: 'ACHIEVEMENTS' }
   ];
 
   if (user?.role === 'admin') {
-    navItems.push({ path: '/admin', label: '⚙️ ADMIN' });
+    navItems.push({ path: '/admin', label: '⚙️' });
   }
 
   return (
@@ -47,7 +47,7 @@ const Navbar = () => {
       }}>
         <div style={{ 
           fontSize: '14px', 
-          color: 'var(--orange-accent)',
+          color: '#ffffff',
           textShadow: '0px 0px 0 var(--light-blue)'
         }}>
           GAMIFIED IMS AWARENESS TRAINING
@@ -64,12 +64,12 @@ const Navbar = () => {
               key={item.path}
               to={item.path}
               style={({ isActive }) => ({
-                color: isActive ? 'var(--light-blue)' : 'var(--bright-blue)',
+                color: isActive ? 'rgb(0, 0, 0)' : 'var(--bright-blue)',
                 textDecoration: 'none',
-                fontSize: '10px',
+                fontSize: '12px',
                 padding: '8px 12px',
-                border: `2px solid ${isActive ? 'var(--light-blue)' : 'var(--bright-blue)'}`,
-                background: isActive ? 'rgba(0, 255, 255, 0.1)' : 'transparent',
+                border: `3px solid ${isActive ? 'var(--light-blue)' : 'var(--bright-blue)'}`,
+                background: isActive ? 'rgba(226, 255, 4, 0.99)' : 'transparent',
                 transition: 'all 0.3s',
                 boxShadow: isActive 
                   ? '0 0 15px var(--light-blue)' 
@@ -85,7 +85,7 @@ const Navbar = () => {
             className="retro-btn danger"
             style={{ fontSize: '10px', padding: '8px 12px' }}
           >
-            🚪 LOGOUT
+            LOGOUT
           </button>
         </div>
 
@@ -98,7 +98,7 @@ const Navbar = () => {
         }}>
           <span>LVL {user?.level || 1}</span>
           <span>|</span>
-          <span>⭐ {user?.xp || 0} XP</span>
+          <span>{user?.xp || 0} XP</span>
           <span>|</span>
           <span>👤 {user?.username}</span>
         </div>

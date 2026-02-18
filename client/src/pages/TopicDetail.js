@@ -129,12 +129,12 @@ const TopicDetail = () => {
           <h1 className="neon-text" style={{ 
             fontSize: '24px', 
             marginBottom: '20px',
-            color: 'var(--orange-accent)'
+            color: '#000000'
           }}>
             ALREADY COMPLETED!
           </h1>
           <p style={{ fontSize: '12px', color: 'var(--light-blue)', marginBottom: '30px' }}>
-            You've already mastered this topic!
+            You've already passed this topic!
           </p>
           <button
             onClick={() => navigate('/topics')}
@@ -167,14 +167,14 @@ const TopicDetail = () => {
         <h1 className="neon-text" style={{ 
           fontSize: '24px', 
           marginBottom: '20px',
-          color: 'var(--orange-accent)'
+          color: '#000000'
         }}>
           {topic.title}
         </h1>
 
         <p style={{ 
           fontSize: '12px', 
-          color: 'var(--light-blue)',
+          color: 'var(--text-light)',
           marginBottom: '30px',
           lineHeight: '1.8'
         }}>
@@ -198,7 +198,7 @@ const TopicDetail = () => {
                 color: 'var(--sky-blue)',
                 marginBottom: '20px'
               }}>
-                📺 TRAINING VIDEO
+                TOPIC VIDEO
               </h3>
 
               <div style={{
@@ -237,8 +237,8 @@ const TopicDetail = () => {
                 color: videoWatched ? 'var(--bright-blue)' : 'var(--orange-accent)'
               }}>
                 {videoWatched 
-                  ? '✓ VIDEO WATCHED - QUIZ UNLOCKED!' 
-                  : '⚠️ WATCH THE FULL VIDEO TO UNLOCK THE QUIZ'}
+                  ? 'VIDEO WATCHED - QUIZ UNLOCKED!' 
+                  : 'WATCH THE VIDEO TO UNLOCK THE QUIZ!'}
               </div>
             </div>
 
@@ -248,7 +248,7 @@ const TopicDetail = () => {
                 className="retro-btn secondary"
                 disabled={videoWatched}
               >
-                {videoWatched ? '✓ VIDEO WATCHED' : 'MARK AS WATCHED'}
+                {videoWatched ? '✓ VIDEO WATCHED' : 'MARK VIDEO AS WATCHED'}
               </button>
 
               <button
@@ -256,7 +256,7 @@ const TopicDetail = () => {
                 className="retro-btn"
                 disabled={!videoWatched}
               >
-                🎯 START QUIZ
+                START QUIZ
               </button>
             </div>
           </motion.div>
@@ -276,21 +276,22 @@ const TopicDetail = () => {
             }}>
               <h3 style={{
                 fontSize: '14px',
-                color: 'var(--sky-blue)',
+                color: '#ffffff',
                 marginBottom: '20px'
               }}>
-                🎯 QUIZ - {topic.questions.length} QUESTIONS
+                {topic.questions.length} QUESTIONS
               </h3>
 
               <div style={{
                 padding: '15px',
-                background: 'rgba(255, 255, 0, 0.1)',
+                background: 'rgba(0, 0, 0, 0.1)',
                 border: '2px solid var(--orange-accent)',
                 marginBottom: '30px',
                 fontSize: '10px',
-                color: 'var(--orange-accent)'
+                color: '#ffffff'
               }}>
-                ⚠️ PASSING SCORE: {topic.passingScore}% | XP REWARD: {topic.xpReward}
+                PASSING SCORE: {topic.passingScore}%  <br></br>
+                REWARD: {topic.xpReward} XP
               </div>
 
               {topic.questions.map((question, qIndex) => (
@@ -300,12 +301,12 @@ const TopicDetail = () => {
                     marginBottom: '30px',
                     padding: '20px',
                     border: '2px solid var(--bright-blue)',
-                    background: 'rgba(0, 255, 0, 0.05)'
+                    background: 'rgb(5, 255, 13)'
                   }}
                 >
                   <div style={{
-                    fontSize: '12px',
-                    color: 'var(--light-blue)',
+                    fontSize: '18px',
+                    color: 'black',
                     marginBottom: '20px',
                     lineHeight: '1.6'
                   }}>
@@ -322,24 +323,24 @@ const TopicDetail = () => {
                           padding: '15px',
                           border: `2px solid ${
                             answers[qIndex] === oIndex 
-                              ? 'var(--light-blue)' 
+                              ? 'rgb(255, 8, 8)' 
                               : 'var(--bright-blue)'
                           }`,
                           background: answers[qIndex] === oIndex 
-                            ? 'rgba(0, 255, 255, 0.2)' 
-                            : 'transparent',
+                            ? 'rgb(246, 255, 0)' 
+                            : 'rgb(1, 48, 255)',
                           cursor: 'pointer',
-                          fontSize: '10px',
+                          fontSize: '12px',
                           color: answers[qIndex] === oIndex 
-                            ? 'var(--light-blue)' 
-                            : 'var(--bright-blue)',
+                            ? 'black' 
+                            : 'white',
                           transition: 'all 0.3s',
                           boxShadow: answers[qIndex] === oIndex 
-                            ? '0 0 20px rgba(0, 255, 255, 0.5)' 
+                            ? '0 0 20px rgba(247, 22, 228, 0.5)' 
                             : 'none'
                         }}
                       >
-                        {answers[qIndex] === oIndex && '✓ '}{option}
+                        {answers[qIndex] === oIndex}{option}
                       </motion.div>
                     ))}
                   </div>
@@ -361,7 +362,7 @@ const TopicDetail = () => {
                 className="retro-btn"
                 disabled={submitting}
               >
-                {submitting ? 'SUBMITTING...' : '🚀 SUBMIT QUIZ'}
+                {submitting ? 'SUBMITTING...' : 'SUBMIT QUIZ'}
               </button>
             </div>
           </motion.div>
@@ -430,10 +431,10 @@ const TopicDetail = () => {
                     marginBottom: '30px'
                   }}>
                     <div style={{ fontSize: '10px', color: 'var(--orange-accent)' }}>
-                      ⭐ XP EARNED: +{result.xpEarned}
+                      XP EARNED: +{result.xpEarned}
                     </div>
                     <div style={{ fontSize: '10px', color: 'var(--light-blue)', marginTop: '10px' }}>
-                      🆙 NEW LEVEL: {result.newLevel}
+                      NEW LEVEL: {result.newLevel}
                     </div>
 
                     {result.badgeEarned && result.badgeImage && (
@@ -476,7 +477,7 @@ const TopicDetail = () => {
                         marginTop: '10px',
                         fontWeight: 'bold'
                       }}>
-                        🎊 ALL BADGES COLLECTED! 🎊
+                        ALL BADGES COLLECTED! 🎊
                       </div>
                     )}
                   </div>
@@ -493,7 +494,9 @@ const TopicDetail = () => {
                   }}>
                     REQUIRED SCORE: {result.requiredScore}%
                     <br />
-                    WATCH THE VIDEO AGAIN AND RETAKE THE QUIZ
+                    HOW COULD YOU FAIL THAT? THAT WAS EASY!
+                    <br />
+                    RETAKE THE QUIZ
                   </div>
                 )}
 
@@ -510,7 +513,7 @@ const TopicDetail = () => {
                   className="retro-btn"
                   style={{ width: '100%' }}
                 >
-                  {result.passed ? '🎮 CONTINUE' : '🔄 TRY AGAIN'}
+                  {result.passed ? 'CONTINUE' : 'TRY AGAIN'}
                 </button>
 
                 {result.allBadgesCollected && result.congratsLink && (

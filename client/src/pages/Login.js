@@ -215,7 +215,7 @@ const Login = () => {
                   setFormData({ username: '', email: '', password: '' });
                 }}
                 className="retro-btn secondary"
-                style={{ fontSize: '10px', color: 'white' }}
+                style={{ fontSize: '10px', color: 'black' }}
               >
                 {isLogin ? 'REQUEST NEW ACCOUNT' : 'BACK TO LOGIN'}
               </button>

@@ -48,10 +48,10 @@ const Topics = () => {
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--orange-accent)'
+          color: '#000000'
         }}
       >
-        📚 TRAINING TOPICS
+        IMS AWARENESS TOPICS
       </motion.h1>
 
       <div style={{
@@ -79,14 +79,14 @@ const Topics = () => {
                 position: 'absolute',
                 top: '10px',
                 right: '10px',
-                background: 'var(--bright-blue)',
-                color: 'var(--primary-navy)',
+                background: 'green',
+                color: '#FFFFFF',
                 padding: '5px 10px',
-                fontSize: '10px',
+                fontSize: '15px',
                 fontWeight: 'bold',
                 boxShadow: '0 0 10px var(--bright-blue)'
               }}>
-                ✓ COMPLETED
+                PASSED
               </div>
             )}
 
@@ -106,18 +106,19 @@ const Topics = () => {
             </div>
 
             <h3 style={{
-              fontSize: '14px',
-              color: 'var(--light-blue)',
+              fontSize: '20px',
+              color: 'var(--text-dark)',
               marginBottom: '15px',
-              textShadow: '0 0 10px var(--light-blue)'
+              textAlign: 'center'
             }}>
               {topic.title}
             </h3>
 
             <p style={{
-              fontSize: '10px',
-              color: 'var(--bright-blue)',
+              fontSize: '12px',
+              color: 'var(--text-light)',
               lineHeight: '1.6',
+              textAlign: 'justify',
               marginBottom: '20px'
             }}>
               {topic.description}
@@ -135,7 +136,7 @@ const Topics = () => {
                 border: '1px solid var(--sky-blue)',
                 textAlign: 'center'
               }}>
-                <div style={{ color: 'var(--orange-accent)' }}>⭐ XP REWARD</div>
+                <div style={{ color: 'var(--orange-accent)' }}>XP REWARD</div>
                 <div style={{ color: 'var(--sky-blue)', marginTop: '5px', fontSize: '14px' }}>
                   {topic.xpReward}
                 </div>
@@ -145,7 +146,7 @@ const Topics = () => {
                 border: '1px solid var(--light-blue)',
                 textAlign: 'center'
               }}>
-                <div style={{ color: 'var(--orange-accent)' }}>🎯 PASSING</div>
+                <div style={{ color: 'var(--orange-accent)' }}>PASSING SCORE</div>
                 <div style={{ color: 'var(--light-blue)', marginTop: '5px', fontSize: '14px' }}>
                   {topic.passingScore}%
                 </div>
@@ -156,14 +157,14 @@ const Topics = () => {
               marginTop: '20px',
               padding: '10px',
               background: topic.isCompleted 
-                ? 'rgba(0, 255, 0, 0.1)' 
-                : 'rgba(255, 255, 0, 0.1)',
+                ? 'rgba(0, 195, 0, 0.99)' 
+                : 'rgba(255, 255, 0, 0.9)',
               border: `2px solid ${topic.isCompleted ? 'var(--bright-blue)' : 'var(--orange-accent)'}`,
               textAlign: 'center',
               fontSize: '10px',
-              color: topic.isCompleted ? 'var(--bright-blue)' : 'var(--orange-accent)'
+              color: topic.isCompleted ? '#FFFFFF' : '#000000'
             }}>
-              {topic.isCompleted ? '✓ BADGE EARNED' : '🎮 CLICK TO START'}
+              {topic.isCompleted ? 'TOPIC COMPLETED' : 'CLICK TO START'}
             </div>
           </motion.div>
         ))}
