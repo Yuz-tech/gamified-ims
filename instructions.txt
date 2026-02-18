@@ -1,5 +1,2911 @@
-1. Navbar mobile hamburger Icon
-2. Upload badge and videos on admin create and edit topic
-3. Images should be backend or server side
-4. Achievements are locked even though topics are passed
-5. Admin reset?
+Part 1: Create Session Model
+File: server/models/Session.js (CREATE NEW)
+javascriptimport mongoose from 'mongoose';
+
+const sessionSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  },
+  token: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  deviceInfo: {
+    userAgent: String,
+    ipAddress: String,
+    deviceType: String, // mobile, tablet, desktop
+    browser: String,
+    os: String
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastActivity: {
+    type: Date,
+    default: Date.now
+  },
+  expiresAt: {
+    type: Date,
+    required: true,
+    index: true
+  }
+}, {
+  timestamps: true
+});
+
+// Auto-delete expired sessions
+sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// Update last activity
+sessionSchema.methods.updateActivity = function() {
+  this.lastActivity = new Date();
+  return this.save();
+};
+
+const Session = mongoose.model('Session', sessionSchema);
+
+export default Session;
+
+Part 2: Update Authentication Routes
+File: server/routes/auth.js (UPDATE)
+javascriptimport express from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import Session from '../models/Session.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { logActivity } from '../utils/logger.js';
+
+const router = express.Router();
+
+// Helper function to parse user agent
+const parseUserAgent = (userAgent) => {
+  const ua = userAgent || '';
+  
+  let deviceType = 'desktop';
+  if (/mobile/i.test(ua)) deviceType = 'mobile';
+  else if (/tablet|ipad/i.test(ua)) deviceType = 'tablet';
+  
+  let browser = 'unknown';
+  if (/chrome/i.test(ua)) browser = 'Chrome';
+  else if (/firefox/i.test(ua)) browser = 'Firefox';
+  else if (/safari/i.test(ua)) browser = 'Safari';
+  else if (/edge/i.test(ua)) browser = 'Edge';
+  
+  let os = 'unknown';
+  if (/windows/i.test(ua)) os = 'Windows';
+  else if (/mac/i.test(ua)) os = 'MacOS';
+  else if (/linux/i.test(ua)) os = 'Linux';
+  else if (/android/i.test(ua)) os = 'Android';
+  else if (/ios|iphone|ipad/i.test(ua)) os = 'iOS';
+  
+  return { deviceType, browser, os };
+};
+
+// Request new account
+router.post('/request-account', async (req, res) => {
+  try {
+    const { username, email } = req.body;
+
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username or email already exists' });
+    }
+
+    const user = new User({
+      username,
+      email,
+      password: Math.random().toString(36).slice(-8),
+      isApproved: false,
+      requestedAt: new Date()
+    });
+
+    await user.save();
+
+    res.status(201).json({ 
+      message: 'Account request submitted. Please wait for admin approval.' 
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Login
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    if (!user.isApproved) {
+      return res.status(403).json({ message: 'Account pending approval' });
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Create JWT token with extended expiration
+    const token = jwt.sign(
+      { 
+        _id: user._id, 
+        username: user.username, 
+        role: user.role 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' } // 7 days
+    );
+
+    // Parse device info
+    const deviceInfo = parseUserAgent(req.headers['user-agent']);
+    deviceInfo.ipAddress = req.ip;
+    deviceInfo.userAgent = req.headers['user-agent'];
+
+    // Create session
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+
+    const session = new Session({
+      userId: user._id,
+      token,
+      deviceInfo,
+      expiresAt
+    });
+
+    await session.save();
+
+    // Log activity
+    await logActivity(user._id, 'login', { 
+      deviceType: deviceInfo.deviceType,
+      browser: deviceInfo.browser,
+      os: deviceInfo.os 
+    }, req);
+
+    // Return user data with session info
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        level: user.level,
+        xp: user.xp,
+        badges: user.badges,
+        completedTopics: user.completedTopics
+      },
+      sessionId: session._id
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get current user
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select('-password')
+      .populate('badges.badgeId')
+      .populate('completedTopics.topicId');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update session activity
+    if (req.session) {
+      await req.session.updateActivity();
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Change password
+router.post('/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isPasswordValid = await user.comparePassword(currentPassword);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    await logActivity(user._id, 'password_change', {}, req);
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Logout (invalidate current session)
+router.post('/logout', authenticateToken, async (req, res) => {
+  try {
+    // Invalidate current session
+    if (req.session) {
+      req.session.isActive = false;
+      await req.session.save();
+    }
+
+    await logActivity(req.user._id, 'logout', {}, req);
+
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Logout all devices
+router.post('/logout-all', authenticateToken, async (req, res) => {
+  try {
+    // Invalidate all sessions for this user
+    await Session.updateMany(
+      { userId: req.user._id, isActive: true },
+      { isActive: false }
+    );
+
+    await logActivity(req.user._id, 'logout_all_devices', {}, req);
+
+    res.json({ message: 'Logged out from all devices' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get active sessions
+router.get('/sessions', authenticateToken, async (req, res) => {
+  try {
+    const sessions = await Session.find({
+      userId: req.user._id,
+      isActive: true,
+      expiresAt: { $gt: new Date() }
+    }).sort({ lastActivity: -1 });
+
+    const sessionsData = sessions.map(session => ({
+      _id: session._id,
+      deviceType: session.deviceInfo.deviceType,
+      browser: session.deviceInfo.browser,
+      os: session.deviceInfo.os,
+      ipAddress: session.deviceInfo.ipAddress,
+      lastActivity: session.lastActivity,
+      isCurrent: session._id.toString() === req.session?._id?.toString(),
+      createdAt: session.createdAt
+    }));
+
+    res.json(sessionsData);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Revoke specific session
+router.delete('/sessions/:sessionId', authenticateToken, async (req, res) => {
+  try {
+    const session = await Session.findOne({
+      _id: req.params.sessionId,
+      userId: req.user._id
+    });
+
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found' });
+    }
+
+    session.isActive = false;
+    await session.save();
+
+    res.json({ message: 'Session revoked successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+export default router;
+
+Part 3: Update Auth Middleware
+File: server/middleware/auth.js (UPDATE)
+javascriptimport jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import Session from '../models/Session.js';
+
+export const authenticateToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: 'Access token required' });
+    }
+
+    // Verify JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if session exists and is active
+    const session = await Session.findOne({
+      token,
+      isActive: true,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!session) {
+      return res.status(401).json({ message: 'Session expired or invalid' });
+    }
+
+    // Get user
+    const user = await User.findById(decoded._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.isApproved) {
+      return res.status(403).json({ message: 'Account not approved' });
+    }
+
+    // Attach user and session to request
+    req.user = user;
+    req.session = session;
+    
+    next();
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(403).json({ message: 'Invalid token' });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(403).json({ message: 'Token expired' });
+    }
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const isAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  next();
+};
+
+Part 4: Add Session Management to Profile Page
+File: client/src/pages/Profile.js (ADD SESSION MANAGEMENT)
+Add this section after the password change section:
+javascript// Add these states at the top
+const [sessions, setSessions] = useState([]);
+const [sessionsLoading, setSessionsLoading] = useState(false);
+
+// Add this useEffect
+useEffect(() => {
+  fetchSessions();
+}, []);
+
+const fetchSessions = async () => {
+  try {
+    setSessionsLoading(true);
+    const response = await api.get('/auth/sessions');
+    setSessions(response.data);
+  } catch (error) {
+    console.error('Error fetching sessions:', error);
+  } finally {
+    setSessionsLoading(false);
+  }
+};
+
+const handleRevokeSession = async (sessionId) => {
+  if (!window.confirm('Are you sure you want to log out this device?')) return;
+
+  try {
+    await api.delete(`/auth/sessions/${sessionId}`);
+    alert('Session revoked successfully');
+    fetchSessions();
+  } catch (error) {
+    alert(error.response?.data?.message || 'Error revoking session');
+  }
+};
+
+const handleLogoutAllDevices = async () => {
+  if (!window.confirm('This will log you out from ALL devices. Continue?')) return;
+
+  try {
+    await api.post('/auth/logout-all');
+    alert('Logged out from all devices');
+    // Redirect to login
+    window.location.href = '/login';
+  } catch (error) {
+    alert(error.response?.data?.message || 'Error logging out');
+  }
+};
+
+// Add this JSX after the password change section:
+jsx      {/* Active Sessions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '20px',
+          flexWrap: 'wrap',
+          gap: '10px'
+        }}>
+          <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)' }}>
+            🔐 ACTIVE SESSIONS ({sessions.length})
+          </h3>
+          {sessions.length > 1 && (
+            <button
+              onClick={handleLogoutAllDevices}
+              className="retro-btn danger"
+              style={{ fontSize: '9px', padding: '8px 15px' }}
+            >
+              🚪 LOGOUT ALL DEVICES
+            </button>
+          )}
+        </div>
+
+        {sessionsLoading ? (
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <div className="loading">LOADING SESSIONS...</div>
+          </div>
+        ) : sessions.length > 0 ? (
+          <div style={{ display: 'grid', gap: '15px' }}>
+            {sessions.map((session) => (
+              <motion.div
+                key={session._id}
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                style={{
+                  padding: '15px',
+                  border: `3px solid ${session.isCurrent ? 'var(--bright-blue)' : 'var(--border-color)'}`,
+                  background: session.isCurrent ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-lightest)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '15px',
+                  boxShadow: session.isCurrent ? '3px 3px 0 var(--bright-blue)' : 'none'
+                }}
+              >
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '24px' }}>
+                      {session.deviceType === 'mobile' ? '📱' : 
+                       session.deviceType === 'tablet' ? '📲' : '💻'}
+                    </div>
+                    <div>
+                      <div style={{ 
+                        fontSize: '12px', 
+                        color: 'var(--primary-navy)',
+                        fontWeight: 'bold'
+                      }}>
+                        {session.browser} on {session.os}
+                        {session.isCurrent && (
+                          <span style={{ 
+                            marginLeft: '10px',
+                            padding: '2px 8px',
+                            background: 'var(--bright-blue)',
+                            color: 'white',
+                            fontSize: '8px',
+                            borderRadius: '2px'
+                          }}>
+                            CURRENT
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '5px' }}>
+                        IP: {session.ipAddress}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>
+                    Last active: {new Date(session.lastActivity).toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '9px', color: 'var(--text-light)' }}>
+                    Logged in: {new Date(session.createdAt).toLocaleString()}
+                  </div>
+                </div>
+
+                {!session.isCurrent && (
+                  <button
+                    onClick={() => handleRevokeSession(session._id)}
+                    className="retro-btn danger"
+                    style={{ fontSize: '9px', padding: '8px 15px' }}
+                  >
+                    ✖ REVOKE
+                  </button>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px',
+            color: 'var(--text-light)',
+            fontSize: '12px'
+          }}>
+            NO ACTIVE SESSIONS
+          </div>
+        )}
+      </motion.div>
+
+Part 5: Update Frontend Logout
+File: client/src/context/AuthContext.js (UPDATE logout function)
+javascriptconst logout = async () => {
+  try {
+    // Call logout endpoint to invalidate session
+    await api.post('/auth/logout');
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    // Clear local storage regardless
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  }
+};
+
+Part 6: Add Session Cleanup Job (Optional but Recommended)
+File: server/utils/sessionCleanup.js (CREATE)
+javascriptimport Session from '../models/Session.js';
+
+// Clean up expired sessions every hour
+export const startSessionCleanup = () => {
+  setInterval(async () => {
+    try {
+      const result = await Session.deleteMany({
+        $or: [
+          { expiresAt: { $lt: new Date() } },
+          { isActive: false, updatedAt: { $lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
+        ]
+      });
+      
+      if (result.deletedCount > 0) {
+        console.log(`🧹 Cleaned up ${result.deletedCount} expired sessions`);
+      }
+    } catch (error) {
+      console.error('Session cleanup error:', error);
+    }
+  }, 60 * 60 * 1000); // Every hour
+};
+Update server/server.js (ADD cleanup)
+javascriptimport { startSessionCleanup } from './utils/sessionCleanup.js';
+
+// After database connection, add:
+startSessionCleanup();
+
+
+
+Quick Fix: The Activity Logs page exists but isn't linked properly
+File: client/src/App.js (CHECK if this route exists)
+Look for this route around line 150-160:
+javascript<Route 
+  path="/admin/logs" 
+  element={
+    <ProtectedRoute adminOnly={true}>
+      <AdminLayout>
+        <ActivityLogs />
+      </AdminLayout>
+    </ProtectedRoute>
+  } 
+/>
+If it's there, check if ActivityLogs is imported at the top:
+javascriptimport ActivityLogs from './pages/admin/ActivityLogs';
+
+If Missing: Add Activity Logs Button to Admin Layout
+File: client/src/App.js (UPDATE AdminLayout component)
+Find the AdminLayout component and make sure it has the LOGS button:
+javascriptconst AdminLayout = ({ children }) => {
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div style={{ 
+        display: 'flex', 
+        gap: '15px', 
+        marginBottom: '30px',
+        flexWrap: 'wrap'
+      }}>
+        <NavLink 
+          to="/admin" 
+          end
+          style={({ isActive }) => ({
+            textDecoration: 'none'
+          })}
+        >
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              📊 DASHBOARD
+            </button>
+          )}
+        </NavLink>
+        <NavLink 
+          to="/admin/users"
+          style={({ isActive }) => ({
+            textDecoration: 'none'
+          })}
+        >
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              👥 USERS
+            </button>
+          )}
+        </NavLink>
+        <NavLink 
+          to="/admin/topics"
+          style={({ isActive }) => ({
+            textDecoration: 'none'
+          })}
+        >
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              📚 TOPICS
+            </button>
+          )}
+        </NavLink>
+        <NavLink 
+          to="/admin/badges"
+          style={({ isActive }) => ({
+            textDecoration: 'none'
+          })}
+        >
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              🏆 BADGES
+            </button>
+          )}
+        </NavLink>
+        <NavLink 
+          to="/admin/logs"
+          style={({ isActive }) => ({
+            textDecoration: 'none'
+          })}
+        >
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              📋 LOGS
+            </button>
+          )}
+        </NavLink>
+      </div>
+      {children}
+    </div>
+  );
+};
+
+If the ActivityLogs.js File is Missing, Here's the Complete File Again:
+File: client/src/pages/admin/ActivityLogs.js (CREATE if missing)
+javascriptimport React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+
+const ActivityLogs = () => {
+  const [logs, setLogs] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    userId: '',
+    action: '',
+    limit: 100
+  });
+
+  const actionTypes = [
+    'login',
+    'logout',
+    'logout_all_devices',
+    'password_change',
+    'video_watched',
+    'quiz_started',
+    'quiz_completed',
+    'badge_earned',
+    'topic_completed',
+    'profile_updated',
+    'account_request',
+    'account_approved'
+  ];
+
+  useEffect(() => {
+    fetchUsers();
+    fetchLogs();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await api.get('/admin/users');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchLogs = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (filters.userId) params.append('userId', filters.userId);
+      if (filters.action) params.append('action', filters.action);
+      params.append('limit', filters.limit);
+
+      const response = await api.get(`/admin/activity-logs?${params}`);
+      setLogs(response.data);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (field, value) => {
+    setFilters({ ...filters, [field]: value });
+  };
+
+  const handleApplyFilters = () => {
+    fetchLogs();
+  };
+
+  const handleClearFilters = () => {
+    setFilters({ userId: '', action: '', limit: 100 });
+    setTimeout(() => fetchLogs(), 100);
+  };
+
+  const handleExportCSV = () => {
+    const csvContent = [
+      ['Timestamp', 'User', 'Email', 'Action', 'IP Address', 'Details'],
+      ...logs.map(log => [
+        new Date(log.createdAt).toLocaleString(),
+        log.userId?.username || 'N/A',
+        log.userId?.email || 'N/A',
+        log.action,
+        log.ipAddress,
+        JSON.stringify(log.details || {})
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `activity-logs-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
+
+  const getActivityIcon = (action) => {
+    const icons = {
+      login: '🔐',
+      logout: '🚪',
+      logout_all_devices: '🚪🚪',
+      password_change: '🔑',
+      video_watched: '📺',
+      quiz_started: '📝',
+      quiz_completed: '✅',
+      badge_earned: '🏆',
+      topic_completed: '🎯',
+      profile_updated: '👤',
+      account_request: '📬',
+      account_approved: '✅'
+    };
+    return icons[action] || '📌';
+  };
+
+  const getActivityColor = (action) => {
+    const colors = {
+      login: 'var(--bright-blue)',
+      logout: 'var(--error-red)',
+      logout_all_devices: 'var(--error-red)',
+      password_change: 'var(--warning-yellow)',
+      video_watched: 'var(--light-blue)',
+      quiz_completed: 'var(--success-green)',
+      badge_earned: 'var(--orange-accent)',
+      topic_completed: 'var(--success-green)',
+      account_approved: 'var(--success-green)'
+    };
+    return colors[action] || 'var(--text-medium)';
+  };
+
+  return (
+    <div style={{ paddingTop: '0' }}>
+      <div className="scanlines"></div>
+
+      <motion.h1
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="neon-text"
+        style={{ 
+          fontSize: '28px', 
+          marginBottom: '40px',
+          textAlign: 'center',
+          color: 'var(--primary-navy)'
+        }}
+      >
+        📋 ACTIVITY LOGS
+      </motion.h1>
+
+      {/* Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          🔍 FILTERS
+        </h3>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '20px',
+          marginBottom: '20px'
+        }}>
+          <div>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '10px', 
+              fontSize: '10px',
+              color: 'var(--text-medium)'
+            }}>
+              USER
+            </label>
+            <select
+              className="retro-input"
+              value={filters.userId}
+              onChange={(e) => handleFilterChange('userId', e.target.value)}
+            >
+              <option value="">ALL USERS</option>
+              {users.map((user) => (
+                <option key={user._id} value={user._id}>
+                  {user.username} ({user.email})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '10px', 
+              fontSize: '10px',
+              color: 'var(--text-medium)'
+            }}>
+              ACTION TYPE
+            </label>
+            <select
+              className="retro-input"
+              value={filters.action}
+              onChange={(e) => handleFilterChange('action', e.target.value)}
+            >
+              <option value="">ALL ACTIONS</option>
+              {actionTypes.map((action) => (
+                <option key={action} value={action}>
+                  {action.replace(/_/g, ' ').toUpperCase()}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '10px', 
+              fontSize: '10px',
+              color: 'var(--text-medium)'
+            }}>
+              LIMIT
+            </label>
+            <select
+              className="retro-input"
+              value={filters.limit}
+              onChange={(e) => handleFilterChange('limit', e.target.value)}
+            >
+              <option value="50">50 RECORDS</option>
+              <option value="100">100 RECORDS</option>
+              <option value="200">200 RECORDS</option>
+              <option value="500">500 RECORDS</option>
+              <option value="1000">1000 RECORDS</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleApplyFilters}
+            className="retro-btn"
+            style={{ flex: 1, minWidth: '150px' }}
+          >
+            🔍 APPLY FILTERS
+          </button>
+          <button
+            onClick={handleClearFilters}
+            className="retro-btn secondary"
+            style={{ flex: 1, minWidth: '150px' }}
+          >
+            ✖ CLEAR
+          </button>
+          <button
+            onClick={handleExportCSV}
+            className="retro-btn"
+            style={{ 
+              background: 'var(--success-green)',
+              borderColor: '#059669',
+              flex: 1,
+              minWidth: '150px'
+            }}
+            disabled={logs.length === 0}
+          >
+            📥 EXPORT CSV
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Logs */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="retro-card"
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          ACTIVITY RECORDS ({logs.length})
+        </h3>
+
+        {loading ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px',
+            color: 'var(--bright-blue)',
+            fontSize: '14px'
+          }}>
+            <div className="loading">LOADING LOGS...</div>
+          </div>
+        ) : logs.length > 0 ? (
+          <div className="table-container">
+            <table style={{ width: '100%', fontSize: '10px' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--primary-navy)' }}>
+                  <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
+                    
+                  </th>
+                  <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
+                    ACTION
+                  </th>
+                  <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
+                    USER
+                  </th>
+                  <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
+                    IP ADDRESS
+                  </th>
+                  <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
+                    TIMESTAMP
+                  </th>
+                  <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
+                    DETAILS
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map((log, index) => (
+                  <motion.tr
+                    key={log._id}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: index * 0.02 }}
+                    style={{ borderBottom: '1px solid var(--border-color)' }}
+                  >
+                    <td style={{ padding: '10px', fontSize: '16px' }}>
+                      {getActivityIcon(log.action)}
+                    </td>
+                    <td style={{ 
+                      padding: '10px', 
+                      color: getActivityColor(log.action),
+                      fontWeight: 'bold'
+                    }}>
+                      {log.action.replace(/_/g, ' ').toUpperCase()}
+                    </td>
+                    <td style={{ padding: '10px', color: 'var(--bright-blue)' }}>
+                      {log.userId?.username || 'N/A'}
+                      <br />
+                      <span style={{ fontSize: '8px', color: 'var(--text-light)' }}>
+                        {log.userId?.email || ''}
+                      </span>
+                    </td>
+                    <td style={{ padding: '10px', color: 'var(--text-medium)' }}>
+                      {log.ipAddress}
+                    </td>
+                    <td style={{ padding: '10px', color: 'var(--text-dark)' }}>
+                      {new Date(log.createdAt).toLocaleString()}
+                    </td>
+                    <td style={{ padding: '10px', color: 'var(--text-light)', fontSize: '8px' }}>
+                      {log.details && Object.keys(log.details).length > 0
+                        ? JSON.stringify(log.details, null, 0).substring(0, 100)
+                        : '-'}
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px',
+            color: 'var(--text-light)',
+            fontSize: '12px'
+          }}>
+            NO LOGS FOUND
+            <br />
+            <span style={{ fontSize: '10px', color: 'var(--text-lighter)', marginTop: '10px' }}>
+              Try adjusting your filters
+            </span>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
+export default ActivityLogs;
+
+Update the Backend Route (Make sure it exists)
+File: server/routes/admin.js (CHECK if this exists)
+The activity logs route should be:
+javascript// Get all activity logs
+router.get('/activity-logs', async (req, res) => {
+  try {
+    const { userId, action, limit = 100 } = req.query;
+    
+    const query = {};
+    if (userId) query.userId = userId;
+    if (action) query.action = action;
+
+    const logs = await ActivityLog.find(query)
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+Solution: Year-Based Badge System + Admin Reset Controls
+
+Part 1: Update Badge Model to Include Year
+File: server/models/Badge.js (UPDATE)
+javascriptimport mongoose from 'mongoose';
+
+const badgeSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  imageUrl: {
+    type: String,
+    required: true,
+    validate: {
+      validator: function(v) {
+        return /^(http|https|\/uploads\/)/.test(v);
+      },
+      message: 'Badge must have a valid image URL'
+    }
+  },
+  topicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Topic',
+    required: true
+  },
+  year: {
+    type: Number,
+    required: true,
+    default: () => new Date().getFullYear()
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  timestamps: true
+});
+
+// Compound unique index: same topic can have different badges per year
+badgeSchema.index({ topicId: 1, year: 1 }, { unique: true });
+
+const Badge = mongoose.model('Badge', badgeSchema);
+
+export default Badge;
+
+Part 2: Update User Model to Track Yearly Progress
+File: server/models/User.js (UPDATE)
+javascriptimport mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    enum: ['employee', 'admin'],
+    default: 'employee'
+  },
+  isApproved: {
+    type: Boolean,
+    default: false
+  },
+  requestedAt: {
+    type: Date,
+    default: Date.now
+  },
+  xp: {
+    type: Number,
+    default: 0
+  },
+  level: {
+    type: Number,
+    default: 1
+  },
+  
+  // Current year progress
+  completedTopics: [{
+    topicId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Topic'
+    },
+    year: {
+      type: Number,
+      default: () => new Date().getFullYear()
+    },
+    completedAt: {
+      type: Date,
+      default: Date.now
+    },
+    score: Number
+  }],
+  
+  badges: [{
+    badgeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Badge'
+    },
+    year: {
+      type: Number,
+      default: () => new Date().getFullYear()
+    },
+    earnedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  watchedVideos: [{
+    topicId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Topic'
+    },
+    year: {
+      type: Number,
+      default: () => new Date().getFullYear()
+    },
+    completedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  // Historical data (archived yearly)
+  yearlyArchive: [{
+    year: Number,
+    completedTopics: Number,
+    badgesEarned: Number,
+    xpEarned: Number,
+    archivedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
+}, {
+  timestamps: true
+});
+
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Compare password method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Calculate level based on XP
+userSchema.methods.calculateLevel = function() {
+  this.level = Math.floor(Math.sqrt(this.xp / 100)) + 1;
+  return this.level;
+};
+
+// Get current year progress
+userSchema.methods.getCurrentYearProgress = function() {
+  const currentYear = new Date().getFullYear();
+  
+  return {
+    completedTopics: this.completedTopics.filter(ct => ct.year === currentYear),
+    badges: this.badges.filter(b => b.year === currentYear),
+    watchedVideos: this.watchedVideos.filter(wv => wv.year === currentYear)
+  };
+};
+
+// Check if topic completed this year
+userSchema.methods.isTopicCompletedThisYear = function(topicId) {
+  const currentYear = new Date().getFullYear();
+  return this.completedTopics.some(
+    ct => ct.topicId.toString() === topicId.toString() && ct.year === currentYear
+  );
+};
+
+// Check if video watched this year
+userSchema.methods.isVideoWatchedThisYear = function(topicId) {
+  const currentYear = new Date().getFullYear();
+  return this.watchedVideos.some(
+    wv => wv.topicId.toString() === topicId.toString() && wv.year === currentYear
+  );
+};
+
+const User = mongoose.model('User', userSchema);
+
+export default User;
+
+Part 3: Create Yearly Reset System
+File: server/routes/admin.js (ADD new routes)
+Add these routes to the admin router:
+javascript// ===== YEARLY RESET SYSTEM =====
+
+// Get current training year stats
+router.get('/training-year', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    
+    const totalUsers = await User.countDocuments({ isApproved: true });
+    
+    // Count users who completed all topics this year
+    const users = await User.find({ isApproved: true });
+    let usersCompleted = 0;
+    
+    const totalTopics = await Topic.countDocuments({ isActive: true });
+    
+    users.forEach(user => {
+      const yearProgress = user.getCurrentYearProgress();
+      if (yearProgress.completedTopics.length >= totalTopics) {
+        usersCompleted++;
+      }
+    });
+    
+    const badges = await Badge.countDocuments({ year: currentYear });
+    
+    res.json({
+      currentYear,
+      totalUsers,
+      usersCompleted,
+      completionRate: totalUsers > 0 ? Math.round((usersCompleted / totalUsers) * 100) : 0,
+      totalTopics,
+      totalBadges: badges
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Archive current year and reset for new year
+router.post('/reset-training-year', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    const { newYear } = req.body;
+    
+    if (!newYear || newYear <= currentYear) {
+      return res.status(400).json({ 
+        message: 'New year must be greater than current year' 
+      });
+    }
+    
+    // Get all users
+    const users = await User.find({ isApproved: true });
+    let archivedCount = 0;
+    
+    for (const user of users) {
+      const yearProgress = user.getCurrentYearProgress();
+      
+      // Archive current year data
+      user.yearlyArchive.push({
+        year: currentYear,
+        completedTopics: yearProgress.completedTopics.length,
+        badgesEarned: yearProgress.badges.length,
+        xpEarned: yearProgress.completedTopics.reduce((sum, ct) => {
+          return sum + (ct.score || 0);
+        }, 0),
+        archivedAt: new Date()
+      });
+      
+      // Clear current year progress (but keep XP and level!)
+      user.completedTopics = user.completedTopics.filter(ct => ct.year !== currentYear);
+      user.badges = user.badges.filter(b => b.year !== currentYear);
+      user.watchedVideos = user.watchedVideos.filter(wv => wv.year !== currentYear);
+      
+      await user.save();
+      archivedCount++;
+    }
+    
+    // Mark old badges as inactive
+    await Badge.updateMany(
+      { year: currentYear },
+      { isActive: false }
+    );
+    
+    await logActivity(req.user._id, 'training_year_reset', {
+      oldYear: currentYear,
+      newYear: newYear,
+      usersArchived: archivedCount
+    }, req);
+    
+    res.json({
+      message: 'Training year reset successfully',
+      archivedUsers: archivedCount,
+      oldYear: currentYear,
+      newYear: newYear
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get user's yearly history
+router.get('/users/:userId/history', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId)
+      .select('username email yearlyArchive completedTopics badges');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const currentYear = new Date().getFullYear();
+    const currentYearData = user.getCurrentYearProgress();
+    
+    res.json({
+      username: user.username,
+      email: user.email,
+      currentYear: {
+        year: currentYear,
+        completedTopics: currentYearData.completedTopics.length,
+        badgesEarned: currentYearData.badges.length
+      },
+      history: user.yearlyArchive.sort((a, b) => b.year - a.year)
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Reset specific user's progress (admin override)
+router.post('/users/:userId/reset-progress', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const currentYear = new Date().getFullYear();
+    
+    // Archive before reset
+    const yearProgress = user.getCurrentYearProgress();
+    user.yearlyArchive.push({
+      year: currentYear,
+      completedTopics: yearProgress.completedTopics.length,
+      badgesEarned: yearProgress.badges.length,
+      xpEarned: 0,
+      archivedAt: new Date()
+    });
+    
+    // Reset current year only
+    user.completedTopics = user.completedTopics.filter(ct => ct.year !== currentYear);
+    user.badges = user.badges.filter(b => b.year !== currentYear);
+    user.watchedVideos = user.watchedVideos.filter(wv => wv.year !== currentYear);
+    
+    await user.save();
+    
+    await logActivity(req.user._id, 'user_progress_reset', {
+      targetUserId: user._id,
+      targetUsername: user.username,
+      year: currentYear
+    }, req);
+    
+    res.json({
+      message: 'User progress reset successfully',
+      user: {
+        username: user.username,
+        resetYear: currentYear
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+Part 4: Update Topic Routes to Check Year
+File: server/routes/topics.js (UPDATE)
+Update the get topics route:
+javascript// Get all active topics
+router.get('/', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    const topics = await Topic.find({ isActive: true })
+      .select('-questions.correctAnswer')
+      .sort({ order: 1 });
+    
+    const user = await User.findById(req.user._id);
+    
+    const topicsWithStatus = topics.map(topic => {
+      const isCompleted = user.isTopicCompletedThisYear(topic._id);
+      const isVideoWatched = user.isVideoWatchedThisYear(topic._id);
+      
+      return {
+        ...topic.toObject(),
+        isCompleted,
+        isVideoWatched,
+        currentYear,
+        questions: topic.questions.map(q => ({
+          question: q.question,
+          options: q.options,
+          points: q.points
+        }))
+      };
+    });
+
+    res.json(topicsWithStatus);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get single topic
+router.get('/:topicId', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    const topic = await Topic.findById(req.params.topicId)
+      .select('-questions.correctAnswer');
+
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    const isCompleted = user.isTopicCompletedThisYear(topic._id);
+    const isVideoWatched = user.isVideoWatchedThisYear(topic._id);
+
+    res.json({
+      ...topic.toObject(),
+      isCompleted,
+      isVideoWatched,
+      currentYear,
+      questions: topic.questions.map(q => ({
+        question: q.question,
+        options: q.options,
+        points: q.points
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Mark video as watched (with year tracking)
+router.post('/:topicId/watch-video', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    const user = await User.findById(req.user._id);
+    const topicId = req.params.topicId;
+
+    const alreadyWatched = user.isVideoWatchedThisYear(topicId);
+
+    if (!alreadyWatched) {
+      user.watchedVideos.push({ 
+        topicId,
+        year: currentYear
+      });
+      await user.save();
+
+      await logActivity(user._id, 'video_watched', { 
+        topicId,
+        year: currentYear 
+      }, req);
+    }
+
+    res.json({ message: 'Video marked as watched' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Submit quiz (with year tracking)
+router.post('/:topicId/submit-quiz', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    const { answers } = req.body;
+    const topicId = req.params.topicId;
+
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    // Check if video was watched THIS YEAR
+    const videoWatched = user.isVideoWatchedThisYear(topicId);
+
+    if (!videoWatched) {
+      return res.status(400).json({ 
+        message: 'You must watch the video before taking the quiz' 
+      });
+    }
+
+    // Check if already completed THIS YEAR
+    const alreadyCompleted = user.isTopicCompletedThisYear(topicId);
+
+    if (alreadyCompleted) {
+      return res.status(400).json({ message: 'Quiz already completed for this year' });
+    }
+
+    // Calculate score
+    let correctAnswers = 0;
+    let totalPoints = 0;
+    let earnedPoints = 0;
+
+    topic.questions.forEach((question, index) => {
+      totalPoints += question.points;
+      if (answers[index] === question.correctAnswer) {
+        correctAnswers++;
+        earnedPoints += question.points;
+      }
+    });
+
+    const scorePercentage = Math.round((earnedPoints / totalPoints) * 100);
+    const passed = scorePercentage >= topic.passingScore;
+
+    await logActivity(user._id, 'quiz_completed', { 
+      topicId, 
+      score: scorePercentage,
+      passed,
+      year: currentYear
+    }, req);
+
+    if (passed) {
+      // Add to completed topics with year
+      user.completedTopics.push({
+        topicId,
+        year: currentYear,
+        score: scorePercentage
+      });
+
+      // Award XP
+      user.xp += topic.xpReward;
+      user.calculateLevel();
+
+      // Award badge for current year
+      const badge = await Badge.findOne({ 
+        topicId,
+        year: currentYear,
+        isActive: true
+      });
+      
+      if (badge) {
+        const hasBadge = user.badges.some(
+          b => b.badgeId.toString() === badge._id.toString() && b.year === currentYear
+        );
+        
+        if (!hasBadge) {
+          user.badges.push({ 
+            badgeId: badge._id,
+            year: currentYear
+          });
+          await logActivity(user._id, 'badge_earned', { 
+            badgeId: badge._id,
+            badgeName: badge.name,
+            year: currentYear
+          }, req);
+        }
+      }
+
+      await user.save();
+
+      // Check if all badges collected for current year
+      const totalBadges = await Badge.countDocuments({ 
+        year: currentYear,
+        isActive: true
+      });
+      const userBadgesThisYear = user.badges.filter(b => b.year === currentYear).length;
+      const allBadgesCollected = userBadgesThisYear >= totalBadges;
+
+      res.json({
+        passed: true,
+        score: scorePercentage,
+        correctAnswers,
+        totalQuestions: topic.questions.length,
+        xpEarned: topic.xpReward,
+        newLevel: user.level,
+        newXP: user.xp,
+        badgeEarned: badge ? badge.name : null,
+        badgeImage: badge ? badge.imageUrl : null,
+        allBadgesCollected,
+        currentYear,
+        congratsLink: allBadgesCollected ? 'https://google.com' : null
+      });
+    } else {
+      res.json({
+        passed: false,
+        score: scorePercentage,
+        correctAnswers,
+        totalQuestions: topic.questions.length,
+        requiredScore: topic.passingScore
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+Part 5: Update Badge Admin Page to Include Year
+File: client/src/pages/admin/Badges.js (UPDATE form data)
+Add year field to the form:
+javascript// Update formData state:
+const [formData, setFormData] = useState({
+  name: '',
+  description: '',
+  imageUrl: '',
+  topicId: '',
+  year: new Date().getFullYear() // ADD THIS
+});
+
+// In the form, add this field after topicId:
+<div style={{ marginBottom: '20px' }}>
+  <label style={{ 
+    display: 'block', 
+    marginBottom: '10px', 
+    fontSize: '10px',
+    color: 'var(--text-medium)'
+  }}>
+    YEAR
+  </label>
+  <input
+    type="number"
+    className="retro-input"
+    value={formData.year}
+    onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
+    min="2024"
+    max="2099"
+    required
+  />
+  <div style={{
+    marginTop: '5px',
+    fontSize: '8px',
+    color: 'var(--text-light)'
+  }}>
+    Set the training year for this badge (e.g., 2025, 2026)
+  </div>
+</div>
+
+Part 6: Create Yearly Reset Admin Page
+File: client/src/pages/admin/YearlyReset.js (CREATE NEW)
+javascriptimport React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+
+const YearlyReset = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [newYear, setNewYear] = useState(new Date().getFullYear() + 1);
+  const [resetting, setResetting] = useState(false);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await api.get('/admin/training-year');
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetYear = async () => {
+    const confirmed = window.confirm(
+      `⚠️ WARNING: This will:\n\n` +
+      `1. Archive ${stats?.totalUsers || 0} users' current progress\n` +
+      `2. Reset all topic completions\n` +
+      `3. Reset all video watch status\n` +
+      `4. Clear current year badges\n` +
+      `5. Users will keep their XP and levels\n\n` +
+      `Are you absolutely sure you want to reset to year ${newYear}?`
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirm = window.confirm(
+      `🚨 FINAL CONFIRMATION\n\nType "RESET" in the next prompt to proceed.`
+    );
+
+    if (!doubleConfirm) return;
+
+    const typed = prompt('Type "RESET" to confirm:');
+    if (typed !== 'RESET') {
+      alert('Reset cancelled');
+      return;
+    }
+
+    setResetting(true);
+
+    try {
+      const response = await api.post('/admin/reset-training-year', { newYear });
+      alert(`✅ ${response.data.message}\n\nArchived: ${response.data.archivedUsers} users`);
+      fetchStats();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error resetting year');
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '80vh' 
+      }}>
+        <div className="loading neon-text">LOADING...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ paddingTop: '0' }}>
+      <motion.h1
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="neon-text"
+        style={{ 
+          fontSize: '28px', 
+          marginBottom: '40px',
+          textAlign: 'center',
+          color: 'var(--primary-navy)'
+        }}
+      >
+        🗓️ YEARLY RESET
+      </motion.h1>
+
+      {/* Current Year Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          📊 CURRENT TRAINING YEAR: {stats?.currentYear}
+        </h3>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '20px'
+        }}>
+          <div style={{
+            padding: '20px',
+            border: '3px solid var(--bright-blue)',
+            textAlign: 'center',
+            boxShadow: '3px 3px 0 var(--primary-navy)'
+          }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+              TOTAL USERS
+            </div>
+            <div style={{ fontSize: '36px', color: 'var(--bright-blue)' }}>
+              {stats?.totalUsers || 0}
+            </div>
+          </div>
+
+          <div style={{
+            padding: '20px',
+            border: '3px solid var(--success-green)',
+            textAlign: 'center',
+            boxShadow: '3px 3px 0 var(--primary-navy)'
+          }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+              COMPLETED TRAINING
+            </div>
+            <div style={{ fontSize: '36px', color: 'var(--success-green)' }}>
+              {stats?.usersCompleted || 0}
+            </div>
+          </div>
+
+          <div style={{
+            padding: '20px',
+            border: '3px solid var(--orange-accent)',
+            textAlign: 'center',
+            boxShadow: '3px 3px 0 var(--primary-navy)'
+          }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+              COMPLETION RATE
+            </div>
+            <div style={{ fontSize: '36px', color: 'var(--orange-accent)' }}>
+              {stats?.completionRate || 0}%
+            </div>
+          </div>
+
+          <div style={{
+            padding: '20px',
+            border: '3px solid var(--light-blue)',
+            textAlign: 'center',
+            boxShadow: '3px 3px 0 var(--primary-navy)'
+          }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+              ACTIVE BADGES
+            </div>
+            <div style={{ fontSize: '36px', color: 'var(--light-blue)' }}>
+              {stats?.totalBadges || 0}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Reset Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="retro-card"
+        style={{
+          border: '3px solid var(--error-red)',
+          background: 'rgba(239, 68, 68, 0.05)'
+        }}
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--error-red)', marginBottom: '20px' }}>
+          ⚠️ RESET TRAINING YEAR
+        </h3>
+
+        <div style={{
+          padding: '20px',
+          background: 'var(--bg-lightest)',
+          border: '2px solid var(--border-color)',
+          marginBottom: '20px'
+        }}>
+          <p style={{ fontSize: '10px', lineHeight: '1.8', marginBottom: '15px' }}>
+            <strong>What happens when you reset:</strong>
+          </p>
+          <ul style={{ fontSize: '9px', lineHeight: '2', paddingLeft: '20px' }}>
+            <li>✅ Current year data is archived for all users</li>
+            <li>✅ Topic completion status is reset</li>
+            <li>✅ Video watch status is reset</li>
+            <li>✅ Current year badges are cleared</li>
+            <li>✅ Users can retake all quizzes</li>
+            <li>🔒 User XP and levels are preserved</li>
+            <li>🔒 Historical data is maintained</li>
+            <li>🔒 Activity logs remain intact</li>
+          </ul>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '10px', 
+            fontSize: '10px',
+            color: 'var(--text-medium)'
+          }}>
+            NEW TRAINING YEAR
+          </label>
+          <input
+            type="number"
+            className="retro-input"
+            value={newYear}
+            onChange={(e) => setNewYear(parseInt(e.target.value))}
+            min={stats?.currentYear + 1}
+            max="2099"
+          />
+        </div>
+
+        <button
+          onClick={handleResetYear}
+          className="retro-btn danger"
+          style={{ width: '100%', padding: '15px' }}
+          disabled={resetting || newYear <= stats?.currentYear}
+        >
+          {resetting ? '⏳ RESETTING...' : `🔄 RESET TO YEAR ${newYear}`}
+        </button>
+
+        <div style={{
+          marginTop: '15px',
+          padding: '10px',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '2px solid var(--error-red)',
+          fontSize: '9px',
+          color: 'var(--error-red)',
+          textAlign: 'center'
+        }}>
+          ⚠️ THIS ACTION CANNOT BE UNDONE. PLEASE BACKUP YOUR DATABASE FIRST!
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default YearlyReset;
+
+Part 7: Add Yearly Reset to Admin Navigation
+File: client/src/App.js (ADD route and import)
+javascript// Import
+import YearlyReset from './pages/admin/YearlyReset';
+
+// Add route
+<Route 
+  path="/admin/yearly-reset" 
+  element={
+    <ProtectedRoute adminOnly={true}>
+      <AdminLayout>
+        <YearlyReset />
+      </AdminLayout>
+    </ProtectedRoute>
+  } 
+/>
+
+// Update AdminLayout to include the button
+<NavLink 
+  to="/admin/yearly-reset"
+  style={({ isActive }) => ({
+    textDecoration: 'none'
+  })}
+>
+  {({ isActive }) => (
+    <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+      🗓️ YEARLY RESET
+    </button>
+  )}
+</NavLink>
+
+
+
+🔧 Fixing All Issues
+Let's fix these problems one by one!
+
+Issue 1: Mobile Hamburger Menu Icon Fix
+File: client/src/components/Navbar.js (COMPLETE FIX)
+javascriptimport React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const Navbar = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    setMobileMenuOpen(false);
+  };
+
+  const navItems = [
+    { path: '/', label: '🏠 HOME' },
+    { path: '/topics', label: '📚 TOPICS' },
+    { path: '/achievements', label: '🏆 ACHIEVEMENTS' },
+    { path: '/profile', label: '👤 PROFILE' }
+  ];
+
+  if (user?.role === 'admin') {
+    navItems.push({ path: '/admin', label: '⚙️ ADMIN' });
+  }
+
+  return (
+    <>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          background: 'var(--darker-bg)',
+          borderBottom: '3px solid var(--primary-navy)',
+          boxShadow: '0 4px 12px var(--shadow-medium), 0 0 0 2px var(--bright-blue) inset',
+          padding: '15px 20px'
+        }}
+      >
+        <div style={{ 
+          maxWidth: '1200px', 
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '15px'
+        }}>
+          {/* Logo */}
+          <div style={{ 
+            fontSize: '14px', 
+            color: 'var(--primary-navy)',
+            textShadow: '2px 2px 0 var(--light-blue)',
+            flex: '0 0 auto'
+          }}>
+            🎮 IMS ARCADE
+          </div>
+
+          {/* Desktop Navigation */}
+          <div 
+            style={{ 
+              display: 'flex', 
+              gap: '15px',
+              alignItems: 'center',
+              flex: '1 1 auto',
+              justifyContent: 'center'
+            }}
+            className="desktop-nav"
+          >
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/' || item.path === '/admin'}
+                style={({ isActive }) => ({
+                  color: isActive ? 'var(--bright-blue)' : 'var(--primary-navy)',
+                  textDecoration: 'none',
+                  fontSize: '10px',
+                  padding: '8px 12px',
+                  border: `2px solid ${isActive ? 'var(--bright-blue)' : 'var(--primary-navy)'}`,
+                  background: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                  transition: 'all 0.3s',
+                  boxShadow: isActive 
+                    ? '3px 3px 0 var(--primary-navy)' 
+                    : 'none',
+                  whiteSpace: 'nowrap'
+                })}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+
+            <button
+              onClick={handleLogout}
+              className="retro-btn danger"
+              style={{ fontSize: '10px', padding: '8px 12px' }}
+            >
+              🚪 LOGOUT
+            </button>
+          </div>
+
+          {/* User Stats - Desktop */}
+          <div 
+            style={{ 
+              fontSize: '10px',
+              color: 'var(--bright-blue)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              flex: '0 0 auto'
+            }}
+            className="desktop-stats"
+          >
+            <span>LVL {user?.level || 1}</span>
+            <span>|</span>
+            <span>⭐ {user?.xp || 0} XP</span>
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="retro-btn secondary mobile-menu-toggle"
+            style={{ 
+              fontSize: '14px', 
+              padding: '8px 12px',
+              display: 'none'
+            }}
+          >
+            {mobileMenuOpen ? '✖' : '☰'}
+          </button>
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu Dropdown */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            style={{
+              position: 'sticky',
+              top: '70px',
+              zIndex: 999,
+              background: 'var(--bg-lightest)',
+              borderBottom: '3px solid var(--primary-navy)',
+              boxShadow: '0 4px 12px var(--shadow-medium)',
+              overflow: 'hidden'
+            }}
+            className="mobile-menu"
+          >
+            <div style={{ 
+              padding: '15px',
+              display: 'flex', 
+              flexDirection: 'column',
+              gap: '10px'
+            }}>
+              {/* User Stats - Mobile */}
+              <div style={{
+                padding: '10px',
+                background: 'var(--bg-medium)',
+                border: '2px solid var(--bright-blue)',
+                textAlign: 'center',
+                fontSize: '10px',
+                color: 'var(--bright-blue)'
+              }}>
+                👤 {user?.username} | LVL {user?.level || 1} | ⭐ {user?.xp || 0} XP
+              </div>
+
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/' || item.path === '/admin'}
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={({ isActive }) => ({
+                    color: isActive ? 'white' : 'var(--primary-navy)',
+                    textDecoration: 'none',
+                    fontSize: '12px',
+                    padding: '12px',
+                    border: `2px solid ${isActive ? 'var(--bright-blue)' : 'var(--primary-navy)'}`,
+                    background: isActive ? 'var(--bright-blue)' : 'transparent',
+                    textAlign: 'center',
+                    display: 'block'
+                  })}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+
+              <button
+                onClick={handleLogout}
+                className="retro-btn danger"
+                style={{ fontSize: '12px', padding: '12px', width: '100%' }}
+              >
+                🚪 LOGOUT
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile-specific styles */}
+      <style>{`
+        @media (max-width: 768px) {
+          .mobile-menu-toggle {
+            display: block !important;
+          }
+          .desktop-nav {
+            display: none !important;
+          }
+          .desktop-stats {
+            display: none !important;
+          }
+          .mobile-menu {
+            display: block !important;
+          }
+        }
+        
+        @media (min-width: 769px) {
+          .mobile-menu {
+            display: none !important;
+          }
+          .mobile-menu-toggle {
+            display: none !important;
+          }
+        }
+      `}</style>
+    </>
+  );
+};
+
+export default Navbar;
+
+Issue 2: Video Upload for Topics
+File: server/routes/upload.js (ADD video upload)
+javascriptimport express from 'express';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { authenticateToken, isAdmin } from '../middleware/auth.js';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const router = express.Router();
+
+// Configure multer for badge image uploads
+const badgeStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = 'uploads/badges/';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'badge-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// Configure multer for video uploads
+const videoStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = 'uploads/videos/';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'video-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const imageFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+const videoFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('video/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only video files are allowed!'), false);
+  }
+};
+
+const uploadBadge = multer({ 
+  storage: badgeStorage,
+  fileFilter: imageFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max for images
+  }
+});
+
+const uploadVideo = multer({ 
+  storage: videoStorage,
+  fileFilter: videoFilter,
+  limits: {
+    fileSize: 500 * 1024 * 1024 // 500MB max for videos
+  }
+});
+
+// Upload badge image (admin only)
+router.post('/badge', authenticateToken, isAdmin, uploadBadge.single('badge'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/badges/${req.file.filename}`;
+    
+    res.json({
+      message: 'Badge image uploaded successfully',
+      url: fileUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error uploading file', error: error.message });
+  }
+});
+
+// Upload video (admin only)
+router.post('/video', authenticateToken, isAdmin, uploadVideo.single('video'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/videos/${req.file.filename}`;
+    
+    res.json({
+      message: 'Video uploaded successfully',
+      url: fileUrl,
+      filename: req.file.filename,
+      size: req.file.size,
+      mimetype: req.file.mimetype
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error uploading file', error: error.message });
+  }
+});
+
+// Delete badge image (admin only)
+router.delete('/badge/:filename', authenticateToken, isAdmin, (req, res) => {
+  try {
+    const filepath = path.join(__dirname, '../uploads/badges/', req.params.filename);
+    
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+      res.json({ message: 'Badge image deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'File not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting file', error: error.message });
+  }
+});
+
+// Delete video (admin only)
+router.delete('/video/:filename', authenticateToken, isAdmin, (req, res) => {
+  try {
+    const filepath = path.join(__dirname, '../uploads/videos/', req.params.filename);
+    
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+      res.json({ message: 'Video deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'File not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting file', error: error.message });
+  }
+});
+
+export default router;
+
+Issue 3: Create Uploads Directory Structure
+Create these directories in server folder:
+bashmkdir -p server/uploads/badges
+mkdir -p server/uploads/videos
+```
+
+### File: `server/uploads/badges/.gitkeep`
+```
+# Keep this directory
+```
+
+### File: `server/uploads/videos/.gitkeep`
+```
+# Keep this directory
+```
+
+### Update `.gitignore`:
+```
+# Uploaded files
+server/uploads/badges/*
+server/uploads/videos/*
+!server/uploads/badges/.gitkeep
+!server/uploads/videos/.gitkeep
+
+Issue 4: Update Topics Admin Page with Video Upload
+File: client/src/pages/admin/Topics.js (UPDATE - Add video upload)
+Replace the video URL section with this:
+javascript// Add state for video upload
+const [uploadingVideo, setUploadingVideo] = useState(false);
+const [videoPreview, setVideoPreview] = useState(null);
+
+// Add video upload handler
+const handleVideoUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Validate file type
+  if (!file.type.startsWith('video/')) {
+    alert('Please upload a video file');
+    return;
+  }
+
+  // Validate file size (500MB max)
+  if (file.size > 500 * 1024 * 1024) {
+    alert('Video file size must be less than 500MB');
+    return;
+  }
+
+  setUploadingVideo(true);
+
+  try {
+    const formDataUpload = new FormData();
+    formDataUpload.append('video', file);
+
+    const response = await api.post('/upload/video', formDataUpload, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        console.log(`Upload Progress: ${percentCompleted}%`);
+      }
+    });
+
+    const videoUrl = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${response.data.url}`;
+    setFormData({ ...formData, videoUrl: videoUrl });
+    setVideoPreview(videoUrl);
+    alert('Video uploaded successfully!');
+  } catch (error) {
+    alert(error.response?.data?.message || 'Error uploading video');
+  } finally {
+    setUploadingVideo(false);
+  }
+};
+
+// In the form JSX, replace the video URL input section with:
+javascript<div style={{ marginBottom: '20px' }}>
+  <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+    TRAINING VIDEO
+  </label>
+  
+  {/* Video Preview */}
+  {(videoPreview || formData.videoUrl) && (
+    <div style={{
+      marginBottom: '15px',
+      padding: '15px',
+      border: '3px solid var(--bright-blue)',
+      background: 'var(--bg-lightest)'
+    }}>
+      <video 
+        src={videoPreview || formData.videoUrl}
+        controls
+        style={{
+          width: '100%',
+          maxHeight: '300px',
+          objectFit: 'contain'
+        }}
+      />
+    </div>
+  )}
+
+  {/* Upload Button or URL Input */}
+  <div style={{ display: 'grid', gap: '10px' }}>
+    <div>
+      <input
+        type="file"
+        id="video-upload"
+        accept="video/*"
+        onChange={handleVideoUpload}
+        style={{ display: 'none' }}
+      />
+      <label htmlFor="video-upload">
+        <div
+          className="retro-btn"
+          style={{
+            display: 'inline-block',
+            cursor: 'pointer',
+            opacity: uploadingVideo ? 0.5 : 1
+          }}
+        >
+          {uploadingVideo ? '⏳ UPLOADING VIDEO...' : '📁 UPLOAD VIDEO FILE'}
+        </div>
+      </label>
+    </div>
+
+    <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--text-light)' }}>
+      - OR -
+    </div>
+
+    <div>
+      <input
+        type="text"
+        className="retro-input"
+        value={formData.videoUrl}
+        onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+        placeholder="Or paste YouTube/external video URL"
+      />
+    </div>
+  </div>
+
+  <div style={{
+    marginTop: '10px',
+    padding: '10px',
+    background: 'rgba(59, 130, 246, 0.1)',
+    border: '1px solid var(--bright-blue)',
+    fontSize: '8px',
+    color: 'var(--text-medium)'
+  }}>
+    ℹ️ Upload MP4/WebM video (max 500MB) OR paste YouTube embed URL
+  </div>
+</div>
+
+<div style={{ marginBottom: '20px' }}>
+  <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+    VIDEO DURATION (seconds)
+  </label>
+  <input
+    type="number"
+    className="retro-input"
+    value={formData.videoDuration}
+    onChange={(e) => setFormData({ ...formData, videoDuration: parseInt(e.target.value) })}
+    required
+  />
+</div>
+
+Issue 5: Fix Achievements Page - Show Badges Properly
+File: client/src/pages/Achievements.js (COMPLETE REPLACEMENT)
+javascriptimport React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import api from '../utils/api';
+
+const Achievements = () => {
+  const { user } = useAuth();
+  const [topics, setTopics] = useState([]);
+  const [badges, setBadges] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [topicsRes, userRes] = await Promise.all([
+        api.get('/topics'),
+        api.get('/auth/me')
+      ]);
+      
+      setTopics(topicsRes.data);
+      
+      // Get current year badges
+      const currentYear = new Date().getFullYear();
+      const badgesRes = await api.get('/admin/badges');
+      const currentYearBadges = badgesRes.data.filter(b => b.year === currentYear && b.isActive);
+      
+      // Map badges with earned status
+      const badgesWithStatus = currentYearBadges.map(badge => {
+        const isEarned = userRes.data.badges?.some(
+          ub => ub.badgeId?._id === badge._id || ub.badgeId === badge._id
+        );
+        
+        const topic = topicsRes.data.find(t => t._id === badge.topicId?._id || t._id === badge.topicId);
+        
+        return {
+          ...badge,
+          earned: isEarned,
+          topicTitle: topic?.title || 'Unknown Topic',
+          topicCompleted: topic?.isCompleted || false
+        };
+      });
+      
+      setBadges(badgesWithStatus);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '80vh' 
+      }}>
+        <div className="loading neon-text">LOADING ACHIEVEMENTS...</div>
+      </div>
+    );
+  }
+
+  const earnedCount = badges.filter(b => b.earned).length;
+  const totalCount = badges.length;
+  const progressPercentage = totalCount > 0 ? (earnedCount / totalCount) * 100 : 0;
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div className="scanlines"></div>
+
+      <motion.h1
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="neon-text"
+        style={{ 
+          fontSize: '28px', 
+          marginBottom: '40px',
+          textAlign: 'center',
+          color: 'var(--primary-navy)'
+        }}
+      >
+        🏆 YOUR ACHIEVEMENTS ({currentYear})
+      </motion.h1>
+
+      {/* Progress Card */}
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="retro-card pixel-corners"
+        style={{ marginBottom: '40px' }}
+      >
+        <h3 style={{
+          fontSize: '14px',
+          color: 'var(--secondary-pink)',
+          marginBottom: '20px',
+          textAlign: 'center'
+        }}>
+          COLLECTION PROGRESS
+        </h3>
+
+        <div style={{
+          fontSize: '48px',
+          textAlign: 'center',
+          marginBottom: '20px',
+          color: 'var(--bright-blue)'
+        }}>
+          {earnedCount} / {totalCount}
+        </div>
+
+        <div style={{
+          background: 'var(--bg-dark)',
+          border: '3px solid var(--primary-navy)',
+          height: '40px',
+          position: 'relative',
+          overflow: 'hidden',
+          marginBottom: '20px'
+        }}>
+          <div style={{
+            background: 'linear-gradient(90deg, var(--bright-blue), var(--light-blue))',
+            height: '100%',
+            width: `${progressPercentage}%`,
+            transition: 'width 1s ease',
+            boxShadow: '0 0 20px var(--bright-blue)'
+          }} />
+        </div>
+
+        <div style={{
+          textAlign: 'center',
+          fontSize: '12px',
+          color: 'var(--orange-accent)'
+        }}>
+          {progressPercentage === 100 
+            ? '🎊 ALL BADGES COLLECTED! YOU ARE A MASTER! 🎊'
+            : `${Math.round(progressPercentage)}% COMPLETE - KEEP GOING!`
+          }
+        </div>
+      </motion.div>
+
+      {/* Badge Gallery */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+        gap: '30px'
+      }}>
+        {badges.map((badge, index) => (
+          <motion.div
+            key={badge._id}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.1 }}
+            className="retro-card"
+            style={{
+              textAlign: 'center',
+              opacity: badge.earned ? 1 : 0.5,
+              position: 'relative',
+              border: `3px solid ${badge.earned ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+              boxShadow: badge.earned ? '4px 4px 0 var(--primary-navy)' : 'none'
+            }}
+          >
+            {/* Badge Image Container */}
+            <div style={{
+              width: '120px',
+              height: '120px',
+              margin: '0 auto 20px',
+              border: `3px solid ${badge.earned ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: badge.earned ? 'var(--bg-lightest)' : 'var(--bg-medium)',
+              boxShadow: badge.earned 
+                ? '4px 4px 0 var(--primary-navy)' 
+                : '2px 2px 0 var(--border-color)',
+              position: 'relative',
+              overflow: 'hidden',
+              filter: badge.earned ? 'none' : 'grayscale(100%) brightness(0.7)'
+            }}>
+              {badge.earned ? (
+                <>
+                  <img 
+                    src={badge.imageUrl.startsWith('http') ? badge.imageUrl : `http://localhost:5000${badge.imageUrl}`}
+                    alt={badge.name}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                      imageRendering: 'pixelated'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<div style="font-size: 48px;">🏆</div>';
+                    }}
+                  />
+                  
+                  {/* Glow effect for earned badges */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '150%',
+                    height: '150%',
+                    background: 'radial-gradient(circle, var(--light-blue) 0%, transparent 70%)',
+                    opacity: 0.3,
+                    animation: 'pulse 2s infinite'
+                  }} />
+                </>
+              ) : (
+                <div style={{
+                  fontSize: '48px',
+                  color: 'var(--text-lighter)'
+                }}>
+                  🔒
+                </div>
+              )}
+            </div>
+
+            <h4 style={{
+              fontSize: '11px',
+              color: badge.earned ? 'var(--primary-navy)' : 'var(--text-light)',
+              marginBottom: '10px',
+              fontWeight: 'bold'
+            }}>
+              {badge.name}
+            </h4>
+
+            <p style={{
+              fontSize: '8px',
+              color: 'var(--text-medium)',
+              marginBottom: '10px',
+              lineHeight: '1.4'
+            }}>
+              {badge.description}
+            </p>
+
+            <div style={{
+              fontSize: '9px',
+              color: 'var(--text-light)',
+              marginBottom: '10px',
+              padding: '5px',
+              background: 'var(--bg-medium)',
+              border: '1px solid var(--border-color)'
+            }}>
+              📚 {badge.topicTitle}
+            </div>
+
+            <div style={{
+              fontSize: '9px',
+              color: badge.earned ? 'var(--success-green)' : 'var(--error-red)',
+              padding: '8px 10px',
+              border: `2px solid ${badge.earned ? 'var(--success-green)' : 'var(--error-red)'}`,
+              fontWeight: 'bold',
+              boxShadow: badge.earned ? '2px 2px 0 var(--primary-navy)' : 'none'
+            }}>
+              {badge.earned ? '✓ EARNED' : '✗ LOCKED'}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {badges.length === 0 && (
+        <div className="retro-card" style={{ textAlign: 'center', padding: '60px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>🏆</div>
+          <div style={{ fontSize: '14px', color: 'var(--bright-blue)' }}>
+            NO BADGES FOR {currentYear} YET
+          </div>
+          <div style={{ fontSize: '10px', color: 'var(--text-light)', marginTop: '10px' }}>
+            Complete topics to earn badges!
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.6; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default Achievements;
+
+Issue 6: Update Topic Detail Page to Support Local Videos
+File: client/src/pages/TopicDetail.js (UPDATE video section)
+Find the video iframe section and replace with:
+javascript{/* Video Player */}
+<div style={{
+  position: 'relative',
+  paddingBottom: topic.videoUrl.includes('youtube.com') || topic.videoUrl.includes('youtu.be') ? '56.25%' : '0',
+  height: topic.videoUrl.includes('youtube.com') || topic.videoUrl.includes('youtu.be') ? 0 : 'auto',
+  overflow: 'hidden',
+  background: 'var(--dark-bg)',
+  border: '2px solid var(--bright-blue)'
+}}>
+  {topic.videoUrl.includes('youtube.com') || topic.videoUrl.includes('youtu.be') ? (
+    <iframe
+      src={topic.videoUrl}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%'
+      }}
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+      title={topic.title}
+    />
+  ) : (
+    <video
+      controls
+      style={{
+        width: '100%',
+        maxHeight: '500px'
+      }}
+      onEnded={handleVideoEnd}
+    >
+      <source 
+        src={topic.videoUrl.startsWith('http') ? topic.videoUrl : `http://localhost:5000${topic.videoUrl}`}
+        type="video/mp4" 
+      />
+      Your browser does not support the video tag.
+    </video>
+  )}
+</div>
