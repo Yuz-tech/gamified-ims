@@ -11,8 +11,9 @@ const Badges = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    imageUrl: '🏆',
-    topicId: ''
+    imageUrl: '',
+    topicId: '',
+    year: new Date().getFullYear()
   });
 
   useEffect(() => {
@@ -115,7 +116,7 @@ const Badges = () => {
           color: 'var(--orange-accent)'
         }}
       >
-        🏆 BADGE MANAGEMENT
+        BADGE MANAGEMENT
       </motion.h1>
 
       <button
@@ -123,7 +124,7 @@ const Badges = () => {
         className="retro-btn"
         style={{ marginBottom: '30px' }}
       >
-        {showForm ? '✖ CANCEL' : '➕ CREATE BADGE'}
+        {showForm ? 'CANCEL' : 'CREATE BADGE'}
       </button>
 
       {/* Form */}
@@ -219,9 +220,38 @@ const Badges = () => {
               </select>
             </div>
 
+            <div style={{ marginBottom:'20px' }}>
+              <label style = {{
+                display: 'block',
+                marginBottom: '10px',
+                fontSize: '10px',
+                color: 'var(--text-medium)'
+              }}>
+                YEAR
+              </label>
+              <input 
+                type="number"
+                className="retro-input"
+                value={formData.year}
+                onChange={(e) => setFormData({
+                  ...formData, year:parseInt(e.target.value)
+                })}
+                min="2026"
+                max="2099"
+                required
+                />
+                <div style = {{
+                  marginTop: '5px',
+                  fontSize: '8px',
+                  color: 'var(--text-light)'
+                }}>
+                  Set the training year for this badge (e.g., 2027, 2028, 2029)
+                </div>
+            </div>
+
             <div style={{ display: 'flex', gap: '10px' }}>
               <button type="submit" className="retro-btn" style={{ flex: 1 }}>
-                💾 {editingBadge ? 'UPDATE BADGE' : 'CREATE BADGE'}
+                {editingBadge ? 'UPDATE BADGE' : 'CREATE BADGE'}
               </button>
               <button
                 type="button"
@@ -229,7 +259,7 @@ const Badges = () => {
                 className="retro-btn secondary"
                 style={{ flex: 1 }}
               >
-                ✖ CANCEL
+                CANCEL
               </button>
             </div>
           </form>

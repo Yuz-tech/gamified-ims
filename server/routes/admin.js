@@ -279,4 +279,175 @@ router.get('/statistics', async (req, res) => {
   }
 });
 
+//Get yearly stats
+router.get('/training-year', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    
+    const totalUsers = await User.countDocuments({ isApproved: true });
+    
+    // Count users who completed all topics this year
+    const users = await User.find({ isApproved: true });
+    let usersCompleted = 0;
+    
+    const totalTopics = await Topic.countDocuments({ isActive: true });
+    
+    users.forEach(user => {
+      const yearProgress = user.getCurrentYearProgress();
+      if (yearProgress.completedTopics.length >= totalTopics) {
+        usersCompleted++;
+      }
+    });
+    
+    const badges = await Badge.countDocuments({ year: currentYear });
+    
+    res.json({
+      currentYear,
+      totalUsers,
+      usersCompleted,
+      completionRate: totalUsers > 0 ? Math.round((usersCompleted / totalUsers) * 100) : 0,
+      totalTopics,
+      totalBadges: badges
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Archive current year and reset for new year
+router.post('/reset-training-year', async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    const { newYear } = req.body;
+    
+    if (!newYear || newYear <= currentYear) {
+      return res.status(400).json({ 
+        message: 'New year must be greater than current year' 
+      });
+    }
+    
+    // Get all users
+    const users = await User.find({ isApproved: true });
+    let archivedCount = 0;
+    
+    for (const user of users) {
+      const yearProgress = user.getCurrentYearProgress();
+      
+      // Archive current year data
+      user.yearlyArchive.push({
+        year: currentYear,
+        completedTopics: yearProgress.completedTopics.length,
+        badgesEarned: yearProgress.badges.length,
+        xpEarned: yearProgress.completedTopics.reduce((sum, ct) => {
+          return sum + (ct.score || 0);
+        }, 0),
+        archivedAt: new Date()
+      });
+      
+      // Clear current year progress (but keep XP and level!)
+      user.completedTopics = user.completedTopics.filter(ct => ct.year !== currentYear);
+      user.badges = user.badges.filter(b => b.year !== currentYear);
+      user.watchedVideos = user.watchedVideos.filter(wv => wv.year !== currentYear);
+      
+      await user.save();
+      archivedCount++;
+    }
+    
+    // Mark old badges as inactive
+    await Badge.updateMany(
+      { year: currentYear },
+      { isActive: false }
+    );
+    
+    await logActivity(req.user._id, 'training_year_reset', {
+      oldYear: currentYear,
+      newYear: newYear,
+      usersArchived: archivedCount
+    }, req);
+    
+    res.json({
+      message: 'Training year reset successfully',
+      archivedUsers: archivedCount,
+      oldYear: currentYear,
+      newYear: newYear
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get user's yearly history
+router.get('/users/:userId/history', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId)
+      .select('username email yearlyArchive completedTopics badges');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const currentYear = new Date().getFullYear();
+    const currentYearData = user.getCurrentYearProgress();
+    
+    res.json({
+      username: user.username,
+      email: user.email,
+      currentYear: {
+        year: currentYear,
+        completedTopics: currentYearData.completedTopics.length,
+        badgesEarned: currentYearData.badges.length
+      },
+      history: user.yearlyArchive.sort((a, b) => b.year - a.year)
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Reset specific user's progress (admin override)
+router.post('/users/:userId/reset-progress', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const currentYear = new Date().getFullYear();
+    
+    // Archive before reset
+    const yearProgress = user.getCurrentYearProgress();
+    user.yearlyArchive.push({
+      year: currentYear,
+      completedTopics: yearProgress.completedTopics.length,
+      badgesEarned: yearProgress.badges.length,
+      xpEarned: 0,
+      archivedAt: new Date()
+    });
+    
+    // Reset current year only
+    user.completedTopics = user.completedTopics.filter(ct => ct.year !== currentYear);
+    user.badges = user.badges.filter(b => b.year !== currentYear);
+    user.watchedVideos = user.watchedVideos.filter(wv => wv.year !== currentYear);
+    
+    await user.save();
+    
+    await logActivity(req.user._id, 'user_progress_reset', {
+      targetUserId: user._id,
+      targetUsername: user.username,
+      year: currentYear
+    }, req);
+    
+    res.json({
+      message: 'User progress reset successfully',
+      user: {
+        username: user.username,
+        resetYear: currentYear
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 export default router;

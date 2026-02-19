@@ -47,10 +47,16 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+  const logout = async() => {
+    try {
+      await api.post('/auth/logout');
+    } catch(error) {
+      console.error('Logout error: ', error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+    }
   };
 
   const requestAccount = async (username, email) => {
