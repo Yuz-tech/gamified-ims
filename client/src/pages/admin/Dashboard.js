@@ -134,7 +134,7 @@ const Dashboard = () => {
           color: 'var(--sky-blue)',
           marginBottom: '20px'
         }}>
-          👑 TOP 10 USERS
+          TOP 10 USERS
         </h3>
 
         <div style={{ overflowX: 'auto' }}>

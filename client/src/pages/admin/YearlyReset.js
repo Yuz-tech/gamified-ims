@@ -242,7 +242,7 @@ const YearlyReset = () => {
                             fontSize: '10px',
                             color: 'var(--text-medium)'
                         }}>
-                            NEW TRAININ YEAR
+                            NEW TRAINING YEAR
                         </label>
                         <input 
                           type = "number"

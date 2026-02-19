@@ -12,6 +12,7 @@ import AdminUsers from './pages/admin/Users';
 import AdminTopics from './pages/admin/Topics';
 import AdminBadges from './pages/admin/Badges';
 import './styles/retro.css';
+import YearlyReset from './pages/admin/YearlyReset';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
@@ -56,14 +57,11 @@ const AdminLayout = ({ children }) => {
         <NavLink to="/admin/badges" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
           BADGES
         </NavLink>
-        <NavLink to="/admin/logs" style={({isActive}) => ({
-          textDecoration: 'none'
-        })}>
-          {({ isActive }) => (
-            <button className = {isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px'}}>
-              LOGS
-            </button>
-          )}
+        <NavLink to="/admin/logs" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
+          LOGS
+        </NavLink>
+        <NavLink to="/admin/yearl-reset" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
+          RESET
         </NavLink>
       </div>
       {children}
@@ -154,6 +152,16 @@ const AppRoutes = () => {
               </AdminLayout>
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/admin/yearly-reset"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminLayout>
+                <YearlyReset />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
         />
         
         <Route path="*" element={<Navigate to="/" />} />
