@@ -1,0 +1,4 @@
+1. Refreshing the page would reset user session
+2. Admin CRUDs error (can no longer add users, topics, badges, etc.) 
+3. new SeedData.js
+4. Logs and yearly reset not working
