@@ -1,37 +1,55 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import Session from '../models/Session.js';
 
-export const authenticateToken = async (req, res, next) => {
+export const authenticateToken = async(req,res,next) => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) {
+    if(!token) {
       return res.status(401).json({ message: 'Access token required' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId).select('-password');
 
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+    const session = await Session.findOne({
+      token,
+      isActive: true,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if(!session) {
+      return res.status(401).json({ message: 'Session expired or invalid' });
     }
 
-    if (!user.isApproved) {
-      return res.status(403).json({ message: 'Account not approved yet' });
+    const user = await User.findById(decoded._id);
+    if(!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if(!user.isApproved) {
+      return res.status(403).json({ message: 'Account not approved' });
     }
 
     req.user = user;
+    req.session = session;
+
     next();
-  } catch (error) {
-    return res.status(403).json({ message: 'Invalid or expired token' });
+  } catch(error) {
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(403).json({ message: 'Invalid Token' });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(403).json({ message: 'Token expired' });
+    }
+    return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-export const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    res.status(403).json({ message: 'Admin access required' });
+export const isAdmin = (req,res,next) => {
+  if(req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Admin access required' });
   }
+  next();
 };

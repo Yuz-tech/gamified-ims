@@ -106,7 +106,7 @@ const Login = () => {
                 fontSize: '10px'
               }}
             >
-              ⚠️ {error}
+              {error}
             </motion.div>
           )}
 
@@ -123,7 +123,7 @@ const Login = () => {
                 fontSize: '10px'
               }}
             >
-              ✓ {success}
+              {success}
             </motion.div>
           )}
 
@@ -229,7 +229,7 @@ const Login = () => {
             textAlign: 'center',
             color: 'var(--text-secondary)'
           }}>
-            v1.0 by Julius Galejo
+            v1.0 by Julius Galejo and Jose Dante Chan
           </div>
         </div>
       </motion.div>

@@ -63,12 +63,11 @@ const Achievements = () => {
       <motion.h1
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="neon-text"
+        className="neon-text-achieve"
         style={{ 
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--orange-accent)'
         }}
       >
         YOUR ACHIEVEMENTS

@@ -343,16 +343,16 @@ const Home = () => {
                     <td style={{ 
                       padding: '10px', 
                       textAlign: 'center',
-                      color: player.rank === 1 ? 'var(--error-red)' : 'var(--bright-blue)'
+                      color: player.rank === 1 ? 'var(--error-red)' : 'var(--text-light)'
                     }}>
-                      {player.rank === 1} #{player.rank}
+                      {player.rank === 1} {player.rank}
                     </td>
 
                     <td style={{ 
                       padding: '12px',
-                      color: player.username === user?.username 
-                        ? 'var(--text-dark)' 
-                        : 'var(--text-light)'
+                      color: player.username === user?.username
+                        ? 'var(--text-light)' 
+                        : 'var(--text-dark)'
                     }}>
                       {player.username}
                     </td>

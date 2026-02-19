@@ -478,7 +478,7 @@ a:hover {
   }
 
   /* Navbar Mobile */
-  nav > div {
+  /* nav > div {
     flex-direction: row !important;
     transition: all 0.3s ease-in-out;
   }
@@ -491,6 +491,31 @@ a:hover {
     font-size: 8px !important;
     flex-wrap: wrap;
     justify-content: center;
+  } */
+  .nav-links {
+    display: flex;
+  }
+
+  .hamberger-btn {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .hamberger-btn {
+      display: block;
+    }
+
+    .nav-links {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--primary-navy);
+      padding: 10px;
+    }
+
+    .nav-links.open {
+      display: flex;
+    }
   }
 
   /* Tables */
