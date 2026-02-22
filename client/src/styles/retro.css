@@ -460,37 +460,18 @@ a:hover {
   }
 
   .retro-btn {
-    font-size: 9px;
+    font-size: 10px;
     padding: 10px 15px;
   }
 
   .retro-input {
-    font-size: 9px;
+    font-size: 10px;
     padding: 10px;
   }
 
   .retro-card {
     padding: 15px;
     margin: 15px 0;
-    box-shadow: 
-      3px 3px 0 var(--border-blue),
-      6px 6px 0 var(--primary-navy);
-  }
-
-  /* Navbar Mobile */
-  nav > div {
-    flex-direction: row !important;
-    transition: all 0.3s ease-in-out;
-  }
-
-  nav > div > div:first-child {
-    font-size: 8px !important;
-  }
-
-  nav > div > div:last-child {
-    font-size: 8px !important;
-    flex-wrap: wrap;
-    justify-content: center;
   }
 
   /* Tables */
@@ -503,49 +484,9 @@ a:hover {
     padding: 5px !important;
   }
 
-  /* Hide table columns on mobile */
-  .hide-mobile {
-    display: none !important;
-  }
-
   /* Grid adjustments */
   [style*="grid-template-columns"] {
     grid-template-columns: 1fr !important;
-  }
-
-  /* Topic cards */
-  .topic-card {
-    min-width: 100% !important;
-  }
-
-  /* Badge size */
-  .badge {
-    width: 60px !important;
-    height: 60px !important;
-    margin: 5px !important;
-  }
-
-  /* Progress bar */
-  .progress-bar {
-    height: 25px !important;
-  }
-
-  /* Modals */
-  .retro-card.pixel-corners {
-    margin: 10px !important;
-    max-width: 100% !important;
-  }
-
-  /* Form inputs full width */
-  .retro-input,
-  .retro-btn {
-    width: 100% !important;
-    margin-bottom: 10px;
-  }
-
-  /* Flex buttons */
-  [style*="display: flex"][style*="gap"] {
-    flex-direction: column !important;
   }
 
   /* Stats grid */
@@ -557,37 +498,25 @@ a:hover {
 
 @media (max-width: 480px) {
   .neon-text {
-    font-size: 16px !important;
-  }
-
-  h1.neon-text {
     font-size: 18px !important;
   }
 
+  h1.neon-text {
+    font-size: 20px !important;
+  }
+
   h2.neon-text {
-    font-size: 14px !important;
+    font-size: 16px !important;
   }
 
   h3 {
-    font-size: 11px !important;
-  }
-
-  /* Single column for everything */
-  .stats-grid,
-  [style*="gridTemplateColumns"] {
-    grid-template-columns: 1fr !important;
+    font-size: 12px !important;
   }
 
   /* Touch-friendly buttons */
   .retro-btn {
     min-height: 44px;
-    font-size: 8px;
-  }
-
-  /* Larger touch targets */
-  a, button, [onclick] {
-    min-height: 44px;
-    min-width: 44px;
+    font-size: 9px;
   }
 }
 
@@ -600,20 +529,6 @@ a:hover {
   [style*="grid-template-columns"] {
     grid-template-columns: repeat(2, 1fr) !important;
   }
-}
-
-/* Scrollable tables on mobile */
-.table-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.table-container::-webkit-scrollbar-track {
-  background: var(--bg-medium);
-}
-
-.table-container::-webkit-scrollbar-thumb {
-  background: var(--bright-blue);
-  border-radius: 4px;
 }
 
 /* Additional utility classes */
