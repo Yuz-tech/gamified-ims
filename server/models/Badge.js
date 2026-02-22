@@ -12,14 +12,7 @@ const badgeSchema = new mongoose.Schema({
   },
   imageUrl: {
     type: String,
-    required: true,
-    validate: {
-      validator: function(v) {
-        // Must be a valid URL or start with /uploads/
-        return /^(http|https|\/uploads\/)/.test(v);
-      },
-      message: 'Badge must have a valid image URL'
-    }
+    required: true
   },
   topicId: {
     type: mongoose.Schema.Types.ObjectId,
