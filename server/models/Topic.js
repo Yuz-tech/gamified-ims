@@ -15,7 +15,7 @@ const topicSchema = new mongoose.Schema({
     required: true
   },
   videoDuration: {
-    type: Number, // in seconds
+    type: Number,
     required: true
   },
   order: {
@@ -42,7 +42,7 @@ const topicSchema = new mongoose.Schema({
       required: true
     }],
     correctAnswer: {
-      type: Number, // index of correct option
+      type: Number,
       required: true
     },
     points: {

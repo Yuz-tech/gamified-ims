@@ -3,10 +3,55 @@ import User from '../models/User.js';
 import Topic from '../models/Topic.js';
 import Badge from '../models/Badge.js';
 import ActivityLog from '../models/ActivityLog.js';
+import Session from '../models/Session.js';
 import { authenticateToken, isAdmin } from '../middleware/auth.js';
-import { sendPasswordEmail } from '../utils/email.js';
+import { logActivity } from '../utils/logger.js';
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = express.Router();
+
+// Email transporter
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// Send password email helper
+const sendPasswordEmail = async (email, username, password) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'IMS Training - Your Account Credentials',
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h1>🎮 IMS TRAINING ARCADE 🎮</h1>
+        <p>Hi ${username},</p>
+        <p>Your account has been approved! Get ready to level up your IMS knowledge.</p>
+        <div style="background: #f0f0f0; padding: 15px; margin: 20px 0;">
+          <p><strong>USERNAME:</strong> ${username}</p>
+          <p><strong>PASSWORD:</strong> ${password}</p>
+        </div>
+        <p>⚠️ Please change your password after your first login for security.</p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return { success: true };
+  } catch (error) {
+    console.error('Email error:', error);
+    return { success: false, error: error.message };
+  }
+};
 
 // All admin routes require authentication and admin role
 router.use(authenticateToken, isAdmin);
@@ -51,10 +96,14 @@ router.post('/approve-user/:userId', async (req, res) => {
     user.isApproved = true;
     await user.save();
 
-    // Send email with credentials
-    await sendPasswordEmail(user.email, user.username, password);
+    // Try to send email (don't fail if email fails)
+    try {
+      await sendPasswordEmail(user.email, user.username, password);
+    } catch (emailError) {
+      console.error('Email send failed:', emailError);
+    }
 
-    res.json({ message: 'User approved and password sent' });
+    res.json({ message: 'User approved successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -80,10 +129,14 @@ router.post('/users', async (req, res) => {
 
     await user.save();
 
-    // Send email with credentials
-    await sendPasswordEmail(user.email, user.username, password);
+    // Try to send email (don't fail if email fails)
+    try {
+      await sendPasswordEmail(user.email, user.username, password);
+    } catch (emailError) {
+      console.error('Email send failed:', emailError);
+    }
 
-    res.status(201).json({ message: 'User created successfully', user });
+    res.status(201).json({ message: 'User created successfully', user: { ...user.toObject(), password: undefined } });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -170,8 +223,8 @@ router.delete('/topics/:topicId', async (req, res) => {
       return res.status(404).json({ message: 'Topic not found' });
     }
     
-    // Also delete associated badge
-    await Badge.deleteOne({ topicId: req.params.topicId });
+    // Also delete associated badges
+    await Badge.deleteMany({ topicId: req.params.topicId });
     
     res.json({ message: 'Topic deleted successfully' });
   } catch (error) {
@@ -194,10 +247,32 @@ router.get('/badges', async (req, res) => {
 // Create badge
 router.post('/badges', async (req, res) => {
   try {
-    const badge = new Badge(req.body);
+    const { name, description, imageUrl, topicId, year } = req.body;
+    
+    // Validate required fields
+    if (!name || !description || !imageUrl || !topicId) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: name, description, imageUrl, topicId' 
+      });
+    }
+
+    const badge = new Badge({
+      name,
+      description,
+      imageUrl,
+      topicId,
+      year: year || new Date().getFullYear(),
+      isActive: true
+    });
+    
     await badge.save();
+    
+    // Populate topicId before sending response
+    await badge.populate('topicId');
+    
     res.status(201).json(badge);
   } catch (error) {
+    console.error('Badge creation error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -209,7 +284,8 @@ router.put('/badges/:badgeId', async (req, res) => {
       req.params.badgeId,
       req.body,
       { new: true, runValidators: true }
-    );
+    ).populate('topicId');
+    
     if (!badge) {
       return res.status(404).json({ message: 'Badge not found' });
     }
@@ -279,7 +355,9 @@ router.get('/statistics', async (req, res) => {
   }
 });
 
-//Get yearly stats
+// ===== YEARLY RESET SYSTEM =====
+
+// Get current training year stats
 router.get('/training-year', async (req, res) => {
   try {
     const currentYear = new Date().getFullYear();
@@ -370,80 +448,6 @@ router.post('/reset-training-year', async (req, res) => {
       archivedUsers: archivedCount,
       oldYear: currentYear,
       newYear: newYear
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Get user's yearly history
-router.get('/users/:userId/history', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId)
-      .select('username email yearlyArchive completedTopics badges');
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    const currentYear = new Date().getFullYear();
-    const currentYearData = user.getCurrentYearProgress();
-    
-    res.json({
-      username: user.username,
-      email: user.email,
-      currentYear: {
-        year: currentYear,
-        completedTopics: currentYearData.completedTopics.length,
-        badgesEarned: currentYearData.badges.length
-      },
-      history: user.yearlyArchive.sort((a, b) => b.year - a.year)
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Reset specific user's progress (admin override)
-router.post('/users/:userId/reset-progress', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId);
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    const currentYear = new Date().getFullYear();
-    
-    // Archive before reset
-    const yearProgress = user.getCurrentYearProgress();
-    user.yearlyArchive.push({
-      year: currentYear,
-      completedTopics: yearProgress.completedTopics.length,
-      badgesEarned: yearProgress.badges.length,
-      xpEarned: 0,
-      archivedAt: new Date()
-    });
-    
-    // Reset current year only
-    user.completedTopics = user.completedTopics.filter(ct => ct.year !== currentYear);
-    user.badges = user.badges.filter(b => b.year !== currentYear);
-    user.watchedVideos = user.watchedVideos.filter(wv => wv.year !== currentYear);
-    
-    await user.save();
-    
-    await logActivity(req.user._id, 'user_progress_reset', {
-      targetUserId: user._id,
-      targetUsername: user.username,
-      year: currentYear
-    }, req);
-    
-    res.json({
-      message: 'User progress reset successfully',
-      user: {
-        username: user.username,
-        resetYear: currentYear
-      }
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

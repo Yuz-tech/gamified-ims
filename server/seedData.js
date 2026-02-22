@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Topic from './models/Topic.js';
 import Badge from './models/Badge.js';
+import User from './models/User.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -8,61 +9,64 @@ dotenv.config();
 const seedData = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Connected to MongoDB');
+    console.log('✅ Connected to MongoDB');
 
     // Clear existing data
     await Topic.deleteMany({});
     await Badge.deleteMany({});
+    console.log('🗑️  Cleared existing topics and badges');
+
+    const currentYear = new Date().getFullYear();
 
     // Create Topic 1
     const topic1 = await Topic.create({
-      title: 'ISO 9001',
-      description: 'A standard for Quality Management Systems',
+      title: 'Introduction to IMS',
+      description: 'Learn the fundamentals of Integrated Management Systems and why they matter for organizational success.',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 180,
       order: 1,
       xpReward: 100,
-      passingScore: 75,
+      passingScore: 70,
       questions: [
         {
-          question: 'What is the aim of ISO 9001?',
+          question: 'What does IMS stand for?',
           options: [
-            'To help secure information systems',
-            'To enhance information delivery to partner organizations',
-            'To ensure quality in the delivery of products/services',
-            'To strengthen stakeholder trust and communication'
-          ],
-          correctAnswer: 2,
-          points: 25
-        },
-        {
-          question: 'Which principle is not associated to ISO 9001?',
-          options: [
-            'Customer Focus',
-            'Cryptography',
-            'Process Approach',
-            'All of the above'
-          ],
-          correctAnswer: 1,
-          points: 25
-        },
-        {
-          question: 'What is the main benefit of ISO 9001?',
-          options: [
-            'Compliance to Quality principles',
-            'To satisfy customer wants',
-            'Have a single audit process',
-            'To secure information throughout the business'
+            'Integrated Management System',
+            'Information Management System',
+            'Internal Monitoring System',
+            'Industrial Manufacturing Standard'
           ],
           correctAnswer: 0,
           points: 25
         },
         {
-          question: 'ISO 9001 helps organizations to:',
+          question: 'Which standards are commonly integrated in IMS?',
           options: [
-            'Standardize processes',
-            'Meeting customer needs',
-            'Reduce cost',
+            'ISO 9001, ISO 14001, ISO 45001',
+            'ISO 27001, ISO 22000',
+            'ISO 50001, ISO 31000',
+            'All of the above'
+          ],
+          correctAnswer: 3,
+          points: 25
+        },
+        {
+          question: 'What is the main benefit of IMS?',
+          options: [
+            'Cost reduction',
+            'Improved efficiency',
+            'Single audit process',
+            'All of the above'
+          ],
+          correctAnswer: 3,
+          points: 25
+        },
+        {
+          question: 'IMS helps organizations to:',
+          options: [
+            'Meet regulatory requirements',
+            'Improve customer satisfaction',
+            'Reduce environmental impact',
             'All of the above'
           ],
           correctAnswer: 3,
@@ -74,8 +78,8 @@ const seedData = async () => {
 
     // Create Topic 2
     const topic2 = await Topic.create({
-      title: 'ISO 27001',
-      description: 'Understanding information security compliance',
+      title: 'Quality Management (ISO 9001)',
+      description: 'Understanding ISO 9001 and quality principles for organizational excellence.',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 240,
       order: 2,
@@ -83,58 +87,58 @@ const seedData = async () => {
       passingScore: 75,
       questions: [
         {
-          question: 'What is ISO 27001 about?',
+          question: 'What is ISO 9001?',
           options: [
             'Environmental management standard',
             'Quality management standard',
             'Safety management standard',
             'Information security standard'
           ],
-          correctAnswer: 3,
+          correctAnswer: 1,
           points: 20
         },
         {
-          question: 'Which of the following is NOT a key benefit of ISO 27001?',
+          question: 'What does PDCA cycle stand for?',
           options: [
-            'Risk, Mitigation, & Security',
-            'Mitigate Security Threats',
-            'Competitive Advantage',
+            'Plan, Do, Check, Act',
+            'Prepare, Deliver, Control, Analyze',
+            'Process, Define, Create, Approve',
             'Plan, Design, Construct, Audit'
-          ],
-          correctAnswer: 3,
-          points: 20
-        },
-        {
-          question: 'Which of the following is a key component of ISO 27001?',
-          options: [
-            'Risk Assessment',
-            'Product Lifecycle management',
-            'Customer Satisfaction Surveys',
-            'Financial Auditing'
           ],
           correctAnswer: 0,
           points: 20
         },
         {
-          question: 'Which principle is NOT directly addressed by ISO 27001',
+          question: 'Customer focus is a principle of:',
           options: [
-            'Confidentiality',
-            'Profitability',
-            'Availability',
-            'Integrity'
+            'ISO 14001',
+            'ISO 45001',
+            'ISO 9001',
+            'ISO 27001'
           ],
-          correctAnswer: 1,
+          correctAnswer: 2,
           points: 20
         },
         {
-          question: 'What document is central to ISO 27001 implementation?',
+          question: 'Continuous improvement is also known as:',
           options: [
-            'Annual Financial Report',
-            'Customer Service Charter',
-            'Information Security Policy',
-            'Environmental Impact Statement'
+            'Kaizen',
+            'Six Sigma',
+            'Lean',
+            'All of the above'
           ],
-          correctAnswer: 2,
+          correctAnswer: 0,
+          points: 20
+        },
+        {
+          question: 'Internal audits are conducted to:',
+          options: [
+            'Punish employees',
+            'Find non-conformities',
+            'Ensure compliance',
+            'Both B and C'
+          ],
+          correctAnswer: 3,
           points: 20
         }
       ],
@@ -143,101 +147,130 @@ const seedData = async () => {
 
     // Create Topic 3
     const topic3 = await Topic.create({
-      title: 'Quality and Information Security',
-      description: 'Learn on delivering high quality services while maintaining data CIA',
+      title: 'Environmental Management (ISO 14001)',
+      description: 'Learn about ISO 14001 and environmental responsibility in organizations.',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 200,
       order: 3,
       xpReward: 150,
-      passingScore: 80,
+      passingScore: 70,
       questions: [
         {
-          question: 'Which of the following is a principle of total quality management?',
+          question: 'What is ISO 14001?',
           options: [
-            'Focus on short-term profits',
-            'Continuous improvement',
-            'Limiting customer involvement',
-            'Reducing employee participation'
+            'Quality standard',
+            'Environmental management standard',
+            'Safety standard',
+            'IT security standard'
           ],
           correctAnswer: 1,
-          points: 20
+          points: 25
         },
         {
-          question: 'Which of the following is not part of the CIA triad?',
+          question: 'EMS stands for:',
           options: [
-            'Confidentiality',
-            'Integrity',
-            'Availability',
-            'Accountability'
-          ],
-          correctAnswer: 3,
-          points: 20
-        },
-        {
-          question: 'Which type of attack involves tricking users into revealing sensitive information by pretending to be a trusted entity?',
-          options: [
-            'Phishing',
-            'SQL Injection',
-            'DDOS',
-            'Malware'
-          ],
-          correctAnswer: 0,
-          points: 20
-        },
-        {
-          question: 'What is the main purpose of a risk assessment?',
-          options: [
-            'To ensure compliance with financial regulations',
-            'To guarantee system availability',
-            'To eliminate all risks',
-            'To identify, evaluate, and prioritize risks'
-          ],
-          correctAnswer: 3,
-          points: 20
-        },
-        {
-          question: 'Which of the following is considered a preventive control?',
-          options: [
-            'Intrusion detection system',
-            'Audit logs',
-            'Security Awareness Training',
-            'CCTV installation'
+            'Emergency Management System',
+            'Environmental Monitoring Service',
+            'Environmental Management System',
+            'Energy Management Standard'
           ],
           correctAnswer: 2,
-          points: 20
+          points: 25
         },
+        {
+          question: 'Which is NOT a typical environmental aspect?',
+          options: [
+            'Waste generation',
+            'Employee satisfaction',
+            'Energy consumption',
+            'Water usage'
+          ],
+          correctAnswer: 1,
+          points: 25
+        },
+        {
+          question: 'Life cycle thinking considers:',
+          options: [
+            'Product development only',
+            'Manufacturing only',
+            'Disposal only',
+            'All stages of product life'
+          ],
+          correctAnswer: 3,
+          points: 25
+        }
       ],
       isActive: true
     });
 
-    // Create Badges
+    console.log('✅ Created 3 topics');
+
+    // Create Badges for current year with placeholder image URLs
+    // You'll replace these with actual uploaded badge URLs later
     const badge1 = await Badge.create({
-      name: 'IMS Beginner',
-      description: 'ISO 9001',
-      imageUrl: '../elements/badges/iso 9001.png',
-      topicId: topic1._id
+      name: 'IMS Foundation',
+      description: 'Successfully completed Introduction to IMS',
+      imageUrl: 'https://via.placeholder.com/256/1B3A6B/FFFFFF?text=IMS+Foundation',
+      topicId: topic1._id,
+      year: currentYear,
+      isActive: true
     });
 
     const badge2 = await Badge.create({
-      name: 'IMS Novice',
-      description: 'ISO 27001',
-      imageUrl: '../elements/badges/iso 27001.png',
-      topicId: topic2._id
+      name: 'Quality Champion',
+      description: 'Mastered Quality Management principles',
+      imageUrl: 'https://via.placeholder.com/256/3B82F6/FFFFFF?text=Quality+Champion',
+      topicId: topic2._id,
+      year: currentYear,
+      isActive: true
     });
 
     const badge3 = await Badge.create({
-      name: 'Quality Master',
-      description: 'Quality and Information Security',
-      imageUrl: '../elements/badges/quality and information security.png',
-      topicId: topic3._id
+      name: 'Environmental Guardian',
+      description: 'Completed Environmental Management training',
+      imageUrl: 'https://via.placeholder.com/256/10B981/FFFFFF?text=Eco+Guardian',
+      topicId: topic3._id,
+      year: currentYear,
+      isActive: true
     });
 
-    console.log('✅ Sample data created!');
-    console.log('Topics:', [topic1.title, topic2.title, topic3.title]);
-    console.log('Badges:', [badge1.name, badge2.name, badge3.name]);
+    console.log('✅ Created 3 badges for year', currentYear);
+
+    // Check if admin exists, if not create one
+    const adminExists = await User.findOne({ username: 'admin' });
+    if (!adminExists) {
+      const admin = await User.create({
+        username: 'admin',
+        email: 'admin@imsarcade.com',
+        password: 'admin123',
+        role: 'admin',
+        isApproved: true
+      });
+      console.log('✅ Created admin user (username: admin, password: admin123)');
+    } else {
+      console.log('ℹ️  Admin user already exists');
+    }
+
+    console.log('\n🎮 SEED DATA SUMMARY:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('Topics Created:');
+    console.log('  1.', topic1.title);
+    console.log('  2.', topic2.title);
+    console.log('  3.', topic3.title);
+    console.log('\nBadges Created:');
+    console.log('  🏆', badge1.name);
+    console.log('  🏆', badge2.name);
+    console.log('  🏆', badge3.name);
+    console.log('\nYear:', currentYear);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('\n✅ Seed data created successfully!');
+    console.log('🔐 Admin Login: username=admin, password=admin123');
+    console.log('\n⚠️  NOTE: Placeholder images are being used for badges.');
+    console.log('📝 Upload your custom badge PNGs via Admin → Badges\n');
+    
     process.exit(0);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('❌ Error seeding data:', error);
     process.exit(1);
   }
 };

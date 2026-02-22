@@ -1,54 +1,52 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import Session from '../models/Session.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { logActivity } from '../utils/logger.js';
-import Session from '../models/Session.js';
 
 const router = express.Router();
 
-//check user agents
+// Helper function to parse user agent
 const parseUserAgent = (userAgent) => {
   const ua = userAgent || '';
-
+  
   let deviceType = 'desktop';
-  if(/mobile/i.test(ua)) deviceType = 'mobile';
+  if (/mobile/i.test(ua)) deviceType = 'mobile';
   else if (/tablet|ipad/i.test(ua)) deviceType = 'tablet';
-
+  
   let browser = 'unknown';
-  if(/chrome/i.test(ua)) browser = 'Chrome';
+  if (/chrome/i.test(ua)) browser = 'Chrome';
   else if (/firefox/i.test(ua)) browser = 'Firefox';
+  else if (/safari/i.test(ua)) browser = 'Safari';
   else if (/edge/i.test(ua)) browser = 'Edge';
-
+  
   let os = 'unknown';
-  if(/windows/i.test(ua)) os = 'Windows';
+  if (/windows/i.test(ua)) os = 'Windows';
   else if (/mac/i.test(ua)) os = 'MacOS';
-  else if (/linux/i.test(ua)) os = 'linux';
+  else if (/linux/i.test(ua)) os = 'Linux';
   else if (/android/i.test(ua)) os = 'Android';
-
-  return {deviceType, browser, os};
+  else if (/ios|iphone|ipad/i.test(ua)) os = 'iOS';
+  
+  return { deviceType, browser, os };
 };
 
-// Request account
+// Request new account
 router.post('/request-account', async (req, res) => {
   try {
     const { username, email } = req.body;
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ 
-        message: existingUser.email === email 
-          ? 'Email already registered' 
-          : 'Username already taken' 
-      });
+      return res.status(400).json({ message: 'Username or email already exists' });
     }
 
-    const tempPassword = Math.random().toString(36).slice(-8);
     const user = new User({
       username,
       email,
-      password: tempPassword,
-      isApproved: false
+      password: Math.random().toString(36).slice(-8),
+      isApproved: false,
+      requestedAt: new Date()
     });
 
     await user.save();
@@ -66,6 +64,8 @@ router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
+    console.log(`🔐 Login attempt for user: ${username}`);
+
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -75,22 +75,28 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ message: 'Account pending approval' });
     }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Create JWT token with extended expiration
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { 
+        _id: user._id, 
+        username: user.username, 
+        role: user.role 
+      },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '7d' }
     );
 
+    // Parse device info
     const deviceInfo = parseUserAgent(req.headers['user-agent']);
     deviceInfo.ipAddress = req.ip;
     deviceInfo.userAgent = req.headers['user-agent'];
 
-    // Session
+    // Create session
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
@@ -103,12 +109,16 @@ router.post('/login', async (req, res) => {
 
     await session.save();
 
-    await logActivity(user._id, 'login', {
+    // Log activity
+    await logActivity(user._id, 'login', { 
       deviceType: deviceInfo.deviceType,
       browser: deviceInfo.browser,
-      os: deviceInfo.os
+      os: deviceInfo.os 
     }, req);
 
+    console.log(`✅ Login successful for user: ${username}`);
+
+    // Return user data with session info
     res.json({
       token,
       user: {
@@ -119,34 +129,41 @@ router.post('/login', async (req, res) => {
         level: user.level,
         xp: user.xp,
         badges: user.badges,
-        completedTopics: user.completedTopics
+        completedTopics: user.completedTopics,
+        createdAt: user.createdAt
       },
       sessionId: session._id
     });
   } catch (error) {
+    console.error('❌ Login error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Get current user
-router.get('/me', authenticateToken, async(req,res) => {
+// Get current user - THIS IS THE IMPORTANT ONE
+router.get('/me', authenticateToken, async (req, res) => {
   try {
+    console.log(`👤 Getting user data for: ${req.user.username}`);
+    
     const user = await User.findById(req.user._id)
-       .select('password')
-       .populate('badges.badgeId')
-       .populate('completedTopics.topicId');
+      .select('-password')
+      .populate('badges.badgeId')
+      .lean();
 
-    if(!user) {
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if(req.session) {
+    // Update session activity
+    if (req.session) {
       await req.session.updateActivity();
     }
 
+    console.log(`✅ Sending user data for: ${user.username}`);
     res.json(user);
-  } catch(error) {
-    res.status(500).json({ message: 'Server error', error: error.message});
+  } catch (error) {
+    console.error('❌ Error getting user:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -156,12 +173,12 @@ router.post('/change-password', authenticateToken, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
     const user = await User.findById(req.user._id);
-    if(!user) {
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
     const isPasswordValid = await user.comparePassword(currentPassword);
-    if(!isPasswordValid) {
+    if (!isPasswordValid) {
       return res.status(401).json({ message: 'Current password is incorrect' });
     }
 
@@ -172,51 +189,52 @@ router.post('/change-password', authenticateToken, async (req, res) => {
 
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error occurred for some reason', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Logout logic => invalidate current session
-router.post('/logout', authenticateToken, async(req,res) => {
+// Logout
+router.post('/logout', authenticateToken, async (req, res) => {
   try {
     if (req.session) {
       req.session.isActive = false;
       await req.session.save();
     }
+
     await logActivity(req.user._id, 'logout', {}, req);
 
     res.json({ message: 'Logged out successfully' });
-  } catch(error) {
-    res.status(500).json({ message: 'Server error', error: error.message});
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-//Logout all devices (in case lang naman)
-router.post('/logout-all', authenticateToken, async(req,res) => {
+// Logout all devices
+router.post('/logout-all', authenticateToken, async (req, res) => {
   try {
     await Session.updateMany(
-      { userId: req.user._id, isActive: true},
+      { userId: req.user._id, isActive: true },
       { isActive: false }
     );
 
     await logActivity(req.user._id, 'logout_all_devices', {}, req);
 
     res.json({ message: 'Logged out from all devices' });
-  } catch(error) {
+  } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
 // Get active sessions
-router.get('/sessions', authenticateToken, async(req,res) => {
+router.get('/sessions', authenticateToken, async (req, res) => {
   try {
-    Session.find({
+    const sessions = await Session.find({
       userId: req.user._id,
       isActive: true,
       expiresAt: { $gt: new Date() }
     }).sort({ lastActivity: -1 });
 
-    const sessionsData = sessionsStorage.map(session=>({
+    const sessionsData = sessions.map(session => ({
       _id: session._id,
       deviceType: session.deviceInfo.deviceType,
       browser: session.deviceInfo.browser,
@@ -233,22 +251,22 @@ router.get('/sessions', authenticateToken, async(req,res) => {
   }
 });
 
-//Revoke session
-router.delete('/sessions/:sessionId',authenticateToken, async(req,res) => {
+// Revoke specific session
+router.delete('/sessions/:sessionId', authenticateToken, async (req, res) => {
   try {
     const session = await Session.findOne({
       _id: req.params.sessionId,
       userId: req.user._id
     });
 
-    if(!session) {
+    if (!session) {
       return res.status(404).json({ message: 'Session not found' });
     }
 
     session.isActive = false;
     await session.save();
 
-    res.json({ message: 'Session revoked' });
+    res.json({ message: 'Session revoked successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

@@ -15,9 +15,10 @@ const Topics = () => {
   const fetchTopics = async () => {
     try {
       const response = await api.get('/topics');
-      setTopics(response.data);
+      setTopics(response.data || []);
     } catch (error) {
       console.error('Error fetching topics:', error);
+      setTopics([]);
     } finally {
       setLoading(false);
     }
@@ -25,12 +26,7 @@ const Topics = () => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '80vh' 
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div className="loading neon-text">LOADING TOPICS...</div>
       </div>
     );
@@ -44,141 +40,70 @@ const Topics = () => {
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="neon-text"
-        style={{ 
-          fontSize: '28px', 
-          marginBottom: '40px',
-          textAlign: 'center',
-          color: '#000000'
-        }}
+        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
       >
-        IMS AWARENESS TOPICS
+        📚 TRAINING TOPICS
       </motion.h1>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: '30px'
-      }}>
-        {topics.map((topic, index) => (
-          <motion.div
-            key={topic._id}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="retro-card"
-            style={{
-              cursor: 'pointer',
-              position: 'relative',
-              opacity: topic.isCompleted ? 0.7 : 1
-            }}
-            onClick={() => navigate(`/topics/${topic._id}`)}
-            whileHover={{ scale: 1.02 }}
-          >
-            {topic.isCompleted && (
+      {topics.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
+          {topics.map((topic, index) => (
+            <motion.div
+              key={topic._id}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="retro-card"
+              style={{ cursor: 'pointer', position: 'relative' }}
+              onClick={() => navigate(`/topics/${topic._id}`)}
+            >
+              {topic.isCompleted && (
+                <div style={{
+                  position: 'absolute', top: '10px', right: '10px',
+                  background: 'var(--success-green)', color: 'white',
+                  padding: '5px 10px', fontSize: '10px', fontWeight: 'bold',
+                  boxShadow: '2px 2px 0 var(--primary-navy)'
+                }}>
+                  ✓ COMPLETED
+                </div>
+              )}
+
               <div style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                background: 'green',
-                color: '#FFFFFF',
-                padding: '5px 10px',
-                fontSize: '15px',
-                fontWeight: 'bold',
-                boxShadow: '0 0 10px var(--bright-blue)'
+                width: '100%', height: '150px',
+                background: 'linear-gradient(135deg, var(--bg-medium) 0%, var(--bg-dark) 100%)',
+                border: '2px solid var(--bright-blue)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '48px', marginBottom: '20px'
               }}>
-                PASSED
+                {topic.isCompleted ? '✅' : '📖'}
               </div>
-            )}
 
-            <div style={{
-              width: '100%',
-              height: '150px',
-              background: 'linear-gradient(135deg, var(--primary-navy) 0%, var(--bg-dark) 100%)',
-              border: '2px solid var(--bright-blue)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '48px',
-              marginBottom: '20px',
-              boxShadow: 'inset 0 0 20px rgba(0, 255, 0, 0.2)'
-            }}>
-              {topic.isCompleted ? '✅' : '📖'}
-            </div>
+              <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '15px', fontWeight: 'bold' }}>
+                {topic.title}
+              </h3>
 
-            <h3 style={{
-              fontSize: '20px',
-              color: 'var(--text-dark)',
-              marginBottom: '15px',
-              textAlign: 'center'
-            }}>
-              {topic.title}
-            </h3>
+              <p style={{ fontSize: '10px', color: 'var(--text-medium)', lineHeight: '1.6', marginBottom: '20px' }}>
+                {topic.description}
+              </p>
 
-            <p style={{
-              fontSize: '12px',
-              color: 'var(--text-light)',
-              lineHeight: '1.6',
-              textAlign: 'justify',
-              marginBottom: '20px'
-            }}>
-              {topic.description}
-            </p>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '10px',
-              fontSize: '9px',
-              marginTop: '20px'
-            }}>
-              <div style={{
-                padding: '10px',
-                border: '1px solid var(--sky-blue)',
-                textAlign: 'center'
-              }}>
-                <div style={{ color: 'var(--orange-accent)' }}>XP REWARD</div>
-                <div style={{ color: 'var(--sky-blue)', marginTop: '5px', fontSize: '14px' }}>
-                  {topic.xpReward}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginTop: '20px' }}>
+                <div style={{ padding: '10px', border: '2px solid var(--orange-accent)', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--text-medium)', fontSize: '9px' }}>⭐ XP</div>
+                  <div style={{ color: 'var(--orange-accent)', marginTop: '5px', fontSize: '14px' }}>{topic.xpReward}</div>
+                </div>
+                <div style={{ padding: '10px', border: '2px solid var(--bright-blue)', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--text-medium)', fontSize: '9px' }}>🎯 PASS</div>
+                  <div style={{ color: 'var(--bright-blue)', marginTop: '5px', fontSize: '14px' }}>{topic.passingScore}%</div>
                 </div>
               </div>
-              <div style={{
-                padding: '10px',
-                border: '1px solid var(--light-blue)',
-                textAlign: 'center'
-              }}>
-                <div style={{ color: 'var(--orange-accent)' }}>PASSING SCORE</div>
-                <div style={{ color: 'var(--light-blue)', marginTop: '5px', fontSize: '14px' }}>
-                  {topic.passingScore}%
-                </div>
-              </div>
-            </div>
-
-            <div style={{
-              marginTop: '20px',
-              padding: '10px',
-              background: topic.isCompleted 
-                ? 'rgba(0, 195, 0, 0.99)' 
-                : 'rgba(255, 255, 0, 0.9)',
-              border: `2px solid ${topic.isCompleted ? 'var(--bright-blue)' : 'var(--orange-accent)'}`,
-              textAlign: 'center',
-              fontSize: '10px',
-              color: topic.isCompleted ? '#FFFFFF' : '#000000'
-            }}>
-              {topic.isCompleted ? 'TOPIC COMPLETED' : 'CLICK TO START'}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {topics.length === 0 && (
+            </motion.div>
+          ))}
+        </div>
+      ) : (
         <div className="retro-card" style={{ textAlign: 'center', padding: '60px' }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>📚</div>
-          <div style={{ fontSize: '14px', color: 'var(--light-blue)' }}>
-            NO TOPICS AVAILABLE YET
-          </div>
-          <div style={{ fontSize: '10px', color: 'var(--bright-blue)', marginTop: '10px' }}>
-            Check back soon for new training content!
-          </div>
+          <div style={{ fontSize: '14px', color: 'var(--bright-blue)' }}>NO TOPICS AVAILABLE YET</div>
+          <button onClick={fetchTopics} className="retro-btn" style={{ marginTop: '20px' }}>🔄 REFRESH</button>
         </div>
       )}
     </div>
