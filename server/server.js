@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import topicRoutes from './routes/topics.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import adminRoutes from './routes/admin.js';
+import { startSessionCleanup } from './utils/sessionCleanup.js';
 
 dotenv.config();
 
@@ -24,7 +25,10 @@ app.set('trust proxy', true);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB Connected!'))
+  .then(() => {
+    console.log('MongoDB Connected');
+    startSessionCleanup(); 
+  })
   .catch((err) => console.error('MongoDB Connection Error:', err));
 
 // Routes

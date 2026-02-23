@@ -18,8 +18,8 @@ const seedData = async () => {
     const topic1 = await Topic.create({
       title: 'ISO 9001',
       description: 'A standard for Quality Management Systems',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      videoDuration: 180,
+      videoUrl: 'https://www.youtube.com/watch?v=W9nZ6u15yis',
+      videoDuration: 10,
       order: 1,
       xpReward: 100,
       passingScore: 75,
@@ -76,8 +76,8 @@ const seedData = async () => {
     const topic2 = await Topic.create({
       title: 'ISO 27001',
       description: 'Understanding information security compliance',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      videoDuration: 240,
+      videoUrl: 'https://www.youtube.com/watch?v=W9nZ6u15yis',
+      videoDuration: 20,
       order: 2,
       xpReward: 150,
       passingScore: 75,

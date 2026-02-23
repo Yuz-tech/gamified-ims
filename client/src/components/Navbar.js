@@ -15,13 +15,13 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { path: '/', label: '🏠 HOME' },
-    { path: '/topics', label: '📚 TOPICS' },
-    { path: '/achievements', label: '🏆 ACHIEVEMENTS' }
+    { path: '/', label: 'HOME' },
+    { path: '/topics', label: 'TOPICS' },
+    { path: '/achievements', label: 'ACHIEVEMENTS' }
   ];
 
   if (user?.role === 'admin') {
-    navItems.push({ path: '/admin', label: '⚙️ ADMIN' });
+    navItems.push({ path: '/admin', label: 'ADMIN' });
   }
 
   return (
@@ -54,7 +54,7 @@ const Navbar = () => {
             textShadow: '2px 2px 0 var(--light-blue)',
             flex: '0 0 auto'
           }}>
-            🎮 IMS ARCADE
+            IMS AWARENESS
           </div>
 
           {/* Desktop Navigation */}
@@ -192,7 +192,7 @@ const Navbar = () => {
                 className="retro-btn danger"
                 style={{ fontSize: '12px', padding: '12px', width: '100%' }}
               >
-                🚪 LOGOUT
+                LOGOUT
               </button>
             </div>
           </motion.div>

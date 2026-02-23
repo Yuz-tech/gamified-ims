@@ -254,6 +254,26 @@ router.get('/activity-logs', async (req, res) => {
   }
 });
 
+// Get all activity logs with filtering
+router.get('/activity-logs', async (req, res) => {
+  try {
+    const { userId, action, limit = 100 } = req.query;
+    
+    const query = {};
+    if (userId) query.userId = userId;
+    if (action) query.action = action;
+
+    const logs = await ActivityLog.find(query)
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Get statistics
 router.get('/statistics', async (req, res) => {
   try {
