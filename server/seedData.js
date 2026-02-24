@@ -22,7 +22,7 @@ const seedData = async () => {
       videoDuration: 10,
       order: 1,
       xpReward: 100,
-      passingScore: 75,
+      passingScore: 70,
       questions: [
         {
           question: 'What is the aim of ISO 9001?',
@@ -79,8 +79,8 @@ const seedData = async () => {
       videoUrl: 'https://www.youtube.com/watch?v=W9nZ6u15yis',
       videoDuration: 20,
       order: 2,
-      xpReward: 150,
-      passingScore: 75,
+      xpReward: 100,
+      passingScore: 70,
       questions: [
         {
           question: 'What is ISO 27001 about?',
@@ -148,8 +148,8 @@ const seedData = async () => {
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 200,
       order: 3,
-      xpReward: 150,
-      passingScore: 80,
+      xpReward: 100,
+      passingScore: 70,
       questions: [
         {
           question: 'Which of the following is a principle of total quality management?',
