@@ -221,7 +221,7 @@ const seedData = async () => {
     const badge2 = await Badge.create({
       name: 'IMS Novice',
       description: 'ISO 27001',
-      imageUrl: '../elements/badges/iso 27001.png',
+      imageUrl: './uploads/badges/iso 27001.png',
       topicId: topic2._id
     });
 

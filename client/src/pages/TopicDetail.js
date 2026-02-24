@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../utils/api';
+import api from '../utils/api.js';
 import { useAuth } from '../context/AuthContext';
 
 const TopicDetail = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
   const { updateUser } = useAuth();
-
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [videoWatched, setVideoWatched] = useState(false);
