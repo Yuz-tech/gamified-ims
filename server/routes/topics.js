@@ -52,10 +52,6 @@ router.get('/', async (req, res) => {
 // Get single topic
 router.get('/:topicId', async (req, res) => {
   try {
-<<<<<<< HEAD
-    const currentYear = new Date().getFullYear();
-=======
->>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
     const topic = await Topic.findById(req.params.topicId);
 
     if (!topic) {
@@ -63,12 +59,6 @@ router.get('/:topicId', async (req, res) => {
     }
 
     const user = await User.findById(req.user._id);
-<<<<<<< HEAD
-    const isCompleted = user.isTopicCompletedThisYear(topic._id);
-    const isVideoWatched = user.isVideoWatchedThisYear(topic._id);
-
-    // Return topic with questions (hide correct answers only if not completed)
-=======
     
     // Check if topic is completed
     const isCompleted = user.completedTopics.some(
@@ -82,21 +72,13 @@ router.get('/:topicId', async (req, res) => {
 
     // If completed, show all questions with correct answers (for review)
     // If not completed, hide correct answers
->>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
     res.json({
       ...topic.toObject(),
       isCompleted,
       isVideoWatched,
-<<<<<<< HEAD
-      currentYear,
-      questions: isCompleted 
-        ? topic.questions // Show correct answers if completed
-        : topic.questions.map(q => ({ 
-=======
       questions: isCompleted 
         ? topic.questions // Show everything if completed (for review)
         : topic.questions.map(q => ({ // Hide correct answers if not completed
->>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
             question: q.question,
             options: q.options,
             points: q.points

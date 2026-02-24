@@ -66,11 +66,7 @@ const Achievements = () => {
         className="neon-text"
         style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
       >
-<<<<<<< HEAD
-        YOUR ACHIEVEMENTS ({currentYear})
-=======
         🏆 YOUR ACHIEVEMENTS ({currentYear})
->>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
       </motion.h1>
 
       {/* Progress Card */}
@@ -217,11 +213,7 @@ const Achievements = () => {
                   background: 'var(--bg-medium)',
                   border: '1px solid var(--border-color)'
                 }}>
-<<<<<<< HEAD
-                  {badge.topicId?.title || 'Topic'}
-=======
                   📚 {badge.topicId?.title || 'Topic'}
->>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
                 </div>
 
                 <div style={{
@@ -246,11 +238,7 @@ const Achievements = () => {
             Complete topics to earn badges!
           </div>
           <button onClick={fetchBadges} className="retro-btn" style={{ marginTop: '20px' }}>
-<<<<<<< HEAD
-            REFRESH
-=======
             🔄 REFRESH
->>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
           </button>
         </div>
       )}

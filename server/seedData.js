@@ -253,92 +253,6 @@ const seedData = async () => {
       ],
       isActive: true
     });
-<<<<<<< HEAD
-
-    // Create Topic 3
-    const topic3 = await Topic.create({
-      title: 'Quality and Information Security',
-      description: 'Learn on delivering high quality services while maintaining data CIA',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      videoDuration: 200,
-      order: 3,
-      xpReward: 100,
-      passingScore: 70,
-      questions: [
-        {
-          question: 'Which of the following is a principle of total quality management?',
-          options: [
-            'Focus on short-term profits',
-            'Continuous improvement',
-            'Limiting customer involvement',
-            'Reducing employee participation'
-          ],
-          correctAnswer: 1,
-          points: 20
-        },
-        {
-          question: 'Which of the following is not part of the CIA triad?',
-          options: [
-            'Confidentiality',
-            'Integrity',
-            'Availability',
-            'Accountability'
-          ],
-          correctAnswer: 3,
-          points: 20
-        },
-        {
-          question: 'Which type of attack involves tricking users into revealing sensitive information by pretending to be a trusted entity?',
-          options: [
-            'Phishing',
-            'SQL Injection',
-            'DDOS',
-            'Malware'
-          ],
-          correctAnswer: 0,
-          points: 20
-        },
-        {
-          question: 'What is the main purpose of a risk assessment?',
-          options: [
-            'To ensure compliance with financial regulations',
-            'To guarantee system availability',
-            'To eliminate all risks',
-            'To identify, evaluate, and prioritize risks'
-          ],
-          correctAnswer: 3,
-          points: 20
-        },
-        {
-          question: 'Which of the following is considered a preventive control?',
-          options: [
-            'Intrusion detection system',
-            'Audit logs',
-            'Security Awareness Training',
-            'CCTV installation'
-          ],
-          correctAnswer: 2,
-          points: 20
-        },
-      ],
-      isActive: true
-    });
-
-    // Create Badges
-    const badge1 = await Badge.create({
-      name: 'IMS Beginner',
-      description: 'ISO 9001',
-      imageUrl: './uploads/badges/iso 9001.png',
-      topicId: topic1._id
-    });
-
-    const badge2 = await Badge.create({
-      name: 'IMS Novice',
-      description: 'ISO 27001',
-      imageUrl: './uploads/badges/iso 27001.png',
-      topicId: topic2._id
-    });
-=======
     console.log('   ✅ Topic 3 created');
 
     // Create Badges
@@ -352,7 +266,6 @@ const badge1 = await Badge.create({
   topicId: topic1._id
 });
 console.log('   ✅ Badge 1: IMS Foundation Master');
->>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
 
 const badge2 = await Badge.create({
   name: 'Quality Champion',
