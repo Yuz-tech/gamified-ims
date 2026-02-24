@@ -1,117 +1,189 @@
-import React, { useState } from 'react';
+import React, {useState} from "react";
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+    setMobileMenuOpen(false);
   };
 
   const navItems = [
     { path: '/', label: 'HOME' },
-    { path: '/topics', label: 'TOPICS' },
-    { path: '/achievements', label: 'ACHIEVEMENTS' }
+    { path: '/topics', label: 'TOPICS' }
+    { path: '/achievements', label: 'ACHIEVEMENTS' },
+    { path: '/profile', label: 'PROFILE' }
   ];
 
-  if (user?.role === 'admin') {
-    navItems.push({ path: '/admin', label: '⚙️' });
+  if(user?.role === 'admin') {
+    navItems.push({ path: '/admin', label: 'ADMIN' });
   }
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-        background: 'var(--primary-navy)',
-        borderBottom: '3px solid var(--bright-blue)',
-        boxShadow: '0 4px 12px var(--shadow-medium), 0 0 0 2px var(--bright-blue) inset',
-        padding: '15px 20px'
-      }}
-    >
-      <div style={{ 
-        maxWidth: '1200px', 
-        margin: '0 auto',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        {/* Logo / Title */}
-        <div style={{ fontSize: '14px', color: '#ffffff' }}>
-          GAMIFIED IMS AWARENESS TRAINING
-        </div>
+    <>
+      <motion.nav
+        initial={{ y:-100 }}
+        animate={{ y: 0 }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          background: 'var(--darker-bg)',
+          borderBottom: '3px solid var(--primary-navy)',
+          boxShadow: '0 4px 12px var(--shadow-medium), 0 0 0 2px var(--bright-blue) inset',
+          padding: '15px 20px'
+        }}>
+          <div style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '15px'
+          }}>
+            <div style={{
+              fontSize: '14px',
+              color: 'var(--primary-navy)',
+              textShadow: '2px 2px 0 var(--light-blue)',
+              flex: '0 0 auto'
+            }}>
+              IMS ARCADE
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              alignItems: 'center',
+              flex: '1 1 auto',
+              justifyContent: 'center'
+            }}
+            className="desktop-nav">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/' || item.path === '/admin'}
+                  style={({ isActive }) => ({
+                    color: isActive ? 'var(--bright-blue)' : 'var(--primary-navy)',
+                    textDecoration: 'none',
+                    fontSize: '10px',
+                    padding: '8px 12px',
+                    border: `2px solid ${isActive ? 'var(--bright-blue)' : 'var(--primary-navy)'}`,
+                    background: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                    transition: 'all 0.3s',
+                    boxShadow: isActive ? '3px 3px 0 var(--primary-navy)' : 'none',
+                    whiteSpace: 'nowrap'
+                  })}>
+                    {item.label}
+                  </NavLink>
+              ))}
 
-        {/* Hamburger button*/}
-        <button 
-          onClick={() => setMenuOpen(!menuOpen)} 
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--bright-blue)',
-            fontSize: '20px',
-            cursor: 'pointer',
-            display: 'none' 
-          }}
-          className="hamburger-btn"
-        >
-          ☰
-        </button>
+              <button onClick={handleLogout}
+                className="retro-btn-danger"
+                style={{
+                  fontSize: '10px',
+                  padding: '8px 12px'
+                }}>
+                  LOGOUT
+                </button>
+            </div>
 
-        {/* Nav links */}
-        <div 
-          className={`nav-links ${menuOpen ? 'open' : ''}`} 
-          style={{ 
-            display: 'flex', 
-            gap: '15px',
-            alignItems: 'center'
-          }}
-        >
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              style={({ isActive }) => ({
-                color: isActive ? 'rgb(0, 0, 0)' : 'var(--bright-blue)',
-                textDecoration: 'none',
-                fontSize: '12px',
+            <div style = {{
+              fontSize: '10px',
+              color: 'var(--bright-blue)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              flex: '0 0 auto'
+            }}
+            className="desktop-stats">
+              <span>LVL {user?.level || 1 }</span>
+              <span> | </span>
+              <span> {user?.xp || 0} XP</span>
+            </div>
+
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="retro-btn secondary mobile-menu-toggle"
+              style={{
+                fontSize: '14px',
                 padding: '8px 12px',
-                border: `3px solid ${isActive ? 'var(--light-blue)' : 'var(--bright-blue)'}`,
-                background: isActive ? 'rgba(226, 255, 4, 0.99)' : 'transparent',
-                transition: 'all 0.3s',
-                boxShadow: isActive 
-                  ? '0 0 15px var(--light-blue)' 
-                  : '0 0 5px var(--bright-blue)'
-              })}
-              onClick={() => setMenuOpen(false)}
-            >
-              {item.label}
-            </NavLink>
-          ))}
+                display: 'none'
+              }}>
+                {mobileMenuOpen ? 'X' : '☰'}
+              </button>
+          </div>
+        </motion.nav>
 
-          <button
-            onClick={handleLogout}
-            className="retro-btn danger"
-            style={{ fontSize: '10px', padding: '8px 12px' }}
-          >
-            LOGOUT
-          </button>
-        </div>
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit = {{ height: 0, opacity: 0 }}
+              style = {{
+                position: 'sticky',
+                top: '70px',
+                zIndex: 999,
+                background: 'var(--bg-lightest)',
+                borderBottom: '3px solid var(--primary-navy)',
+                boxShadow: '0 4px 12px var(--shadow-medium)',
+                overflow: 'hidden'
+              }}
+              className="mobile-menu">
+                <div style = {{
+                  padding: '15px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  <div style = {{
+                    padding: '10px',
+                    background: 'var(--bg-medium)',
+                    border: '2px solid (var--bright-blue)',
+                    textAlign: 'center',
+                    fontSize: '10px',
+                    color: 'var(--bright-blue)'
+                  }}>
+                    {user?.username} | LVL {user?.level || 1} | {user?.xp || 0} XP
+                  </div>
 
-        {/* User info */}
-        <div style={{ fontSize: '10px', color: 'var(--sky-blue)' }}>
-          LVL {user?.level || 1} | {user?.xp || 0} XP | {user?.username}
-        </div>
-      </div>
-    </motion.nav>
-  );
-};
-
-export default Navbar;
+                  {navItems.map((item) => (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      end={item.path === '/' || item.path === '/admin'}
+                      onClick={() => setMobileMenuOpen(false)}
+                      style={({ isActive }) => ({
+                        color: isActive ? 'white' : 'var(--primary-navy)',
+                        textDecoration: 'none',
+                        fontSize: '12px',
+                        padding: '12px',
+                        border: `2px solid ${isActive ? 'var(--bright-blue)' : 'var(--primary-navy)'}`,
+                        background: isActive ? 'var(--bright-blue)' : 'transparent',
+                        textAlign: 'center',
+                        display: 'block'
+                      })}>
+                        {item.label}
+                      </NavLink>
+                  ))}
+                  <button onClick={handleLogout}
+                    className="retro-btn danger"
+                    style={{
+                      fontSize: '12px',
+                      padding: '12px',
+                      width: '100%'
+                    }}>
+                      LOGOUT
+                    </button>
+                </div>
+              </motion.div>
+          )}
+        </AnimatePresence>
+    </>
+  )
+}
