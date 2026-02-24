@@ -33,36 +33,38 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
   completedTopics: [{
-    topicId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Topic'
-    },
-    completedAt: {
-      type: Date,
-      default: Date.now
-    },
-    score: Number
-  }],
-  badges: [{
-    badgeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Badge'
-    },
-    earnedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  watchedVideos: [{
-    topicId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Topic'
-    },
-    completedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
+  topicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Topic'
+  },
+  score: Number,
+  completedAt: {
+    type: Date,
+    default: Date.now
+  }
+}],
+
+badges: [{
+  badgeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Badge'
+  },
+  earnedAt: {
+    type: Date,
+    default: Date.now
+  }
+}],
+
+watchedVideos: [{
+  topicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Topic'
+  },
+  completedAt: {
+    type: Date,
+    default: Date.now
+  }
+}],
   isApproved: {
     type: Boolean,
     default: false

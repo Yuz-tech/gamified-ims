@@ -145,9 +145,10 @@ router.post('/topics', async (req, res) => {
   }
 });
 
-// Update topic
-router.put('/topics/:topicId', async (req, res) => {
+// Toggle topic active/inactive (instead of delete)
+router.put('/topics/:topicId/toggle', async (req, res) => {
   try {
+<<<<<<< HEAD
     const { title, description, videoUrl, videoDuration, order, questions, isActive } = req.body;
 
     const topic = await Topic.findByIdAndUpdate(req.params.topicId, {
@@ -197,6 +198,41 @@ router.put('/topics/:topicId/toggle', async(req,res) => {
       message: `Topic ${topic.isActive ? 'enabled' : 'disabled'} successfully`, topic
     });
   } catch(error) {
+=======
+    const topic = await Topic.findById(req.params.topicId);
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+    
+    topic.isActive = !topic.isActive;
+    await topic.save();
+    
+    res.json({ 
+      message: `Topic ${topic.isActive ? 'enabled' : 'disabled'} successfully`,
+      topic 
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Update topic (remove XP and passing score from editable fields)
+router.put('/topics/:topicId', async (req, res) => {
+  try {
+    const { title, description, videoUrl, videoDuration, order, questions, isActive } = req.body;
+    
+    const topic = await Topic.findByIdAndUpdate(
+      req.params.topicId,
+      { title, description, videoUrl, videoDuration, order, questions, isActive },
+      { new: true, runValidators: true }
+    );
+    
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+    res.json(topic);
+  } catch (error) {
+>>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

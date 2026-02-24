@@ -163,7 +163,11 @@ const Topics = () => {
       </motion.h1>
 
       <button onClick={() => setShowForm(!showForm)} className="retro-btn" style={{ marginBottom: '30px' }}>
+<<<<<<< HEAD
         {showForm ? 'CANCEL' : 'CREATE TOPIC'}
+=======
+        {showForm ? '✖ CANCEL' : '➕ CREATE TOPIC'}
+>>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
       </button>
 
       {/* Form */}
@@ -203,7 +207,11 @@ const Topics = () => {
             {/* Fixed Values Display */}
             <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(59, 130, 246, 0.1)', border: '2px solid var(--bright-blue)' }}>
               <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+<<<<<<< HEAD
                 FIXED VALUES (Cannot be changed):
+=======
+                ℹ️ FIXED VALUES (Cannot be changed):
+>>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
               </div>
               <div style={{ fontSize: '12px', color: 'var(--primary-navy)' }}>
                 <strong>XP Reward:</strong> 100 XP | <strong>Passing Score:</strong> 70%
@@ -253,7 +261,11 @@ const Topics = () => {
             </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>
+<<<<<<< HEAD
               <button type="submit" className="retro-btn" style={{ flex: 1 }}>{editingTopic ? 'UPDATE TOPIC' : 'CREATE TOPIC'}</button>
+=======
+              <button type="submit" className="retro-btn" style={{ flex: 1 }}>💾 {editingTopic ? 'UPDATE TOPIC' : 'CREATE TOPIC'}</button>
+>>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
               <button type="button" onClick={resetForm} className="retro-btn secondary" style={{ flex: 1 }}>✖ CANCEL</button>
             </div>
           </form>
@@ -303,7 +315,11 @@ const Topics = () => {
                       background: topic.isActive ? 'var(--error-red)' : 'var(--success-green)',
                       borderColor: topic.isActive ? '#DC2626' : '#059669'
                     }}>
+<<<<<<< HEAD
                       {topic.isActive ? 'DISABLE' : 'ENABLE'}
+=======
+                      {topic.isActive ? '✖ DISABLE' : '✓ ENABLE'}
+>>>>>>> 89f8048d986123cee6cc49a2a072d2656ad05db4
                     </button>
                   </div>
                 </td>
