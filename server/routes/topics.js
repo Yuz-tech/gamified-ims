@@ -40,35 +40,36 @@ router.get('/', async (req, res) => {
 // Get single topic
 router.get('/:topicId', async (req, res) => {
   try {
-    const topic = await Topic.findById(req.params.topicId)
-      .select('-questions.correctAnswer');
+    const currentYear = new Date().getFullYear();
+    const topic = await Topic.findById(req.params.topicId);
 
     if (!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
 
     const user = await User.findById(req.user._id);
-    const isCompleted = user.completedTopics.some(
-      ct => ct.topicId.toString() === topic._id.toString()
-    );
-    const isVideoWatched = user.watchedVideos.some(
-      wv => wv.topicId.toString() === topic._id.toString()
-    );
+    const isCompleted = user.isTopicCompletedThisYear(topic._id);
+    const isVideoWatched = user.isVideoWatchedThisYear(topic._id);
 
+    // Return topic with questions (hide correct answers only if not completed)
     res.json({
       ...topic.toObject(),
       isCompleted,
       isVideoWatched,
-      questions: topic.questions.map(q => ({
-        question: q.question,
-        options: q.options,
-        points: q.points
-      }))
+      currentYear,
+      questions: isCompleted 
+        ? topic.questions // Show correct answers if completed
+        : topic.questions.map(q => ({ 
+            question: q.question,
+            options: q.options,
+            points: q.points
+          }))
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
 
 // Mark video as watched
 router.post('/:topicId/watch-video', async (req, res) => {

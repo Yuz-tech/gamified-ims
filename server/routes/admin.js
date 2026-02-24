@@ -148,33 +148,55 @@ router.post('/topics', async (req, res) => {
 // Update topic
 router.put('/topics/:topicId', async (req, res) => {
   try {
-    const topic = await Topic.findByIdAndUpdate(
-      req.params.topicId,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!topic) {
-      return res.status(404).json({ message: 'Topic not found' });
-    }
-    res.json(topic);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    const { title, description, videoUrl, videoDuration, order, questions, isActive } = req.body;
+
+    const topic = await Topic.findByIdAndUpdate(req.params.topicId, {
+      title, description, videoUrl, videoDuration, order, questions, isActive
+    },
+    { new: true, runValidators: true }
+  );
+
+  if (!topic) {
+    return res.status(404).json({ message: 'Topic not found' });
+  }
+  res.json(topic);
+  } catch(error) {
+    res.status(500).json({ message: 'Server error', error:error.message });
   }
 });
 
 // Delete topic
-router.delete('/topics/:topicId', async (req, res) => {
+// router.delete('/topics/:topicId', async (req, res) => {
+//   try {
+//     const topic = await Topic.findByIdAndDelete(req.params.topicId);
+//     if (!topic) {
+//       return res.status(404).json({ message: 'Topic not found' });
+//     }
+    
+//     // Also delete associated badge
+//     await Badge.deleteOne({ topicId: req.params.topicId });
+    
+//     res.json({ message: 'Topic deleted successfully' });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// });
+
+//Enable/Disable
+router.put('/topics/:topicId/toggle', async(req,res) => {
   try {
-    const topic = await Topic.findByIdAndDelete(req.params.topicId);
+    const topic = await Topic.findById(req.params.topicId);
     if (!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
-    
-    // Also delete associated badge
-    await Badge.deleteOne({ topicId: req.params.topicId });
-    
-    res.json({ message: 'Topic deleted successfully' });
-  } catch (error) {
+
+    topic.isActive = !topic.isActive;
+    await topic.save();
+
+    res.json({
+      message: `Topic ${topic.isActive ? 'enabled' : 'disabled'} successfully`, topic
+    });
+  } catch(error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

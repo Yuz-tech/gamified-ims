@@ -25,12 +25,13 @@ const topicSchema = new mongoose.Schema({
   },
   xpReward: {
     type: Number,
-    default: 100
+    default: 100,
+    immutable: true
   },
   passingScore: {
     type: Number,
-    required: true,
-    default: 70
+    default: 70,
+    immutable: true
   },
   questions: [{
     question: {
@@ -56,6 +57,14 @@ const topicSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+topicSchema.pre('save', function(next) {
+  if (this.questions.length === 0) {
+    next(new Error('TOpic must have at least one question'));
+  } else {
+    next();
+  }
 });
 
 const Topic = mongoose.model('Topic', topicSchema);

@@ -7,6 +7,9 @@ import topicRoutes from './routes/topics.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import adminRoutes from './routes/admin.js';
 import { startSessionCleanup } from './utils/sessionCleanup.js';
+import uploadRoutes from './routes/upload.js';
+
+//app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 dotenv.config();
 
@@ -36,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/topics', topicRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

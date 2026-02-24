@@ -94,18 +94,18 @@ const ActivityLogs = () => {
 
   const getActivityIcon = (action) => {
     const icons = {
-      login: '🔐',
-      logout: '🚪',
-      logout_all_devices: '🚪🚪',
-      password_change: '🔑',
-      video_watched: '📺',
-      quiz_started: '📝',
-      quiz_completed: '✅',
-      badge_earned: '🏆',
-      topic_completed: '🎯',
-      profile_updated: '👤',
-      account_request: '📬',
-      account_approved: '✅'
+      login: 'LOGIN',
+      logout: 'LOGOUT',
+      logout_all_devices: 'LOGOUT ALL',
+      password_change: 'PASSWORD CHANGED',
+      video_watched: 'VIDEO WATCHED',
+      quiz_started: 'QUIZ STARTED',
+      quiz_completed: 'QUIZ DONE',
+      badge_earned: 'BADGE EARNED',
+      topic_completed: 'TOPIC COMPLETED',
+      profile_updated: 'PROFILE UPDATED',
+      account_request: 'ACCOUNT REQUEST',
+      account_approved: 'ACCOUNT APPROVED'
     };
     return icons[action] || '📌';
   };
@@ -140,7 +140,7 @@ const ActivityLogs = () => {
           color: 'var(--primary-navy)'
         }}
       >
-        📋 ACTIVITY LOGS
+        ACTIVITY LOGS
       </motion.h1>
 
       {/* Filters */}
@@ -235,14 +235,14 @@ const ActivityLogs = () => {
             className="retro-btn"
             style={{ flex: 1, minWidth: '150px' }}
           >
-            🔍 APPLY FILTERS
+            APPLY FILTERS
           </button>
           <button
             onClick={handleClearFilters}
             className="retro-btn secondary"
             style={{ flex: 1, minWidth: '150px' }}
           >
-            ✖ CLEAR
+            CLEAR
           </button>
           <button
             onClick={handleExportCSV}
@@ -255,7 +255,7 @@ const ActivityLogs = () => {
             }}
             disabled={logs.length === 0}
           >
-            📥 EXPORT CSV
+            EXPORT CSV
           </button>
         </div>
       </motion.div>
