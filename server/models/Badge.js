@@ -3,16 +3,16 @@ import mongoose from 'mongoose';
 const badgeSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   description: {
     type: String,
-    required: true,
+    required: true
   },
   imageUrl: {
     type: String,
     required: true
+    // Removed strict URL validation to allow /uploads/ paths
   },
   topicId: {
     type: mongoose.Schema.Types.ObjectId,

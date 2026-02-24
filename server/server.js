@@ -2,11 +2,20 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';  // ← ADD THIS
+import { fileURLToPath } from 'url';  // ← ADD THIS
+
+// Route imports
 import authRoutes from './routes/auth.js';
 import topicRoutes from './routes/topics.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import adminRoutes from './routes/admin.js';
+import uploadRoutes from './routes/upload.js';
 import { startSessionCleanup } from './utils/sessionCleanup.js';
+
+// ⭐ DEFINE __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -20,35 +29,33 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Trust proxy to get correct IP addresses
+// Serve static files (uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Trust proxy
 app.set('trust proxy', true);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log('MongoDB Connected');
-    startSessionCleanup(); 
+    console.log('🎮 MongoDB Connected - Game On!');
+    startSessionCleanup();
   })
-  .catch((err) => console.error('MongoDB Connection Error:', err));
+  .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/topics', topicRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'Tumatakbo na ang API',
+    message: '🕹️ IMS Training Arcade is running!',
     timestamp: new Date()
-  });
-});
-
-app.get('/admin', (req,res) => {
-  res.json({
-    message: 'Hello there, I am Julius and I "created" this app'
   });
 });
 
@@ -71,10 +78,12 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`
   ╔════════════════════════════════════════╗
-  ║         IMS AWARENESS TRAINING         ║
+  ║   🎮 IMS TRAINING ARCADE SERVER 🎮    ║
   ║                                        ║
-  ║      Server running on port ${PORT}       ║
+  ║   Server running on port ${PORT}        ║
+  ║   Environment: ${process.env.NODE_ENV || 'development'}              ║
   ║                                        ║
+  ║   PRESS START TO CONTINUE...          ║
   ╚════════════════════════════════════════╝
   `);
 });
