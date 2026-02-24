@@ -2,20 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
-import { useAuth } from '../context/AuthContext';
 
 const TopicDetail = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
-  const { updateUser } = useAuth();
-
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [quizResults, setQuizResults] = useState(null);
   const [videoWatched, setVideoWatched] = useState(false);
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [answers, setAnswers] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState(null);
 
   useEffect(() => {
     fetchTopic();
@@ -26,13 +22,6 @@ const TopicDetail = () => {
       const response = await api.get(`/topics/${topicId}`);
       setTopic(response.data);
       setVideoWatched(response.data.isVideoWatched);
-      
-      // Initialize answers
-      const initialAnswers = {};
-      response.data.questions.forEach((_, index) => {
-        initialAnswers[index] = null;
-      });
-      setAnswers(initialAnswers);
     } catch (error) {
       console.error('Error fetching topic:', error);
     } finally {
@@ -45,58 +34,55 @@ const TopicDetail = () => {
       try {
         await api.post(`/topics/${topicId}/watch-video`);
         setVideoWatched(true);
+        alert('✅ Video completed! You can now take the quiz.');
       } catch (error) {
         console.error('Error marking video as watched:', error);
       }
     }
   };
 
-  const handleAnswerSelect = (questionIndex, optionIndex) => {
-    setAnswers({
-      ...answers,
-      [questionIndex]: optionIndex
+  const handleStartQuiz = () => {
+    if (!videoWatched) {
+      alert('⚠️ Please watch the video first before taking the quiz.');
+      return;
+    }
+    setQuizStarted(true);
+    setSelectedAnswers({});
+    setQuizResults(null);
+  };
+
+  const handleAnswerSelect = (questionIndex, answerIndex) => {
+    setSelectedAnswers({
+      ...selectedAnswers,
+      [questionIndex]: answerIndex
     });
   };
 
   const handleSubmitQuiz = async () => {
     // Check if all questions are answered
-    const allAnswered = Object.keys(answers).every(key => answers[key] !== null);
-    
-    if (!allAnswered) {
-      alert('Please answer all questions before submitting!');
+    if (Object.keys(selectedAnswers).length !== topic.questions.length) {
+      alert('⚠️ Please answer all questions before submitting.');
       return;
     }
 
-    setSubmitting(true);
-
     try {
-      const answerArray = Object.keys(answers).map(key => answers[key]);
       const response = await api.post(`/topics/${topicId}/submit-quiz`, {
-        answers: answerArray
+        answers: selectedAnswers
       });
 
-      setResult(response.data);
-
-      // Refresh user data if passed
-      if (response.data.passed) {
-        const userResponse = await api.get('/auth/me');
-        updateUser(userResponse.data);
-      }
+      setQuizResults(response.data);
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting quiz');
-    } finally {
-      setSubmitting(false);
     }
+  };
+
+  const handleReturnHome = () => {
+    navigate('/');
   };
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '80vh' 
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div className="loading neon-text">LOADING TOPIC...</div>
       </div>
     );
@@ -104,45 +90,11 @@ const TopicDetail = () => {
 
   if (!topic) {
     return (
-      <div className="retro-container" style={{ paddingTop: '40px' }}>
-        <div className="retro-card" style={{ textAlign: 'center', padding: '60px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px' }}>❌</div>
-          <div style={{ fontSize: '14px', color: 'var(--error-red)' }}>
-            TOPIC NOT FOUND
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (topic.isCompleted) {
-    return (
-      <div className="retro-container" style={{ paddingTop: '40px' }}>
-        <div className="scanlines"></div>
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="retro-card pixel-corners"
-          style={{ textAlign: 'center', padding: '60px' }}
-        >
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🏆</div>
-          <h1 className="neon-text" style={{ 
-            fontSize: '24px', 
-            marginBottom: '20px',
-            color: '#000000'
-          }}>
-            ALREADY COMPLETED!
-          </h1>
-          <p style={{ fontSize: '12px', color: 'var(--light-blue)', marginBottom: '30px' }}>
-            You've already passed this topic!
-          </p>
-          <button
-            onClick={() => navigate('/topics')}
-            className="retro-btn"
-          >
-            BACK TO TOPICS
-          </button>
-        </motion.div>
+      <div className="retro-container" style={{ paddingTop: '40px', textAlign: 'center' }}>
+        <h2 style={{ color: 'var(--error-red)' }}>Topic not found</h2>
+        <button onClick={() => navigate('/topics')} className="retro-btn" style={{ marginTop: '20px' }}>
+          ← BACK TO TOPICS
+        </button>
       </div>
     );
   }
@@ -151,388 +103,432 @@ const TopicDetail = () => {
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <div className="scanlines"></div>
 
-      <button
-        onClick={() => navigate('/topics')}
-        className="retro-btn secondary"
-        style={{ marginBottom: '20px' }}
-      >
-        ← BACK TO TOPICS
-      </button>
-
+      {/* Header */}
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="retro-card pixel-corners"
+        style={{ marginBottom: '30px' }}
       >
-        <h1 className="neon-text" style={{ 
-          fontSize: '24px', 
-          marginBottom: '20px',
-          color: '#000000'
-        }}>
+        <button onClick={() => navigate('/topics')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
+          ← BACK TO TOPICS
+        </button>
+
+        <h1 className="neon-text" style={{ fontSize: '28px', marginBottom: '15px', color: 'var(--primary-navy)' }}>
           {topic.title}
         </h1>
-
-        <p style={{ 
-          fontSize: '12px', 
-          color: 'var(--text-light)',
-          marginBottom: '30px',
-          lineHeight: '1.8'
-        }}>
+        <p style={{ fontSize: '12px', color: 'var(--text-medium)', lineHeight: '1.6' }}>
           {topic.description}
         </p>
+      </motion.div>
 
-        {/* Video Section */}
-        {!showQuiz && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div style={{
-              background: 'var(--primary-navy)',
-              border: '3px solid var(--bright-blue)',
-              padding: '20px',
-              marginBottom: '30px'
-            }}>
-              <h3 style={{
-                fontSize: '14px',
-                color: 'var(--sky-blue)',
-                marginBottom: '20px'
-              }}>
-                TOPIC VIDEO
-              </h3>
+      {/* Completion Status */}
+      {topic.isCompleted && !quizStarted && (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          style={{
+            padding: '20px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '3px solid var(--success-green)',
+            marginBottom: '30px',
+            textAlign: 'center'
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>✅</div>
+          <div style={{ fontSize: '14px', color: 'var(--success-green)', marginBottom: '10px', fontWeight: 'bold' }}>
+            YOU HAVE COMPLETED THIS TOPIC
+          </div>
+          <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
+            You can review the content and quiz below
+          </div>
+        </motion.div>
+      )}
 
-              <div style={{
-                position: 'relative',
-                paddingBottom: '56.25%',
-                height: 0,
-                overflow: 'hidden',
-                background: 'var(--bg-dark)',
-                border: '2px solid var(--light-blue)'
-              }}>
-                <iframe
-                  src={topic.videoUrl}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%'
-                  }}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={topic.title}
-                />
-              </div>
+      {/* Video Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          📺 TRAINING VIDEO
+        </h3>
 
-              <div style={{
-                marginTop: '20px',
-                padding: '15px',
-                background: videoWatched 
-                  ? 'rgba(0, 255, 0, 0.1)' 
-                  : 'rgba(255, 255, 0, 0.1)',
-                border: `2px solid ${videoWatched ? 'var(--bright-blue)' : 'var(--orange-accent)'}`,
-                textAlign: 'center',
-                fontSize: '10px',
-                color: videoWatched ? 'var(--bright-blue)' : 'var(--orange-accent)'
-              }}>
-                {videoWatched 
-                  ? 'VIDEO WATCHED - QUIZ UNLOCKED!' 
-                  : 'WATCH THE VIDEO TO UNLOCK THE QUIZ!'}
-              </div>
-            </div>
+        <div style={{
+          position: 'relative',
+          paddingBottom: '56.25%',
+          height: 0,
+          overflow: 'hidden',
+          background: 'var(--bg-dark)',
+          border: '3px solid var(--bright-blue)',
+          marginBottom: '15px'
+        }}>
+          <iframe
+            src={topic.videoUrl}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%'
+            }}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={topic.title}
+            onLoad={() => {
+              // Simulate video end for testing (remove in production)
+              // In production, you'd track actual video completion
+            }}
+          />
+        </div>
 
-            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-              <button
-                onClick={handleVideoEnd}
-                className="retro-btn secondary"
-                disabled={videoWatched}
-              >
-                {videoWatched ? '✓ VIDEO WATCHED' : 'MARK VIDEO AS WATCHED'}
-              </button>
-
-              <button
-                onClick={() => setShowQuiz(true)}
-                className="retro-btn"
-                disabled={!videoWatched}
-              >
-                START QUIZ
-              </button>
-            </div>
-          </motion.div>
+        {!videoWatched && (
+          <div style={{
+            padding: '15px',
+            background: 'rgba(249, 115, 22, 0.1)',
+            border: '2px solid var(--orange-accent)',
+            fontSize: '10px',
+            color: 'var(--text-dark)',
+            marginBottom: '10px'
+          }}>
+            ⚠️ You must watch the entire video before taking the quiz
+          </div>
         )}
 
-        {/* Quiz Section */}
-        {showQuiz && !result && (
-          <motion.div
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
+        <button
+          onClick={handleVideoEnd}
+          className="retro-btn"
+          style={{ width: '100%' }}
+          disabled={videoWatched}
+        >
+          {videoWatched ? '✅ VIDEO COMPLETED' : '✓ MARK VIDEO AS WATCHED'}
+        </button>
+      </motion.div>
+
+      {/* Quiz Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="retro-card"
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          📝 KNOWLEDGE CHECK QUIZ
+        </h3>
+
+        {!quizStarted ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>
+              {topic.isCompleted ? '📖' : '🎯'}
+            </div>
+            <div style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
+              {topic.isCompleted ? 'REVIEW THE QUIZ' : 'READY TO TEST YOUR KNOWLEDGE?'}
+            </div>
             <div style={{
-              background: 'var(--primary-navy)',
-              border: '3px solid var(--light-blue)',
-              padding: '20px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: '15px',
               marginBottom: '30px'
             }}>
-              <h3 style={{
-                fontSize: '14px',
-                color: '#ffffff',
-                marginBottom: '20px'
-              }}>
-                {topic.questions.length} QUESTIONS
-              </h3>
-
               <div style={{
                 padding: '15px',
-                background: 'rgba(0, 0, 0, 0.1)',
-                border: '2px solid var(--orange-accent)',
-                marginBottom: '30px',
-                fontSize: '10px',
-                color: '#ffffff'
+                border: '2px solid var(--bright-blue)',
+                background: 'rgba(59, 130, 246, 0.05)'
               }}>
-                PASSING SCORE: {topic.passingScore}%  <br></br>
-                REWARD: {topic.xpReward} XP
+                <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>QUESTIONS</div>
+                <div style={{ fontSize: '18px', color: 'var(--bright-blue)', marginTop: '5px' }}>
+                  {topic.questions.length}
+                </div>
+              </div>
+              <div style={{
+                padding: '15px',
+                border: '2px solid var(--orange-accent)',
+                background: 'rgba(249, 115, 22, 0.05)'
+              }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>PASSING SCORE</div>
+                <div style={{ fontSize: '18px', color: 'var(--orange-accent)', marginTop: '5px' }}>
+                  {topic.passingScore}%
+                </div>
+              </div>
+              <div style={{
+                padding: '15px',
+                border: '2px solid var(--success-green)',
+                background: 'rgba(16, 185, 129, 0.05)'
+              }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>XP REWARD</div>
+                <div style={{ fontSize: '18px', color: 'var(--success-green)', marginTop: '5px' }}>
+                  {topic.xpReward}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleStartQuiz}
+              className="retro-btn"
+              style={{ padding: '15px 30px', fontSize: '12px' }}
+              disabled={!videoWatched}
+            >
+              {videoWatched ? (topic.isCompleted ? '📖 REVIEW QUIZ' : '🎮 START QUIZ') : '🔒 WATCH VIDEO FIRST'}
+            </button>
+          </div>
+        ) : quizResults ? (
+          // Results Screen
+          <AnimatePresence>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              style={{ textAlign: 'center', padding: '40px 20px' }}
+            >
+              <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+                {quizResults.passed ? '🎉' : '😔'}
+              </div>
+              <div style={{
+                fontSize: '24px',
+                color: quizResults.passed ? 'var(--success-green)' : 'var(--error-red)',
+                marginBottom: '10px',
+                fontWeight: 'bold'
+              }}>
+                {quizResults.passed ? 'CONGRATULATIONS!' : 'NOT QUITE THERE'}
+              </div>
+              <div style={{ fontSize: '48px', color: 'var(--bright-blue)', marginBottom: '30px' }}>
+                {quizResults.score}%
               </div>
 
-              {topic.questions.map((question, qIndex) => (
-                <div
-                  key={qIndex}
-                  style={{
-                    marginBottom: '30px',
-                    padding: '20px',
-                    border: '2px solid var(--bright-blue)',
-                    background: 'rgb(5, 255, 13)'
-                  }}
-                >
-                  <div style={{
-                    fontSize: '18px',
-                    color: 'black',
-                    marginBottom: '20px',
-                    lineHeight: '1.6'
-                  }}>
-                    <strong>Q{qIndex + 1}.</strong> {question.question}
-                  </div>
-
-                  <div style={{ display: 'grid', gap: '10px' }}>
-                    {question.options.map((option, oIndex) => (
-                      <motion.div
-                        key={oIndex}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => handleAnswerSelect(qIndex, oIndex)}
-                        style={{
-                          padding: '15px',
-                          border: `2px solid ${
-                            answers[qIndex] === oIndex 
-                              ? 'rgb(255, 8, 8)' 
-                              : 'var(--bright-blue)'
-                          }`,
-                          background: answers[qIndex] === oIndex 
-                            ? 'rgb(246, 255, 0)' 
-                            : 'rgb(1, 48, 255)',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          color: answers[qIndex] === oIndex 
-                            ? 'black' 
-                            : 'white',
-                          transition: 'all 0.3s',
-                          boxShadow: answers[qIndex] === oIndex 
-                            ? '0 0 20px rgba(247, 22, 228, 0.5)' 
-                            : 'none'
-                        }}
-                      >
-                        {answers[qIndex] === oIndex}{option}
-                      </motion.div>
-                    ))}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                gap: '15px',
+                marginBottom: '30px'
+              }}>
+                <div style={{
+                  padding: '15px',
+                  border: '2px solid var(--bright-blue)',
+                  background: 'rgba(59, 130, 246, 0.05)'
+                }}>
+                  <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>CORRECT ANSWERS</div>
+                  <div style={{ fontSize: '18px', color: 'var(--bright-blue)', marginTop: '5px' }}>
+                    {quizResults.correctAnswers} / {quizResults.totalQuestions}
                   </div>
                 </div>
-              ))}
+                {quizResults.passed && (
+                  <>
+                    <div style={{
+                      padding: '15px',
+                      border: '2px solid var(--success-green)',
+                      background: 'rgba(16, 185, 129, 0.05)'
+                    }}>
+                      <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>XP EARNED</div>
+                      <div style={{ fontSize: '18px', color: 'var(--success-green)', marginTop: '5px' }}>
+                        +{quizResults.xpEarned}
+                      </div>
+                    </div>
+                    <div style={{
+                      padding: '15px',
+                      border: '2px solid var(--orange-accent)',
+                      background: 'rgba(249, 115, 22, 0.05)'
+                    }}>
+                      <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>NEW LEVEL</div>
+                      <div style={{ fontSize: '18px', color: 'var(--orange-accent)', marginTop: '5px' }}>
+                        {quizResults.newLevel}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {quizResults.passed && quizResults.badgeEarned && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.5, type: 'spring' }}
+                  style={{
+                    padding: '20px',
+                    border: '3px solid var(--orange-accent)',
+                    background: 'rgba(249, 115, 22, 0.1)',
+                    marginBottom: '20px'
+                  }}
+                >
+                  <div style={{ fontSize: '14px', color: 'var(--orange-accent)', marginBottom: '15px', fontWeight: 'bold' }}>
+                    🏆 BADGE UNLOCKED!
+                  </div>
+                  {quizResults.badgeImage && (
+                    <img
+                      src={quizResults.badgeImage.startsWith('/uploads/') 
+                        ? `http://localhost:5000${quizResults.badgeImage}` 
+                        : quizResults.badgeImage}
+                      alt={quizResults.badgeEarned}
+                      style={{
+                        width: '100px',
+                        height: '100px',
+                        objectFit: 'contain',
+                        imageRendering: 'pixelated',
+                        marginBottom: '10px'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML += '<div style="font-size: 64px;">🏆</div>';
+                      }}
+                    />
+                  )}
+                  <div style={{ fontSize: '12px', color: 'var(--primary-navy)' }}>
+                    {quizResults.badgeEarned}
+                  </div>
+                </motion.div>
+              )}
+
+              {!quizResults.passed && (
+                <div style={{
+                  padding: '15px',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '2px solid var(--error-red)',
+                  marginBottom: '20px',
+                  fontSize: '10px',
+                  color: 'var(--text-dark)'
+                }}>
+                  You need {quizResults.requiredScore}% to pass. Review the video and try again!
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {!quizResults.passed && (
+                  <button
+                    onClick={() => {
+                      setQuizStarted(false);
+                      setQuizResults(null);
+                      setSelectedAnswers({});
+                    }}
+                    className="retro-btn"
+                  >
+                    🔄 TRY AGAIN
+                  </button>
+                )}
+                <button onClick={handleReturnHome} className="retro-btn secondary">
+                  🏠 RETURN HOME
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          // Quiz Questions
+          <div>
+            <div style={{
+              padding: '15px',
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '2px solid var(--bright-blue)',
+              marginBottom: '30px',
+              fontSize: '10px',
+              color: 'var(--text-dark)'
+            }}>
+              ℹ️ Select the best answer for each question. You need {topic.passingScore}% to pass.
             </div>
 
-            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-              <button
-                onClick={() => setShowQuiz(false)}
-                className="retro-btn secondary"
-                disabled={submitting}
+            {topic.questions.map((question, qIndex) => (
+              <motion.div
+                key={qIndex}
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: qIndex * 0.1 }}
+                style={{
+                  marginBottom: '30px',
+                  padding: '20px',
+                  border: '3px solid var(--border-color)',
+                  background: 'var(--bg-light)'
+                }}
               >
-                ← BACK TO VIDEO
-              </button>
+                <div style={{
+                  fontSize: '12px',
+                  color: 'var(--primary-navy)',
+                  marginBottom: '20px',
+                  fontWeight: 'bold'
+                }}>
+                  Question {qIndex + 1} of {topic.questions.length}
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: 'var(--text-dark)',
+                  marginBottom: '20px',
+                  lineHeight: '1.6'
+                }}>
+                  {question.question}
+                </div>
 
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {question.options.map((option, oIndex) => (
+                    <button
+                      key={oIndex}
+                      onClick={() => handleAnswerSelect(qIndex, oIndex)}
+                      style={{
+                        padding: '15px',
+                        border: `3px solid ${
+                          selectedAnswers[qIndex] === oIndex 
+                            ? 'var(--bright-blue)' 
+                            : 'var(--border-color)'
+                        }`,
+                        background: selectedAnswers[qIndex] === oIndex 
+                          ? 'rgba(59, 130, 246, 0.1)' 
+                          : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        fontSize: '11px',
+                        color: 'var(--text-dark)',
+                        textAlign: 'left',
+                        boxShadow: selectedAnswers[qIndex] === oIndex 
+                          ? '3px 3px 0 var(--primary-navy)' 
+                          : 'none'
+                      }}
+                      className="quiz-option"
+                    >
+                      <span style={{
+                        display: 'inline-block',
+                        width: '25px',
+                        height: '25px',
+                        borderRadius: '50%',
+                        border: `2px solid ${selectedAnswers[qIndex] === oIndex ? 'var(--bright-blue)' : 'var(--border-color)'}`,
+                        marginRight: '10px',
+                        textAlign: 'center',
+                        lineHeight: '21px',
+                        background: selectedAnswers[qIndex] === oIndex ? 'var(--bright-blue)' : 'transparent',
+                        color: selectedAnswers[qIndex] === oIndex ? 'white' : 'var(--text-medium)'
+                      }}>
+                        {String.fromCharCode(65 + oIndex)}
+                      </span>
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '30px' }}>
               <button
                 onClick={handleSubmitQuiz}
                 className="retro-btn"
-                disabled={submitting}
+                style={{ flex: 1, padding: '15px', fontSize: '12px' }}
+                disabled={Object.keys(selectedAnswers).length !== topic.questions.length}
               >
-                {submitting ? 'SUBMITTING...' : 'SUBMIT QUIZ'}
+                ✓ SUBMIT QUIZ
+              </button>
+              <button
+                onClick={() => {
+                  setQuizStarted(false);
+                  setSelectedAnswers({});
+                }}
+                className="retro-btn secondary"
+                style={{ flex: 1, padding: '15px', fontSize: '12px' }}
+              >
+                ✖ CANCEL
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
-
-        {/* Results Section */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: 180 }}
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(0, 0, 0, 0.95)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10000,
-                padding: '20px'
-              }}
-            >
-              <div className="retro-card pixel-corners" style={{
-                maxWidth: '600px',
-                width: '100%',
-                textAlign: 'center',
-                padding: '40px'
-              }}>
-                <div style={{ fontSize: '64px', marginBottom: '20px' }}>
-                  {result.passed ? '🎉' : '😞'}
-                </div>
-
-                <h2 className="neon-text" style={{
-                  fontSize: '28px',
-                  marginBottom: '20px',
-                  color: result.passed ? 'var(--bright-blue)' : 'var(--error-red)'
-                }}>
-                  {result.passed ? 'CONGRATULATIONS!' : 'TRY AGAIN'}
-                </h2>
-
-                <div style={{
-                  fontSize: '48px',
-                  color: result.passed ? 'var(--light-blue)' : 'var(--orange-accent)',
-                  marginBottom: '20px'
-                }}>
-                  {result.score}%
-                </div>
-
-                <div style={{
-                  fontSize: '12px',
-                  color: 'var(--bright-blue)',
-                  marginBottom: '30px'
-                }}>
-                  {result.correctAnswers} / {result.totalQuestions} CORRECT
-                </div>
-
-                {result.passed && (
-                  <div style={{
-                    padding: '20px',
-                    border: '2px solid var(--orange-accent)',
-                    background: 'rgba(255, 255, 0, 0.1)',
-                    marginBottom: '30px'
-                  }}>
-                    <div style={{ fontSize: '10px', color: 'var(--orange-accent)' }}>
-                      XP EARNED: +{result.xpEarned}
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'var(--light-blue)', marginTop: '10px' }}>
-                      NEW LEVEL: {result.newLevel}
-                    </div>
-
-                    {result.badgeEarned && result.badgeImage && (
-                      <div style = {{ marginTop: '20px'}}>
-                        <div sytle = {{
-                          width: '80px',
-                          height: '80px',
-                          margin: '0 auto',
-                          border: '3px solid var(--orange-accent)',
-                          padding: '5px',
-                          background: 'var(--bg-lightest)',
-                          boxShadow: '3px 3px 0 var(--primary-navy)',
-                          animation: 'badgePop 0.5s ease'
-                        }}>
-                          <img
-                             src={result.badgeImage}
-                             alt={result.badgeEarned}
-                             style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'contain',
-                              imageRendering: 'pixelated'
-                             }}
-                             />
-                             </div>
-                             <div style = {{ 
-                              fontSize: '10px',
-                              color: 'var(--orange-accent)',
-                              marginTop: '10px'
-                             }}> BADGE EARNED: {result.badgeEarned}
-                             </div>
-                             </div>
-                    )}
-
-
-                    {result.allBadgesCollected && (
-                      <div style={{ 
-                        fontSize: '10px', 
-                        color: 'var(--bright-blue)', 
-                        marginTop: '10px',
-                        fontWeight: 'bold'
-                      }}>
-                        ALL BADGES COLLECTED! 🎊
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {!result.passed && (
-                  <div style={{
-                    padding: '20px',
-                    border: '2px solid var(--error-red)',
-                    background: 'rgba(255, 0, 0, 0.1)',
-                    marginBottom: '30px',
-                    fontSize: '10px',
-                    color: 'var(--error-red)'
-                  }}>
-                    REQUIRED SCORE: {result.requiredScore}%
-                    <br />
-                    HOW COULD YOU FAIL THAT? THAT WAS EASY!
-                    <br />
-                    RETAKE THE QUIZ
-                  </div>
-                )}
-
-                <button
-                  onClick={() => {
-                    if (result.passed) {
-                      navigate('/topics');
-                    } else {
-                      setResult(null);
-                      setShowQuiz(false);
-                      window.location.reload();
-                    }
-                  }}
-                  className="retro-btn"
-                  style={{ width: '100%' }}
-                >
-                  {result.passed ? 'CONTINUE' : 'TRY AGAIN'}
-                </button>
-
-                {result.allBadgesCollected && result.congratsLink && (
-                    <a
-                        href={result.congratsLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ display: 'block', marginTop: '20px' }}
-                    >
-                        <button className="retro-btn secondary" style={{ width: '100%' }}>
-                        🎁 CLAIM YOUR REWARD
-                        </button>
-                    </a>
-                    )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
+
+      <style>{`
+        .quiz-option:hover {
+          transform: translateX(5px);
+          border-color: var(--bright-blue) !important;
+        }
+      `}</style>
     </div>
   );
 };
