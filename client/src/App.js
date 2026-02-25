@@ -80,7 +80,7 @@ const AdminLayout = ({ children }) => {
         <NavLink to="/admin/logs" style={({ isActive }) => ({ textDecoration: 'none' })}>
           {({ isActive }) => (
             <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
-              📋 LOGS
+              LOGS
             </button>
           )}
         </NavLink>
