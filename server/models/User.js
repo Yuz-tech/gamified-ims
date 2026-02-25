@@ -24,6 +24,47 @@ const userSchema = new mongoose.Schema({
     enum: ['employee', 'admin'],
     default: 'employee'
   },
+  level: {
+    type: Number,
+    default: 1
+  },
+  xp: {
+    type: Number,
+    default: 0
+  },
+  completedTopics: [{
+  topicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Topic'
+  },
+  score: Number,
+  completedAt: {
+    type: Date,
+    default: Date.now
+  }
+}],
+
+badges: [{
+  badgeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Badge'
+  },
+  earnedAt: {
+    type: Date,
+    default: Date.now
+  }
+}],
+
+watchedVideos: [{
+  topicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Topic'
+  },
+  completedAt: {
+    type: Date,
+    default: Date.now
+  }
+}],
   isApproved: {
     type: Boolean,
     default: false

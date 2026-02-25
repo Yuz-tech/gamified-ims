@@ -1,54 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { color, motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
 const Home = () => {
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [stats, setStats] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [badges, setBadges] = useState([]);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [userBadges, setUserBadges] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const carouselContent = [
-    {
-      title: 'WELCOME TO THE GAMIFIED IMS AWARENESS TRAINING',
-      text: 'Level up your IMS knowledge through our training modules!'
-    },
-    {
-      title: 'COLLECT BADGES',
-      text: 'Complete topics and quizzes to earn exclusive badges and XP!'
-    },
-    {
-      title: 'CLIMB THE LEADERBOARD',
-      text: 'Compete with your colleagues and become the top player!'
-    },
-    {
-      title: 'MASTER YOUR SKILLS',
-      text: 'Watch videos, pass quizzes, and prove your expertise!'
-    }
-  ];
 
   useEffect(() => {
     fetchData();
-
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % carouselContent.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
   }, []);
 
   const fetchData = async () => {
     try {
-      const [leaderboardRes, userRes] = await Promise.all([
+      const [leaderboardRes, userRes, badgesRes] = await Promise.all([
         api.get('/leaderboard?limit=5'),
-        api.get('/auth/me')
+        api.get('/auth/me'),
+        api.get('/admin/badges')
       ]);
 
       setLeaderboard(leaderboardRes.data);
-      setBadges(userRes.data.badges || []);
-      updateUser(userRes.data);
+      
+      // Get all badges
+      const allBadges = badgesRes.data;
+      
+      // Get user's earned badge IDs
+      const earnedBadgeIds = (userRes.data.badges || []).map(
+        ub => ub.badgeId?._id || ub.badgeId
+      );
+
+      // Map badges with earned status
+      const badgesWithStatus = allBadges.map(badge => ({
+        ...badge,
+        earned: earnedBadgeIds.includes(badge._id)
+      }));
+
+      setUserBadges(badgesWithStatus);
+
+      // Calculate stats
+      const earnedCount = badgesWithStatus.filter(b => b.earned).length;
+      const totalCount = badgesWithStatus.length;
+
+      setStats({
+        level: userRes.data.level || 1,
+        xp: userRes.data.xp || 0,
+        totalBadges: earnedCount,
+        completedTopics: userRes.data.completedTopics?.length || 0
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -58,351 +61,318 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh' 
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div className="loading neon-text">LOADING...</div>
       </div>
     );
   }
 
-  const xpToNextLevel = ((user?.level || 1) ** 2) * 100;
-  const currentLevelXp = ((user?.level || 1) - 1) ** 2 * 100;
-  const xpProgress = (user?.xp || 0) - currentLevelXp;
-  const progressPercentage = (xpProgress / (xpToNextLevel - currentLevelXp)) * 100;
+  const nextLevelXP = Math.pow(stats.level, 2) * 100;
+  const progressToNextLevel = ((stats.xp % nextLevelXP) / nextLevelXP) * 100;
 
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <div className="scanlines"></div>
 
-      {/* Carousel */}
+      {/* Welcome Header */}
       <motion.div
-        className="retro-card pixel-corners"
-        style={{ marginBottom: '40px', minHeight: '200px' }}
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        style={{ marginBottom: '40px', textAlign: 'center' }}
       >
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -100 }}
-          style={{ textAlign: 'center', padding: '40px 20px' }}
-        >
-          <h2 className="neon-text" style={{ 
-            fontSize: '24px', 
-            marginBottom: '20px',
-          }}>
-            {carouselContent[currentSlide].title}
-          </h2>
-          <p style={{ 
-            fontSize: '12px', 
-            lineHeight: '1.8',
-            color: 'var(--text-light)'
-          }}>
-            {carouselContent[currentSlide].text}
-          </p>
-        </motion.div>
-
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          gap: '10px',
-          marginTop: '20px'
-        }}>
-          {carouselContent.map((_, index) => (
-            <div
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              style={{
-                width: '15px',
-                height: '15px',
-                border: `2px solid ${index === currentSlide ? 'var(--light-blue)' : 'var(--bright-blue)'}`,
-                background: index === currentSlide ? 'var(--light-blue)' : 'transparent',
-                cursor: 'pointer',
-                boxShadow: index === currentSlide ? '0 0 15px var(--light-blue)' : 'none'
-              }}
-            />
-          ))}
-        </div>
+        <h1 className="neon-text" style={{ fontSize: '32px', marginBottom: '10px', color: 'var(--primary-navy)' }}>
+          WELCOME, {user?.username?.toUpperCase()}!
+        </h1>
+        <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
+          Ready to level up your IMS knowledge?
+        </p>
       </motion.div>
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '30px'
+      {/* Stats Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '20px',
+        marginBottom: '40px'
       }}>
-        {/* XP Progress */}
+        {/* Level Card */}
         <motion.div
-          initial={{ x: -100, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.1 }}
           className="retro-card"
+          style={{ textAlign: 'center' }}
         >
-          <h3 style={{ 
-            fontSize: '18px', 
-            marginBottom: '20px',
-            color: 'var(--text-dark)'
+          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            LEVEL
+          </div>
+          <div style={{ fontSize: '48px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>
+            {stats.level}
+          </div>
+          <div style={{
+            marginTop: '15px',
+            background: 'var(--bg-dark)',
+            border: '2px solid var(--primary-navy)',
+            height: '20px',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            YOUR PROGRESS
-          </h3>
-
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              fontSize: '12px',
-              marginBottom: '10px',
-              color: 'var(--text-dark)'
-            }}>
-              <span>LEVEL {user?.level || 1}</span>
-              <span>LEVEL {(user?.level || 1) + 1}</span>
-            </div>
             <div style={{
-              background: 'var(--primary-navy)',
-              border: '2px solid var(--bright-blue)',
-              height: '30px',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                background: '#4CAF50',
-                height: '100%',
-                width: `${Math.min(progressPercentage, 100)}%`,
-                transition: 'width 0.5s ease',
-                boxShadow: '0 0 20px var(--bright-blue)'
-              }} />
-            </div>
-            <div style={{ 
-              textAlign: 'center', 
-              marginTop: '10px',
-              fontSize: '10px',
-              color: 'var(--text-dark)'
-            }}>
-              {user?.xp || 0} / {xpToNextLevel} XP
-            </div>
+              background: 'linear-gradient(90deg, var(--bright-blue), var(--light-blue))',
+              height: '100%',
+              width: `${progressToNextLevel}%`,
+              transition: 'width 0.5s ease'
+            }} />
           </div>
-
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '15px',
-            fontSize: '12px'
-          }}>
-            <div style={{ 
-              padding: '15px',
-              border: '2px solid var(--bright-blue)',
-              textAlign: 'center'
-            }}>
-              <div style={{ color: 'var(--orange-accent)', marginBottom: '5px' }}>
-                BADGES
-              </div>
-              <div style={{ fontSize: '24px', color: '#000000' }}>
-                {badges.length}
-              </div>
-            </div>
-            <div style={{ 
-              padding: '15px',
-              border: '2px solid var(--light-blue)',
-              textAlign: 'center'
-            }}>
-              <div style={{ color: 'var(--orange-accent)', marginBottom: '5px' }}>
-                TOPICS
-              </div>
-              <div style={{ fontSize: '24px', color: '#000000' }}>
-                {user?.completedTopics?.length || 0}
-              </div>
-            </div>
+          <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>
+            {Math.round(progressToNextLevel)}% to Level {stats.level + 1}
           </div>
         </motion.div>
 
-        {/* Badges */}
+        {/* XP Card */}
         <motion.div
-          initial={{ x: 100, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
           className="retro-card"
+          style={{ textAlign: 'center' }}
         >
-          <h3 style={{ 
-            fontSize: '18px', 
-            marginBottom: '20px',
-            color: 'var(--text-dark)',
-          }}>
-            YOUR BADGES
-          </h3>
-
-          <div style={{ 
-            display: 'flex', 
-            flexWrap: 'wrap',
-            gap: '15px',
-            justifyContent: 'center',
-            minHeight: '120px'
-          }}>
-            {badges.length > 0 ? (
-              badges.map((badge, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    border: '3px solid var(--orange-accent)',
-                    padding: '5px',
-                    background: 'var(--primary-navy)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '40px',
-                    boxShadow: '3px 3px 0 var(--primary-navy)',
-                    cursor: 'pointer',
-                    overflow: 'hidden'
-                  }}
-                  title={badge.badgeId?.name}
-                >
-                  {badge.badgeId?.imageUrl}
-                  <img src = {badge.badgeId?.imageUrl}
-                       alt = {badge.badgeId?.name || 'Badge'}
-                       style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        imageRendering: 'pixelated'
-                       }}
-                       onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.parentElement.innerHTML = '<div style = "font-size: 32px;">BADGE</div>';
-                       }}
-                       />
-
-                       {/*Shine effect */}
-                       <div style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: '-100%',
-                          width: '100%',
-                          height: '100%',
-                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
-                          animation: 'shine 3s infinite'
-                       }} />
-
-                </motion.div>
-              ))
-            ) : (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '40px',
-                color: 'var(--light-blue)',
-                fontSize: '10px'
-              }}>
-                NO BADGES YET!
-                <br />
-                COMPLETE TOPICS TO EARN BADGES
-              </div>
-            )}
+          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            TOTAL XP
+          </div>
+          <div style={{ fontSize: '48px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>
+            {stats.xp}
+          </div>
+          <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
+            ⭐ Experience Points
           </div>
         </motion.div>
 
-        {/* Leaderboard */}
+        {/* Badges Card */}
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.3 }}
           className="retro-card"
-          style={{ gridColumn: '1 / -1' }}
+          style={{ textAlign: 'center', cursor: 'pointer' }}
+          onClick={() => navigate('/achievements')}
         >
-          <h3 style={{ 
-            fontSize: '18px', 
-            marginBottom: '20px',
-            color: 'var(--text-dark)',
-          }}>
-            LEADERBOARD
-          </h3>
+          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            BADGES EARNED
+          </div>
+          <div style={{ fontSize: '48px', color: 'var(--success-green)', fontWeight: 'bold' }}>
+            {stats.totalBadges}
+          </div>
+          <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
+            🏆 Click to view all
+          </div>
+        </motion.div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', fontSize: '12px' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--dark-bg)' }}>
-                  <th style={{ padding: '10px', color: '#ffffff' }}>RANK</th>
-                  <th style={{ padding: '10px', color: '#ffffff', textAlign: 'left' }}>
-                    PLAYER
-                  </th>
-                  <th style={{ padding: '10px', color: '#ffffff' }}>LEVEL</th>
-                  <th style={{ padding: '10px', color: '#ffffff' }}>XP</th>
-                  <th style={{ padding: '10px', color: '#ffffff' }}>BADGES</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((player) => (
-                  <tr
-                    key={player.rank}
-                    style={{ 
-                      borderBottom: '1px solid var(--grid-color)',
-                      background: player.username === user?.username 
-                        ? 'rgba(0, 255, 255, 0.1)' 
-                        : 'transparent'
-                    }}
-                  >
-                    <td style={{ 
-                      padding: '10px', 
-                      textAlign: 'center',
-                      color: player.rank === 1 ? 'var(--error-red)' : 'var(--text-light)'
-                    }}>
-                      {player.rank === 1} {player.rank}
-                    </td>
-
-                    <td style={{ 
-                      padding: '12px',
-                      color: player.username === user?.username
-                        ? 'var(--text-light)' 
-                        : 'var(--text-dark)'
-                    }}>
-                      {player.username}
-                    </td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--text-dark)' }}>
-                      {player.level}
-                    </td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--text-dark)' }}>
-                      {player.xp}
-                    </td>
-
-                    <td style={{ padding: '10px', textAlign: 'center' }}>
-                      <div style = {{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '5px'
-                      }}>
-                        <div style={{
-                          width: '20px',
-                          height: '20px',
-                          background: 'var(--orange-accent)',
-                          border: '2px solid var(--primary-navy)',
-                          borderRadius: '2px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '10px',
-                          color: 'white',
-                          fontWeight: 'bold',
-                        }}>
-                          {player.badgeCount}
-                        </div>
-                        <span style={{
-                          fontSize: '16px',
-                          filter: player.badgeCount > 0 ? 'none' : 'grayscale(100%)',
-                          opacity: player.badgeCount > 0 ? 1 : 0.3
-                        }}>
-                          🏆
-                        </span>
-                      </div>
-                    </td>
-
-
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Topics Card */}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="retro-card"
+          style={{ textAlign: 'center', cursor: 'pointer' }}
+          onClick={() => navigate('/topics')}
+        >
+          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            COMPLETED TOPICS
+          </div>
+          <div style={{ fontSize: '48px', color: 'var(--light-blue)', fontWeight: 'bold' }}>
+            {stats.completedTopics}
+          </div>
+          <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
+            📚 Click to continue
           </div>
         </motion.div>
       </div>
+
+      {/* Badge Gallery */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="retro-card"
+        style={{ marginBottom: '40px' }}
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          🏆 YOUR BADGE COLLECTION
+        </h3>
+
+        {userBadges.length > 0 ? (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+            gap: '20px'
+          }}>
+            {userBadges.map((badge, index) => {
+              const imageUrl = badge.imageUrl.startsWith('/uploads/') 
+                ? `http://localhost:5000${badge.imageUrl}` 
+                : badge.imageUrl;
+
+              return (
+                <motion.div
+                  key={badge._id}
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.6 + index * 0.1, type: 'spring' }}
+                  style={{
+                    textAlign: 'center',
+                    opacity: badge.earned ? 1 : 0.3,
+                    filter: badge.earned ? 'none' : 'grayscale(100%)'
+                  }}
+                  title={badge.name}
+                >
+                  <div style={{
+                    width: '80px',
+                    height: '80px',
+                    margin: '0 auto 10px',
+                    border: `3px solid ${badge.earned ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: badge.earned ? 'var(--bg-lightest)' : 'var(--bg-medium)',
+                    boxShadow: badge.earned ? '3px 3px 0 var(--primary-navy)' : 'none',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    {badge.earned ? (
+                      <>
+                        <img 
+                          src={imageUrl}
+                          alt={badge.name}
+                          style={{
+                            maxWidth: '90%',
+                            maxHeight: '90%',
+                            objectFit: 'contain',
+                            imageRendering: 'pixelated'
+                          }}
+                          onError={(e) => {
+                            console.error('Badge image failed to load:', imageUrl);
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<div style="font-size: 40px;">🏆</div>';
+                          }}
+                        />
+                        {/* Shine effect */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-50%',
+                          left: '-50%',
+                          width: '200%',
+                          height: '200%',
+                          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+                          animation: 'shine 3s infinite',
+                          pointerEvents: 'none'
+                        }} />
+                      </>
+                    ) : (
+                      <div style={{ fontSize: '40px', color: 'var(--text-lighter)' }}>
+                        🔒
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ 
+                    fontSize: '8px', 
+                    color: badge.earned ? 'var(--text-dark)' : 'var(--text-light)',
+                    fontWeight: badge.earned ? 'bold' : 'normal'
+                  }}>
+                    {badge.name}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-light)' }}>
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>🏆</div>
+            <div style={{ fontSize: '12px' }}>No badges yet - complete topics to earn badges!</div>
+          </div>
+        )}
+
+        <button
+          onClick={() => navigate('/achievements')}
+          className="retro-btn"
+          style={{ marginTop: '20px', width: '100%' }}
+        >
+          VIEW ALL ACHIEVEMENTS →
+        </button>
+      </motion.div>
+
+      {/* Leaderboard */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="retro-card"
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          🏅 TOP PERFORMERS
+        </h3>
+
+        {leaderboard.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {leaderboard.map((player, index) => (
+              <motion.div
+                key={player._id || index}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '15px',
+                  border: index === 0 ? '3px solid var(--orange-accent)' : '2px solid var(--border-color)',
+                  background: index === 0 ? 'rgba(249, 115, 22, 0.05)' : 'var(--bg-light)',
+                  boxShadow: index === 0 ? '3px 3px 0 var(--primary-navy)' : 'none'
+                }}
+              >
+                <div style={{
+                  fontSize: '20px',
+                  marginRight: '15px',
+                  minWidth: '30px',
+                  textAlign: 'center'
+                }}>
+                  {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '11px', color: 'var(--primary-navy)', fontWeight: 'bold' }}>
+                    {player.username}
+                  </div>
+                  <div style={{ fontSize: '8px', color: 'var(--text-light)' }}>
+                    Level {player.level} • {player.xp} XP
+                  </div>
+                </div>
+                <div style={{
+                  fontSize: '10px',
+                  color: 'var(--orange-accent)',
+                  padding: '5px 10px',
+                  border: '2px solid var(--orange-accent)',
+                  background: 'rgba(249, 115, 22, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}>
+                  <span style={{ opacity: player.badgeCount > 0 ? 1 : 0.3 }}>🏆</span>
+                  {player.badgeCount}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-light)' }}>
+            No leaderboard data yet
+          </div>
+        )}
+      </motion.div>
+
+      <style>{`
+        @keyframes shine {
+          0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+          100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+      `}</style>
     </div>
   );
 };

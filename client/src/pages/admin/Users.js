@@ -10,6 +10,8 @@ const Users = () => {
   const [showApproveModal, setShowApproveModal] = useState(null);
   const [password, setPassword] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   const [formData, setFormData] = useState({
     username: '',
@@ -22,6 +24,19 @@ const Users = () => {
     fetchUsers();
     fetchPendingUsers();
   }, []);
+
+  useEffect(() => {
+  if (searchTerm) {
+    const filtered = users.filter(user =>
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredUsers(filtered);
+  } else {
+    setFilteredUsers(users);
+  }
+}, [searchTerm, users]);
 
   const fetchUsers = async () => {
     try {
@@ -56,6 +71,8 @@ const Users = () => {
       setPassword('');
       fetchUsers();
       fetchPendingUsers();
+      
+      
     } catch (error) {
       alert(error.response?.data?.message || 'Error approving user');
     }
@@ -297,6 +314,7 @@ const Users = () => {
                     >
                       ✖ DELETE
                     </button>
+                    
                   </td>
                 </tr>
               ))}
@@ -457,5 +475,7 @@ const Users = () => {
     </div>
   );
 };
+
+
 
 export default Users;

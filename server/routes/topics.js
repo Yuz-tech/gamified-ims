@@ -1,12 +1,13 @@
 import express from 'express';
 import Topic from '../models/Topic.js';
-import Badge from '../models/Badge.js';
 import User from '../models/User.js';
+import Badge from '../models/Badge.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
 
+// All topic routes require authentication
 router.use(authenticateToken);
 
 // Get all active topics
@@ -16,16 +17,22 @@ router.get('/', async(req,res) => {
     const topics = await Topic.find({ isActive: true })
       .select({ order: 1 });
     const user = await User.findById(req.user._id);
-
+    
     const topicsWithStatus = topics.map(topic => {
-      const isCompleted = user.isTopicCompletedThisYear(topic._id);
-      const isVideoWatched = user.isVideoWatchedThisYear(topic._id);
-
+      // Check if topic is completed
+      const isCompleted = user.completedTopics.some(
+        ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
+      );
+      
+      // Check if video is watched
+      const isVideoWatched = user.watchedVideos.some(
+        wv => wv.topicId && wv.topicId.toString() === topic._id.toString()
+      );
+      
       return {
         ...topic.toObject(),
         isCompleted,
         isVideoWatched,
-        isCurrentYear,
         questions: topic.questions.map(q => ({
           question: q.question,
           options: q.options,
@@ -35,39 +42,50 @@ router.get('/', async(req,res) => {
     });
 
     res.json(topicsWithStatus);
-  } catch(error) {
-    res.status(500).json({ message: 'Server error', error:error.message });
+  } catch (error) {
+    console.error('Error getting topics:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
 // Get single topic
 router.get('/:topicId', async(req,res) => {
   try {
-    const currentYear = new Date().getFullYear();
-    const topic = await Topic.findById(req.params.topicId)
-      .select('-questions.correctAnswer');
+    const topic = await Topic.findById(req.params.topicId);
 
     if(!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
 
     const user = await User.findById(req.user._id);
-    const isCompleted = user.isTopicCompletedThisYear(topic._id);
-    const isVideoWatched = user.isVideoWatchedThisYear(topic._id);
+    
+    // Check if topic is completed
+    const isCompleted = user.completedTopics.some(
+      ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
+    );
+    
+    // Check if video is watched
+    const isVideoWatched = user.watchedVideos.some(
+      wv => wv.topicId && wv.topicId.toString() === topic._id.toString()
+    );
 
+    // If completed, show all questions with correct answers (for review)
+    // If not completed, hide correct answers
     res.json({
       ...topic.toObject(),
       isCompleted,
       isVideoWatched,
-      currentYear,
-      questions: topic.questions.map(q => ({
-        question: q.question,
-        options: q.options,
-        points: q.points
-      }))
+      questions: isCompleted 
+        ? topic.questions // Show everything if completed (for review)
+        : topic.questions.map(q => ({ // Hide correct answers if not completed
+            question: q.question,
+            options: q.options,
+            points: q.points
+          }))
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error:error.message});
+    console.error('Error getting topic:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -77,13 +95,14 @@ router.post('/:topicId/watch-video', async(req,res) => {
     const currentYear = new Date().getFullYear();
     const user = await User.findById(req.user._id);
     const topicId = req.params.topicId;
-    const alreadyWatched = user.isVideoWatchedThisYear(topicId);
 
-    if(!alreadyWatched) {
-      user.watchedVideos.push({
-        topicId,
-        year: currentYear
-      });
+    // Check if already watched
+    const alreadyWatched = user.watchedVideos.some(
+      wv => wv.topicId && wv.topicId.toString() === topicId
+    );
+
+    if (!alreadyWatched) {
+      user.watchedVideos.push({ topicId });
       await user.save();
 
       await logActivity(user._id, 'video_watched', {
@@ -94,7 +113,8 @@ router.post('/:topicId/watch-video', async(req,res) => {
 
     res.json({ message: 'Video marked as watched' });
   } catch (error) {
-    res.status(500).json({ messge: 'Server error', error: error.message });
+    console.error('Error marking video as watched:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -110,8 +130,10 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
     }
     const user = await User.findById(req.user._id);
 
-    //Check if video was watched this year
-    const videoWatched = user.isVideoWatchedThisYear(topicId);
+    // Check if video was watched
+    const videoWatched = user.watchedVideos.some(
+      wv => wv.topicId && wv.topicId.toString() === topicId
+    );
 
     if(!videoWatched) {
       return res.status(400).json({
@@ -119,12 +141,12 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
       });
     }
 
-    const alreadyCompleted = user.isTopicCompletedThisYear(topicId);
-    
-    if(alreadyCompleted) {
-      return res.status(400).json({ message: 'Quiz already completed for this year'});
-    }
+    // Check if already completed (allow review but don't award points again)
+    const alreadyCompleted = user.completedTopics.some(
+      ct => ct.topicId && ct.topicId.toString() === topicId
+    );
 
+    // Calculate score
     let correctAnswers = 0;
     let totalPoints = 0;
     let earnedPoints = 0;
@@ -143,39 +165,32 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
     await logActivity(user._id, 'quiz_completed', {
       topicId,
       score: scorePercentage,
-      passed,
-      year: currentYear
+      passed
     }, req);
 
-    if(passed) {
+    // Only award XP and badge if passed AND not already completed
+    if (passed && !alreadyCompleted) {
+      // Add to completed topics
       user.completedTopics.push({
-        topicId, 
-        year: currentYear,
-        score: scorePercentage
+        topicId,
+        score: scorePercentage,
+        completedAt: new Date()
       });
 
       user.xp += topic.xpReward;
-      user.calculateLevel();
+      user.level = Math.floor(Math.sqrt(user.xp / 100)) + 1;
 
-      const badge = await Badge.findOne({
-        topicId,
-        year: currentYear,
-        isActive: true
-      });
-
-      if(badge) {
+      // Find and award badge
+      const badge = await Badge.findOne({ topicId });
+      
+      if (badge) {
         const hasBadge = user.badges.some(
-          b => b.badgeId.toString() === badge._id.toString() && b.year === currentYear
+          b => b.badgeId && b.badgeId.toString() === badge._id.toString()
         );
         if(!hasBadge) {
           user.badges.push({
             badgeId: badge._id,
-            year: currentYear
-          });
-          await logActivity(user._id,'badge_earned', {
-            badgeId: badge._id,
-            badgeName: badge.name,
-            year: currentYear
+            badgeName: badge.name
           }, req);
         }
       }
@@ -200,11 +215,19 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
         newXP: user.xp,
         badgeEarned: badge ? badge.name : null,
         badgeImage: badge ? badge.imageUrl : null,
-        allBadgesCollected,
-        currentYear,
-        congratsLink : allBadgesCollected ? 'https://google.com' : null
+        allBadgesCollected
+      });
+    } else if (passed && alreadyCompleted) {
+      // Passed but already completed - review mode
+      res.json({
+        passed: true,
+        score: scorePercentage,
+        correctAnswers,
+        totalQuestions: topic.questions.length,
+        message: 'Review completed - you already earned rewards for this topic'
       });
     } else {
+      // Failed
       res.json({
         passed: false,
         score: scorePercentage,
@@ -214,6 +237,7 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
       });
     }
   } catch (error) {
+    console.error('Error submitting quiz:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

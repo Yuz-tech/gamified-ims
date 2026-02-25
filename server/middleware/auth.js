@@ -11,34 +11,38 @@ export const authenticateToken = async(req,res,next) => {
       return res.status(401).json({ message: 'Access token required' });
     }
 
+    // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // Check if session exists and is active
     const session = await Session.findOne({
       token,
       isActive: true,
       expiresAt: { $gt: new Date() }
     });
 
-    if(!session) {
+    if (!session) {
       return res.status(401).json({ message: 'Session expired or invalid' });
     }
 
+    // Get user
     const user = await User.findById(decoded._id);
-    if(!user) {
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if(!user.isApproved) {
+    if (!user.isApproved) {
       return res.status(403).json({ message: 'Account not approved' });
     }
 
+    // Attach user and session to request
     req.user = user;
     req.session = session;
-
+    
     next();
-  } catch(error) {
+  } catch (error) {
     if (error.name === 'JsonWebTokenError') {
-      return res.status(403).json({ message: 'Invalid Token' });
+      return res.status(403).json({ message: 'Invalid token' });
     }
     if (error.name === 'TokenExpiredError') {
       return res.status(403).json({ message: 'Token expired' });
@@ -47,8 +51,8 @@ export const authenticateToken = async(req,res,next) => {
   }
 };
 
-export const isAdmin = (req,res,next) => {
-  if(req.user.role !== 'admin') {
+export const isAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Admin access required' });
   }
   next();

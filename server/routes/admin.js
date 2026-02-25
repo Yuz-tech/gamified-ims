@@ -145,35 +145,41 @@ router.post('/topics', async (req, res) => {
   }
 });
 
-// Update topic
-router.put('/topics/:topicId', async (req, res) => {
+// Toggle topic active/inactive (instead of delete)
+router.put('/topics/:topicId/toggle', async (req, res) => {
   try {
-    const topic = await Topic.findByIdAndUpdate(
-      req.params.topicId,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const topic = await Topic.findById(req.params.topicId);
     if (!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
-    res.json(topic);
+    
+    topic.isActive = !topic.isActive;
+    await topic.save();
+    
+    res.json({ 
+      message: `Topic ${topic.isActive ? 'enabled' : 'disabled'} successfully`,
+      topic 
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Delete topic
-router.delete('/topics/:topicId', async (req, res) => {
+// Update topic (remove XP and passing score from editable fields)
+router.put('/topics/:topicId', async (req, res) => {
   try {
-    const topic = await Topic.findByIdAndDelete(req.params.topicId);
+    const { title, description, videoUrl, videoDuration, order, questions, isActive } = req.body;
+    
+    const topic = await Topic.findByIdAndUpdate(
+      req.params.topicId,
+      { title, description, videoUrl, videoDuration, order, questions, isActive },
+      { new: true, runValidators: true }
+    );
+    
     if (!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
-    
-    // Also delete associated badge
-    await Badge.deleteOne({ topicId: req.params.topicId });
-    
-    res.json({ message: 'Topic deleted successfully' });
+    res.json(topic);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -235,6 +241,26 @@ router.delete('/badges/:badgeId', async (req, res) => {
 // ===== ACTIVITY LOGS =====
 
 // Get all activity logs
+router.get('/activity-logs', async (req, res) => {
+  try {
+    const { userId, action, limit = 100 } = req.query;
+    
+    const query = {};
+    if (userId) query.userId = userId;
+    if (action) query.action = action;
+
+    const logs = await ActivityLog.find(query)
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get all activity logs with filtering
 router.get('/activity-logs', async (req, res) => {
   try {
     const { userId, action, limit = 100 } = req.query;

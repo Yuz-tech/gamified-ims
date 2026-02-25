@@ -15,7 +15,7 @@ const topicSchema = new mongoose.Schema({
     required: true
   },
   videoDuration: {
-    type: Number, // in seconds
+    type: Number,
     required: true
   },
   order: {
@@ -25,12 +25,13 @@ const topicSchema = new mongoose.Schema({
   },
   xpReward: {
     type: Number,
-    default: 100
+    default: 100, // Fixed at 100
+    immutable: true // Cannot be changed after creation
   },
   passingScore: {
     type: Number,
-    required: true,
-    default: 70
+    default: 70, // Fixed at 70%
+    immutable: true // Cannot be changed after creation
   },
   questions: [{
     question: {
@@ -42,7 +43,7 @@ const topicSchema = new mongoose.Schema({
       required: true
     }],
     correctAnswer: {
-      type: Number, // index of correct option
+      type: Number,
       required: true
     },
     points: {
@@ -56,6 +57,15 @@ const topicSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+// Validation: Must have at least 1 question
+topicSchema.pre('save', function(next) {
+  if (this.questions.length === 0) {
+    next(new Error('Topic must have at least one question'));
+  } else {
+    next();
+  }
 });
 
 const Topic = mongoose.model('Topic', topicSchema);

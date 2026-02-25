@@ -11,6 +11,7 @@ import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
 import AdminTopics from './pages/admin/Topics';
 import AdminBadges from './pages/admin/Badges';
+import ActivityLogs from './pages/admin/ActivityLogs';
 import './styles/retro.css';
 import YearlyReset from './pages/admin/YearlyReset';
 
@@ -45,17 +46,44 @@ const AdminLayout = ({ children }) => {
         marginBottom: '30px',
         flexWrap: 'wrap'
       }}>
-        <NavLink to="/admin" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          DASHBOARD
+        <NavLink to="/admin" end style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              DASHBOARD
+            </button>
+          )}
         </NavLink>
-        <NavLink to="/admin/users" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          USERS
+        
+        <NavLink to="/admin/users" style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              USERS
+            </button>
+          )}
         </NavLink>
-        <NavLink to="/admin/topics" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          TOPICS
+        
+        <NavLink to="/admin/topics" style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              TOPICS
+            </button>
+          )}
         </NavLink>
-        <NavLink to="/admin/badges" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          BADGES
+        
+        <NavLink to="/admin/badges" style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              BADGES
+            </button>
+          )}
+        </NavLink>
+        
+        <NavLink to="/admin/logs" style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              📋 LOGS
+            </button>
+          )}
         </NavLink>
         <NavLink to="/admin/logs" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
           LOGS
@@ -153,16 +181,16 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } 
         />
-        <Route
-          path="/admin/yearly-reset"
+        <Route 
+          path="/admin/logs" 
           element={
             <ProtectedRoute adminOnly={true}>
               <AdminLayout>
-                <YearlyReset />
+                <ActivityLogs />
               </AdminLayout>
             </ProtectedRoute>
-          }
-        />
+          } 
+        />        
         
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
