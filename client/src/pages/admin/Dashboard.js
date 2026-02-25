@@ -49,7 +49,7 @@ const Dashboard = () => {
           color: 'var(--orange-accent)'
         }}
       >
-        ⚙️ ADMIN DASHBOARD
+        ADMIN DASHBOARD
       </motion.h1>
 
       {/* Stats Grid */}

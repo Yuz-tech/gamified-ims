@@ -159,11 +159,11 @@ const Topics = () => {
         className="neon-text"
         style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
       >
-        📚 TOPIC MANAGEMENT
+        TOPIC MANAGEMENT
       </motion.h1>
 
       <button onClick={() => setShowForm(!showForm)} className="retro-btn" style={{ marginBottom: '30px' }}>
-        {showForm ? '✖ CANCEL' : '➕ CREATE TOPIC'}
+        {showForm ? 'CANCEL' : 'CREATE TOPIC'}
       </button>
 
       {/* Form */}
@@ -203,7 +203,7 @@ const Topics = () => {
             {/* Fixed Values Display */}
             <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(59, 130, 246, 0.1)', border: '2px solid var(--bright-blue)' }}>
               <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-                ℹ️ FIXED VALUES (Cannot be changed):
+                FIXED VALUES (Cannot be changed):
               </div>
               <div style={{ fontSize: '12px', color: 'var(--primary-navy)' }}>
                 <strong>XP Reward:</strong> 100 XP | <strong>Passing Score:</strong> 70%
@@ -215,7 +215,7 @@ const Topics = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                 <label style={{ fontSize: '10px', color: 'var(--text-medium)' }}>QUESTIONS (minimum 1 required)</label>
                 <button type="button" onClick={addQuestion} className="retro-btn" style={{ fontSize: '9px', padding: '6px 12px' }}>
-                  ➕ ADD QUESTION
+                  ADD QUESTION
                 </button>
               </div>
 
@@ -224,7 +224,7 @@ const Topics = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                     <h4 style={{ fontSize: '11px', color: 'var(--primary-navy)' }}>QUESTION {qIndex + 1}</h4>
                     <button type="button" onClick={() => removeQuestion(qIndex)} className="retro-btn danger" style={{ fontSize: '8px', padding: '5px 10px' }}>
-                      ✖ DELETE
+                      DELETE
                     </button>
                   </div>
 
@@ -303,7 +303,7 @@ const Topics = () => {
                       background: topic.isActive ? 'var(--error-red)' : 'var(--success-green)',
                       borderColor: topic.isActive ? '#DC2626' : '#059669'
                     }}>
-                      {topic.isActive ? '✖ DISABLE' : '✓ ENABLE'}
+                      {topic.isActive ? 'DISABLE' : 'ENABLE'}
                     </button>
                   </div>
                 </td>

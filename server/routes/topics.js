@@ -7,7 +7,6 @@ import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
 
-// All topic routes require authentication
 router.use(authenticateToken);
 
 // Get all active topics
@@ -19,12 +18,10 @@ router.get('/', async(req,res) => {
     const user = await User.findById(req.user._id);
     
     const topicsWithStatus = topics.map(topic => {
-      // Check if topic is completed
       const isCompleted = user.completedTopics.some(
         ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
       );
-      
-      // Check if video is watched
+
       const isVideoWatched = user.watchedVideos.some(
         wv => wv.topicId && wv.topicId.toString() === topic._id.toString()
       );
@@ -58,26 +55,22 @@ router.get('/:topicId', async(req,res) => {
     }
 
     const user = await User.findById(req.user._id);
-    
-    // Check if topic is completed
+
     const isCompleted = user.completedTopics.some(
       ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
     );
-    
-    // Check if video is watched
+
     const isVideoWatched = user.watchedVideos.some(
       wv => wv.topicId && wv.topicId.toString() === topic._id.toString()
     );
 
-    // If completed, show all questions with correct answers (for review)
-    // If not completed, hide correct answers
     res.json({
       ...topic.toObject(),
       isCompleted,
       isVideoWatched,
       questions: isCompleted 
         ? topic.questions // Show everything if completed (for review)
-        : topic.questions.map(q => ({ // Hide correct answers if not completed
+        : topic.questions.map(q => ({ 
             question: q.question,
             options: q.options,
             points: q.points
@@ -96,7 +89,6 @@ router.post('/:topicId/watch-video', async(req,res) => {
     const user = await User.findById(req.user._id);
     const topicId = req.params.topicId;
 
-    // Check if already watched
     const alreadyWatched = user.watchedVideos.some(
       wv => wv.topicId && wv.topicId.toString() === topicId
     );
@@ -130,7 +122,6 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
     }
     const user = await User.findById(req.user._id);
 
-    // Check if video was watched
     const videoWatched = user.watchedVideos.some(
       wv => wv.topicId && wv.topicId.toString() === topicId
     );
@@ -141,7 +132,7 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
       });
     }
 
-    // Check if already completed (allow review but don't award points again)
+    // (allow review but don't award points again)
     const alreadyCompleted = user.completedTopics.some(
       ct => ct.topicId && ct.topicId.toString() === topicId
     );
@@ -168,9 +159,7 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
       passed
     }, req);
 
-    // Only award XP and badge if passed AND not already completed
     if (passed && !alreadyCompleted) {
-      // Add to completed topics
       user.completedTopics.push({
         topicId,
         score: scorePercentage,
@@ -180,7 +169,6 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
       user.xp += topic.xpReward;
       user.level = Math.floor(Math.sqrt(user.xp / 100)) + 1;
 
-      // Find and award badge
       const badge = await Badge.findOne({ topicId });
       
       if (badge) {
@@ -218,7 +206,6 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
         allBadgesCollected
       });
     } else if (passed && alreadyCompleted) {
-      // Passed but already completed - review mode
       res.json({
         passed: true,
         score: scorePercentage,

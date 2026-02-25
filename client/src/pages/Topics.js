@@ -176,9 +176,6 @@ const Topics = () => {
           <div style={{ fontSize: '14px', color: 'var(--light-blue)' }}>
             NO TOPICS AVAILABLE YET
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--bright-blue)', marginTop: '10px' }}>
-            Check back soon for new training content!
-          </div>
         </div>
       )}
     </div>

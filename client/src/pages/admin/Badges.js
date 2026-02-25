@@ -46,7 +46,7 @@ const Badges = () => {
       return;
     }
 
-    // Validate file size (5MB max)
+    // file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       alert('File size must be less than 5MB');
       return;
@@ -163,7 +163,7 @@ const Badges = () => {
       </motion.h1>
 
       <button onClick={() => setShowForm(!showForm)} className="retro-btn" style={{ marginBottom: '30px' }}>
-        {showForm ? '✖ CANCEL' : '➕ CREATE BADGE'}
+        {showForm ? 'CANCEL' : 'CREATE BADGE'}
       </button>
 
       {/* Form */}
@@ -249,7 +249,7 @@ const Badges = () => {
                     opacity: uploading ? 0.5 : 1
                   }}
                 >
-                  {uploading ? '⏳ UPLOADING...' : '📁 UPLOAD IMAGE'}
+                  {uploading ? 'UPLOADING...' : 'UPLOAD IMAGE'}
                 </div>
               </label>
 
@@ -261,7 +261,7 @@ const Badges = () => {
                 fontSize: '8px',
                 color: 'var(--text-medium)'
               }}>
-                ℹ️ Recommended: 256x256px or 512x512px PNG with transparent background. Max 5MB.
+                Recommended: 256x256px or 512x512px PNG with transparent background. Max 5MB.
               </div>
             </div>
 
@@ -320,7 +320,7 @@ const Badges = () => {
                 style={{ flex: 1 }}
                 disabled={uploading || !formData.imageUrl}
               >
-                💾 {editingBadge ? 'UPDATE BADGE' : 'CREATE BADGE'}
+                {editingBadge ? 'UPDATE BADGE' : 'CREATE BADGE'}
               </button>
               <button type="button" onClick={resetForm} className="retro-btn secondary" style={{ flex: 1 }}>
                 ✖ CANCEL

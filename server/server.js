@@ -2,10 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';  // ← ADD THIS
-import { fileURLToPath } from 'url';  // ← ADD THIS
-
-// Route imports
+import path from 'path';
+import { fileURLToPath } from 'url'; 
 import authRoutes from './routes/auth.js';
 import topicRoutes from './routes/topics.js';
 import leaderboardRoutes from './routes/leaderboard.js';
@@ -13,7 +11,6 @@ import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/upload.js';
 import { startSessionCleanup } from './utils/sessionCleanup.js';
 
-// ⭐ DEFINE __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -29,19 +26,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files (uploaded images)
+// Static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Trust proxy
 app.set('trust proxy', true);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log('🎮 MongoDB Connected - Game On!');
+    console.log('MongoDB Connected');
     startSessionCleanup();
   })
-  .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+  .catch((err) => console.error('MongoDB Connection Error:', err));
 
 startSessionCleanup();
 
@@ -56,7 +52,7 @@ app.use('/api/upload', uploadRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: '🕹️ IMS Training Arcade is running!',
+    message: 'IMS Training running!',
     timestamp: new Date()
   });
 });
@@ -80,12 +76,11 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`
   ╔════════════════════════════════════════╗
-  ║   🎮 IMS TRAINING ARCADE SERVER 🎮    ║
+  ║        IMS AWARENESS TRAINING          ║
   ║                                        ║
-  ║   Server running on port ${PORT}        ║
-  ║   Environment: ${process.env.NODE_ENV || 'development'}              ║
+  ║   Server running on port ${PORT}          ║
+  ║   Environment:${process.env.NODE_ENV || 'development'}              ║
   ║                                        ║
-  ║   PRESS START TO CONTINUE...          ║
   ╚════════════════════════════════════════╝
   `);
 });

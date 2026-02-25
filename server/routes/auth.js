@@ -4,11 +4,10 @@ import User from '../models/User.js';
 import Session from '../models/Session.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { logActivity } from '../utils/logger.js';
-import Session from '../models/Session.js';
 
 const router = express.Router();
 
-// Helper function to parse user agent
+// parse user agent
 const parseUserAgent = (userAgent) => {
   const ua = userAgent || '';
   
@@ -60,7 +59,7 @@ router.post('/request-account', async (req, res) => {
   }
 });
 
-// Login - UPDATED TO CREATE SESSIONS
+// Login 
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -79,7 +78,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Create JWT token with 7 day expiration
+    // JWT token with 7 day expiration
     const token = jwt.sign(
       { 
         _id: user._id, 
@@ -90,14 +89,12 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Parse device info
     const deviceInfo = parseUserAgent(req.headers['user-agent']);
     deviceInfo.ipAddress = req.ip;
     deviceInfo.userAgent = req.headers['user-agent'];
 
-    // Create session (allows multiple sessions per user)
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+    expiresAt.setDate(expiresAt.getDate() + 7); 
 
     const session = new Session({
       userId: user._id,
@@ -115,7 +112,6 @@ router.post('/login', async (req, res) => {
       os: deviceInfo.os 
     }, req);
 
-    // Return user data with session info
     res.json({
       token,
       user: {
@@ -147,7 +143,6 @@ router.get('/me', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update session activity
     if (req.session) {
       await req.session.updateActivity();
     }
@@ -184,7 +179,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
   }
 });
 
-// Logout logic => invalidate current session
+// Logout
 router.post('/logout', authenticateToken, async(req,res) => {
   try {
     if (req.session) {
@@ -215,10 +210,9 @@ router.post('/logout-all', authenticateToken, async(req,res) => {
   }
 });
 
-// Logout (invalidate current session only)
+// Logout current session only
 router.post('/logout', authenticateToken, async (req, res) => {
   try {
-    // Only invalidate THIS session
     if (req.session) {
       req.session.isActive = false;
       await req.session.save();

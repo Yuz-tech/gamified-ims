@@ -34,7 +34,7 @@ const TopicDetail = () => {
       try {
         await api.post(`/topics/${topicId}/watch-video`);
         setVideoWatched(true);
-        alert('✅ Video completed! You can now take the quiz.');
+        alert('Video completed! You can now take the quiz.');
       } catch (error) {
         console.error('Error marking video as watched:', error);
       }
@@ -43,7 +43,7 @@ const TopicDetail = () => {
 
   const handleStartQuiz = () => {
     if (!videoWatched) {
-      alert('⚠️ Please watch the video first before taking the quiz.');
+      alert('Please watch the video first before taking the quiz.');
       return;
     }
     setQuizStarted(true);
@@ -61,7 +61,7 @@ const TopicDetail = () => {
   const handleSubmitQuiz = async () => {
     // Check if all questions are answered
     if (Object.keys(selectedAnswers).length !== topic.questions.length) {
-      alert('⚠️ Please answer all questions before submitting.');
+      alert('Please answer all questions before submitting.');
       return;
     }
 
@@ -152,7 +152,7 @@ const TopicDetail = () => {
         style={{ marginBottom: '30px' }}
       >
         <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          📺 TRAINING VIDEO
+          TRAINING VIDEO
         </h3>
 
         <div style={{
@@ -193,7 +193,7 @@ const TopicDetail = () => {
             color: 'var(--text-dark)',
             marginBottom: '10px'
           }}>
-            ⚠️ You must watch the entire video before taking the quiz
+            You must watch the entire video before taking the quiz
           </div>
         )}
 
@@ -203,7 +203,7 @@ const TopicDetail = () => {
           style={{ width: '100%' }}
           disabled={videoWatched}
         >
-          {videoWatched ? '✅ VIDEO COMPLETED' : '✓ MARK VIDEO AS WATCHED'}
+          {videoWatched ? 'VIDEO COMPLETED' : 'MARK VIDEO AS WATCHED'}
         </button>
       </motion.div>
 
@@ -214,7 +214,7 @@ const TopicDetail = () => {
         className="retro-card"
       >
         <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          📝 KNOWLEDGE CHECK QUIZ
+          KNOWLEDGE CHECK QUIZ
         </h3>
 
         {!quizStarted ? (
@@ -268,7 +268,7 @@ const TopicDetail = () => {
               style={{ padding: '15px 30px', fontSize: '12px' }}
               disabled={!videoWatched}
             >
-              {videoWatched ? (topic.isCompleted ? '📖 REVIEW QUIZ' : '🎮 START QUIZ') : '🔒 WATCH VIDEO FIRST'}
+              {videoWatched ? (topic.isCompleted ? 'REVIEW QUIZ' : '🎮 START QUIZ') : '🔒 WATCH VIDEO FIRST'}
             </button>
           </div>
         ) : quizResults ? (
@@ -349,7 +349,7 @@ const TopicDetail = () => {
                   }}
                 >
                   <div style={{ fontSize: '14px', color: 'var(--orange-accent)', marginBottom: '15px', fontWeight: 'bold' }}>
-                    🏆 BADGE UNLOCKED!
+                    BADGE UNLOCKED!
                   </div>
                   {quizResults.badgeImage && (
                     <img
@@ -399,11 +399,11 @@ const TopicDetail = () => {
                     }}
                     className="retro-btn"
                   >
-                    🔄 TRY AGAIN
+                    TRY AGAIN
                   </button>
                 )}
                 <button onClick={handleReturnHome} className="retro-btn secondary">
-                  🏠 RETURN HOME
+                  RETURN HOME
                 </button>
               </div>
             </motion.div>
@@ -419,7 +419,7 @@ const TopicDetail = () => {
               fontSize: '10px',
               color: 'var(--text-dark)'
             }}>
-              ℹ️ Select the best answer for each question. You need {topic.passingScore}% to pass.
+              You need {topic.passingScore}% to pass.
             </div>
 
             {topic.questions.map((question, qIndex) => (
@@ -506,7 +506,7 @@ const TopicDetail = () => {
                 style={{ flex: 1, padding: '15px', fontSize: '12px' }}
                 disabled={Object.keys(selectedAnswers).length !== topic.questions.length}
               >
-                ✓ SUBMIT QUIZ
+                SUBMIT QUIZ
               </button>
               <button
                 onClick={() => {
@@ -516,7 +516,7 @@ const TopicDetail = () => {
                 className="retro-btn secondary"
                 style={{ flex: 1, padding: '15px', fontSize: '12px' }}
               >
-                ✖ CANCEL
+                CANCEL
               </button>
             </div>
           </div>

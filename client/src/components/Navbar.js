@@ -54,7 +54,8 @@ const Navbar = () => {
             textShadow: '2px 2px 0 var(--light-blue)',
             flex: '0 0 auto'
           }}>
-            IMS AWARENESS
+            Advanced World <br />
+            Solutions, Inc.
           </div>
 
           {/* Desktop Navigation */}
@@ -94,7 +95,7 @@ const Navbar = () => {
               className="retro-btn danger"
               style={{ fontSize: '10px', padding: '8px 12px' }}
             >
-              🚪 LOGOUT
+              LOGOUT
             </button>
           </div>
 
@@ -112,7 +113,7 @@ const Navbar = () => {
           >
             <span>LVL {user?.level || 1}</span>
             <span>|</span>
-            <span>⭐ {user?.xp || 0} XP</span>
+            <span>{user?.xp || 0} XP</span>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -163,7 +164,7 @@ const Navbar = () => {
                 fontSize: '10px',
                 color: 'var(--bright-blue)'
               }}>
-                👤 {user?.username} | LVL {user?.level || 1} | ⭐ {user?.xp || 0} XP
+                 {user?.username} | LVL {user?.level || 1} | {user?.xp || 0} XP
               </div>
 
               {navItems.map((item) => (

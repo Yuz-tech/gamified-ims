@@ -8,23 +8,19 @@ dotenv.config();
 
 const seedData = async () => {
   try {
-    console.log('🔄 Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
     // Clear existing data
-    console.log('\n🗑️  Clearing existing data...');
     await Topic.deleteMany({});
     await Badge.deleteMany({});
-    console.log('   ✓ Cleared topics and badges');
 
     const currentYear = new Date().getFullYear();
 
-    // Create Topic 1: Introduction to IMS
-    console.log('\n📝 Creating Topic 1: Introduction to IMS...');
+    // Create Topic 1
     const topic1 = await Topic.create({
-      title: 'Introduction to Integrated Management Systems',
-      description: 'Learn the fundamentals of IMS and why integrated management systems are essential for modern organizations.',
+      title: 'IS0 9001',
+      description: 'Learn the fundamentals of ISO 9001',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 300,
       order: 1,
@@ -89,13 +85,11 @@ const seedData = async () => {
       ],
       isActive: true
     });
-    console.log('   ✅ Topic 1 created');
 
-    // Create Topic 2: Quality Management (ISO 9001)
-    console.log('📝 Creating Topic 2: Quality Management...');
+    // Create Topic 2:
     const topic2 = await Topic.create({
-      title: 'Quality Management System (ISO 9001)',
-      description: 'Understanding ISO 9001 quality management principles and how they drive organizational excellence.',
+      title: 'ISO 27001',
+      description: 'Understanding ISO 27001',
       videoUrl: 'https://www.youtube.com/embed/wO7rWkVL3Es',
       videoDuration: 360,
       order: 2,
@@ -182,10 +176,8 @@ const seedData = async () => {
       ],
       isActive: true
     });
-    console.log('   ✅ Topic 2 created');
 
-    // Create Topic 3: Environmental Management (ISO 14001)
-    console.log('📝 Creating Topic 3: Environmental Management...');
+    // Create Topic 3
     const topic3 = await Topic.create({
       title: 'Environmental Management System (ISO 14001)',
       description: 'Learn about ISO 14001 and how organizations can minimize their environmental impact while improving sustainability.',
@@ -253,38 +245,31 @@ const seedData = async () => {
       ],
       isActive: true
     });
-    console.log('   ✅ Topic 3 created');
 
     // Create Badges
-    // Create Badges with your actual PNG files
-console.log('\n🏆 Creating badges...');
 
 const badge1 = await Badge.create({
-  name: 'IMS Foundation Master',
-  description: 'Successfully completed Introduction to Integrated Management Systems',
-  imageUrl: './uploads/badges/iso9001.png', // ← Replace with your actual filename
+  name: 'Quality Foundation Master',
+  description: 'Successfully completed ISO 9001',
+  imageUrl: './uploads/badges/iso9001.png',
   topicId: topic1._id
 });
-console.log('   ✅ Badge 1: IMS Foundation Master');
 
 const badge2 = await Badge.create({
-  name: 'Quality Champion',
-  description: 'Mastered Quality Management System (ISO 9001) principles',
-  imageUrl: '/uploads/badges/iso9001.png', // ← Replace with your actual filename
+  name: 'Security Champion',
+  description: 'Mastered ISO 27001 principles',
+  imageUrl: '/uploads/badges/iso9001.png',
   topicId: topic2._id
 });
-console.log('   ✅ Badge 2: Quality Champion');
 
 const badge3 = await Badge.create({
-  name: 'Environmental Guardian',
-  description: 'Completed Environmental Management System (ISO 14001) training',
-  imageUrl: '/uploads/badges/environmental-guardian.png', // ← Replace with your actual filename
+  name: 'QIS Guardian',
+  description: 'Completed Quality and Information Security training',
+  imageUrl: '/uploads/badges/environmental-guardian.png',
   topicId: topic3._id
 });
-console.log('   ✅ Badge 3: Environmental Guardian');
 
     // Check/Create Admin User
-    console.log('\n👤 Checking admin user...');
     const adminExists = await User.findOne({ username: 'admin' });
     if (!adminExists) {
       await User.create({
@@ -294,34 +279,14 @@ console.log('   ✅ Badge 3: Environmental Guardian');
         role: 'admin',
         isApproved: true
       });
-      console.log('   ✅ Admin user created');
+      console.log('Admin user created');
     } else {
-      console.log('   ℹ️  Admin user already exists');
+      console.log('Admin user already exists');
     }
-
-    // Summary
-    console.log('\n' + '='.repeat(60));
-    console.log('🎮 SEED DATA SUMMARY');
-    console.log('='.repeat(60));
-    console.log(`📚 Topics Created: ${await Topic.countDocuments()}`);
-    console.log(`   1. ${topic1.title} (${topic1.questions.length} questions)`);
-    console.log(`   2. ${topic2.title} (${topic2.questions.length} questions)`);
-    console.log(`   3. ${topic3.title} (${topic3.questions.length} questions)`);
-    console.log(`\n🏆 Badges Created: ${await Badge.countDocuments()}`);
-    console.log(`   1. ${badge1.name}`);
-    console.log(`   2. ${badge2.name}`);
-    console.log(`   3. ${badge3.name}`);
-    console.log(`\n👥 Users: ${await User.countDocuments()}`);
-    console.log(`\n📅 Year: ${currentYear}`);
-    console.log(`⚙️  Settings: 100 XP per topic, 70% passing score`);
-    console.log('='.repeat(60));
-    console.log('\n✅ Seed data created successfully!');
-    console.log('🔐 Admin Login: username=admin, password=admin123');
-    console.log('\n💡 TIP: Upload custom badge images via Admin → Badges\n');
     
     process.exit(0);
   } catch (error) {
-    console.error('\n❌ ERROR SEEDING DATA:');
+    console.error('\nERROR SEEDING DATA:');
     console.error(error);
     process.exit(1);
   }

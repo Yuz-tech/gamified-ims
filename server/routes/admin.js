@@ -8,7 +8,6 @@ import { sendPasswordEmail } from '../utils/email.js';
 
 const router = express.Router();
 
-// All admin routes require authentication and admin role
 router.use(authenticateToken, isAdmin);
 
 // ===== USER MANAGEMENT =====
@@ -51,7 +50,7 @@ router.post('/approve-user/:userId', async (req, res) => {
     user.isApproved = true;
     await user.save();
 
-    // Send email with credentials
+    // Send email with credentials (not yet fully working)
     await sendPasswordEmail(user.email, user.username, password);
 
     res.json({ message: 'User approved and password sent' });
@@ -80,7 +79,6 @@ router.post('/users', async (req, res) => {
 
     await user.save();
 
-    // Send email with credentials
     await sendPasswordEmail(user.email, user.username, password);
 
     res.status(201).json({ message: 'User created successfully', user });
@@ -124,7 +122,7 @@ router.delete('/users/:userId', async (req, res) => {
 
 // ===== TOPIC MANAGEMENT =====
 
-// Get all topics (including inactive)
+// Get all topics
 router.get('/topics', async (req, res) => {
   try {
     const topics = await Topic.find().sort({ order: 1 });
@@ -165,7 +163,7 @@ router.put('/topics/:topicId/toggle', async (req, res) => {
   }
 });
 
-// Update topic (remove XP and passing score from editable fields)
+// Update topic
 router.put('/topics/:topicId', async (req, res) => {
   try {
     const { title, description, videoUrl, videoDuration, order, questions, isActive } = req.body;

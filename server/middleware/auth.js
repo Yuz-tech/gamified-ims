@@ -11,10 +11,8 @@ export const authenticateToken = async(req,res,next) => {
       return res.status(401).json({ message: 'Access token required' });
     }
 
-    // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Check if session exists and is active
     const session = await Session.findOne({
       token,
       isActive: true,
@@ -35,7 +33,6 @@ export const authenticateToken = async(req,res,next) => {
       return res.status(403).json({ message: 'Account not approved' });
     }
 
-    // Attach user and session to request
     req.user = user;
     req.session = session;
     

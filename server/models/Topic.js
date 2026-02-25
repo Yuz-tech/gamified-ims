@@ -26,12 +26,12 @@ const topicSchema = new mongoose.Schema({
   xpReward: {
     type: Number,
     default: 100, // Fixed at 100
-    immutable: true // Cannot be changed after creation
+    immutable: true 
   },
   passingScore: {
     type: Number,
     default: 70, // Fixed at 70%
-    immutable: true // Cannot be changed after creation
+    immutable: true 
   },
   questions: [{
     question: {
@@ -59,7 +59,7 @@ const topicSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Validation: Must have at least 1 question
+// Must have at least 1 question
 topicSchema.pre('save', function(next) {
   if (this.questions.length === 0) {
     next(new Error('Topic must have at least one question'));

@@ -213,7 +213,7 @@ const Achievements = () => {
                   background: 'var(--bg-medium)',
                   border: '1px solid var(--border-color)'
                 }}>
-                  📚 {badge.topicId?.title || 'Topic'}
+                  {badge.topicId?.title || 'Topic'}
                 </div>
 
                 <div style={{
@@ -238,7 +238,7 @@ const Achievements = () => {
             Complete topics to earn badges!
           </div>
           <button onClick={fetchBadges} className="retro-btn" style={{ marginTop: '20px' }}>
-            🔄 REFRESH
+            REFRESH
           </button>
         </div>
       )}

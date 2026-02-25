@@ -229,7 +229,7 @@ const Login = () => {
             textAlign: 'center',
             color: 'var(--text-secondary)'
           }}>
-            v1.0 by Julius Galejo and Jose Dante Chan
+            v1.0 by Jose Dante Chan and Julius Galejo
           </div>
         </div>
       </motion.div>

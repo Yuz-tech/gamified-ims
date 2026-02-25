@@ -81,10 +81,10 @@ const Home = () => {
         style={{ marginBottom: '40px', textAlign: 'center' }}
       >
         <h1 className="neon-text" style={{ fontSize: '32px', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-          WELCOME, {user?.username?.toUpperCase()}!
+          KONNICHIWA, {user?.username?.toUpperCase()}!
         </h1>
         <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
-          Ready to level up your IMS knowledge?
+          Ready to train?
         </p>
       </motion.div>
 
@@ -144,7 +144,7 @@ const Home = () => {
             {stats.xp}
           </div>
           <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
-            ⭐ Experience Points
+            Experience Points
           </div>
         </motion.div>
 
@@ -164,7 +164,7 @@ const Home = () => {
             {stats.totalBadges}
           </div>
           <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
-            🏆 Click to view all
+            Click to view all
           </div>
         </motion.div>
 
@@ -184,7 +184,7 @@ const Home = () => {
             {stats.completedTopics}
           </div>
           <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
-            📚 Click to continue
+            Click to continue
           </div>
         </motion.div>
       </div>
@@ -198,7 +198,7 @@ const Home = () => {
         style={{ marginBottom: '40px' }}
       >
         <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          🏆 YOUR BADGE COLLECTION
+          YOUR BADGE COLLECTION
         </h3>
 
         {userBadges.length > 0 ? (
@@ -308,7 +308,7 @@ const Home = () => {
         className="retro-card"
       >
         <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          🏅 TOP PERFORMERS
+          TOP PERFORMERS
         </h3>
 
         {leaderboard.length > 0 ? (

@@ -143,7 +143,7 @@ const Users = () => {
           color: 'var(--orange-accent)'
         }}
       >
-        👥 USER MANAGEMENT
+        USER MANAGEMENT
       </motion.h1>
 
       <button
@@ -151,7 +151,7 @@ const Users = () => {
         className="retro-btn"
         style={{ marginBottom: '30px' }}
       >
-        {showCreateForm ? '✖ CANCEL' : '➕ CREATE USER'}
+        {showCreateForm ? 'CANCEL' : 'CREATE USER'}
       </button>
 
       {/* Create User Form */}
@@ -231,7 +231,7 @@ const Users = () => {
           style={{ marginBottom: '40px' }}
         >
           <h3 style={{ fontSize: '14px', color: 'var(--sky-blue)', marginBottom: '20px' }}>
-            ⏳ PENDING REQUESTS ({pendingUsers.length})
+            PENDING REQUESTS ({pendingUsers.length})
           </h3>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', fontSize: '10px' }}>
@@ -257,7 +257,7 @@ const Users = () => {
                         className="retro-btn"
                         style={{ fontSize: '8px', padding: '5px 10px' }}
                       >
-                        ✓ APPROVE
+                        APPROVE
                       </button>
                     </td>
                   </tr>
@@ -305,14 +305,14 @@ const Users = () => {
                       className="retro-btn secondary"
                       style={{ fontSize: '8px', padding: '5px 10px', marginRight: '5px' }}
                     >
-                      ✎ EDIT
+                      EDIT
                     </button>
                     <button
                       onClick={() => handleDeleteUser(user._id)}
                       className="retro-btn danger"
                       style={{ fontSize: '8px', padding: '5px 10px' }}
                     >
-                      ✖ DELETE
+                      DELETE
                     </button>
                     
                   </td>
@@ -360,7 +360,7 @@ const Users = () => {
                 className="retro-btn"
                 style={{ flex: 1 }}
               >
-                ✓ APPROVE & SEND EMAIL
+                APPROVE & SEND EMAIL
               </button>
               <button
                 onClick={() => {
@@ -370,7 +370,7 @@ const Users = () => {
                 className="retro-btn secondary"
                 style={{ flex: 1 }}
               >
-                ✖ CANCEL
+                CANCEL
               </button>
             </div>
           </div>
@@ -457,7 +457,7 @@ const Users = () => {
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button type="submit" className="retro-btn" style={{ flex: 1 }}>
-                  💾 SAVE
+                  SAVE
                 </button>
                 <button
                   type="button"
@@ -465,7 +465,7 @@ const Users = () => {
                   className="retro-btn secondary"
                   style={{ flex: 1 }}
                 >
-                  ✖ CANCEL
+                  CANCEL
                 </button>
               </div>
             </form>

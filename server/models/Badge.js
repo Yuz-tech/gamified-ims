@@ -12,7 +12,6 @@ const badgeSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
     required: true
-    // Removed strict URL validation to allow /uploads/ paths
   },
   topicId: {
     type: mongoose.Schema.Types.ObjectId,

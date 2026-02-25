@@ -17,7 +17,7 @@ const ensureDirectoryExists = (dir) => {
   }
 };
 
-// Configure multer for badge image uploads
+// Configure multer
 const badgeStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = path.join(__dirname, '../uploads/badges/');
@@ -46,7 +46,7 @@ const uploadBadge = multer({
   }
 });
 
-// Upload badge image (admin only)
+// Upload badge
 router.post('/badge', authenticateToken, isAdmin, uploadBadge.single('badge'), (req, res) => {
   try {
     if (!req.file) {
@@ -65,7 +65,7 @@ router.post('/badge', authenticateToken, isAdmin, uploadBadge.single('badge'), (
   }
 });
 
-// Delete badge image (admin only)
+// Delete badge
 router.delete('/badge/:filename', authenticateToken, isAdmin, (req, res) => {
   try {
     const filepath = path.join(__dirname, '../uploads/badges/', req.params.filename);

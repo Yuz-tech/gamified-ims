@@ -12,7 +12,7 @@ export const startSessionCleanup = () => {
       });
       
       if (result.deletedCount > 0) {
-        console.log(`🧹 Cleaned up ${result.deletedCount} expired sessions`);
+        console.log(`Cleaned up ${result.deletedCount} expired sessions`);
       }
     } catch (error) {
       console.error('Session cleanup error:', error);
