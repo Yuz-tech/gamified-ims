@@ -13,7 +13,6 @@ import AdminTopics from './pages/admin/Topics';
 import AdminBadges from './pages/admin/Badges';
 import ActivityLogs from './pages/admin/ActivityLogs';
 import './styles/retro.css';
-import YearlyReset from './pages/admin/YearlyReset.js';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
