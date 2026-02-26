@@ -187,6 +187,10 @@ const Home = () => {
             Click to continue
           </div>
         </motion.div>
+
+        {/* IMS Portal Link Card -- change if ever man the url changes IRL*/}
+
+
       </div>
 
       {/* Badge Gallery */}

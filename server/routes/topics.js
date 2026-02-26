@@ -63,12 +63,13 @@ router.get('/:topicId', async(req,res) => {
             wv => wv.topicId && wv.topicId.toString() === topic._id.toString()
         );
 
-        // Review 
         res.json({
             ...topic.toObject(),
             isCompleted,
             isVideoWatched,
-            questions: isCompleted ? topic.questions : topic.question.map(q => ({
+            questions: isCompleted 
+                ? topic.questions 
+                : topic.questions.map(q => ({
                 question: q.question,
                 options: q.options,
                 points: q.points

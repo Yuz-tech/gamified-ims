@@ -18,6 +18,7 @@ const Topics = () => {
         question: '',
         options: ['', '', '', ''],
         correctAnswer: 0,
+        explanation: '',
         points: 10
       }
     ],
@@ -116,6 +117,7 @@ const Topics = () => {
           question: '',
           options: ['', '', '', ''],
           correctAnswer: 0,
+          explanation: '',
           points: 10
         }
       ]
@@ -203,7 +205,7 @@ const Topics = () => {
             {/* Fixed Values Display */}
             <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(59, 130, 246, 0.1)', border: '2px solid var(--bright-blue)' }}>
               <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-                FIXED VALUES (Cannot be changed):
+                FIXED VALUES (immutable):
               </div>
               <div style={{ fontSize: '12px', color: 'var(--primary-navy)' }}>
                 <strong>XP Reward:</strong> 100 XP | <strong>Passing Score:</strong> 70%
@@ -220,36 +222,104 @@ const Topics = () => {
               </div>
 
               {formData.questions.map((question, qIndex) => (
-                <div key={qIndex} style={{ marginBottom: '20px', padding: '15px', border: '2px solid var(--border-color)', background: 'var(--bg-light)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <h4 style={{ fontSize: '11px', color: 'var(--primary-navy)' }}>QUESTION {qIndex + 1}</h4>
-                    <button type="button" onClick={() => removeQuestion(qIndex)} className="retro-btn danger" style={{ fontSize: '8px', padding: '5px 10px' }}>
-                      DELETE
-                    </button>
+                <div key={qIndex} style = {{
+                  marginBottom: '20px',
+                  padding: '15px',
+                  border: '2px solid var(--border-color)',
+                  background: 'var(--bg-light)'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '15px'
+                  }}>
+                    <h4 style={{
+                      fontSize: '11px',
+                      color: 'var(--primary-navy)'
+                    }}>Question {qIndex + 1}</h4>
+                    <button type = "button" onClick={() => removeQuestion(qIndex)}
+                        className='retro-btn danger'
+                        style={{
+                          fontSize: '8px',
+                          padding: '5px 10px'
+                        }}>DELETE</button>
                   </div>
 
                   <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '9px', color: 'var(--text-medium)' }}>QUESTION TEXT</label>
-                    <input type="text" className="retro-input" value={question.question} onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)} required />
+                      <label style={{
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontSize: '9px',
+                        color: 'var(--text-medium)'
+                      }}>Question Text</label>
+                      <input type = "text"
+                        className='retro-input'
+                        value={question.question} onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)} 
+                        required />
+                  </div>
+                  <div style = {{ marginBottom: '15px' }}>
+                      <label style={{
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontSize: '9px',
+                        color: 'var(--text-medium)'
+                      }}>Options</label>
+                      {question.options.map((option, oIndex) => (
+                        <div key={oIndex} style = {{
+                          marginBottom: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px'
+                        }}>
+                          <input type="radio" checked = {question.correctAnswer === oIndex} onChange={() => updateQuestion(qIndex, 'correctAnswer', oIndex)} />
+                          <input type="text" className='retro-input' value={option} onChange={(e) => 
+                            updateQuestionOption(qIndex, oIndex, e.target.value)} placeholder={`Option ${oIndex + 1}`} required style={{ flex: 1 }} />
+                            <span style = {{
+                              fontSize: '8px',
+                              color: 'var(--text-light)'
+                            }}>{question.correctAnswer === oIndex ? 'CORRECT' : ''}</span>
+                        </div>
+                      ))}
                   </div>
 
-                  <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '9px', color: 'var(--text-medium)' }}>OPTIONS</label>
-                    {question.options.map((option, oIndex) => (
-                      <div key={oIndex} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <input type="radio" checked={question.correctAnswer === oIndex} onChange={() => updateQuestion(qIndex, 'correctAnswer', oIndex)} />
-                        <input type="text" className="retro-input" value={option} onChange={(e) => updateQuestionOption(qIndex, oIndex, e.target.value)} placeholder={`Option ${oIndex + 1}`} required style={{ flex: 1 }} />
-                        <span style={{ fontSize: '8px', color: 'var(--text-light)' }}>{question.correctAnswer === oIndex ? '✓ CORRECT' : ''}</span>
-                      </div>
-                    ))}
+                  {/*Explanation field*/}
+                  <div style = {{ marginBottom:'15px' }}>
+                    <label style = {{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '9px',
+                      color: 'var(--text-medium)'
+                    }}>Correct Answer Explanation</label>
+                    <textarea className="retro-input" value={question.explanation || ''} 
+                      onChange={(e) => updateQuestion(qIndex, 'explanation', e.target.value)}
+                      placeholder='Put explanation here...'
+                      rows = "2"
+                      style={{ fontSize: '10px' }}
+                    />
+                    <div style = {{
+                      fontSize: '8px',
+                      color: 'var(--text-light)',
+                      marginTop: '5px'
+                    }}>This will be shown to users after they passed
+                    </div>
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '9px', color: 'var(--text-medium)' }}>POINTS</label>
-                    <input type="number" className="retro-input" value={question.points} onChange={(e) => updateQuestion(qIndex, 'points', parseInt(e.target.value))} min="1" required />
+                    <label style = {{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '9px',
+                      color: 'var(--text-medium)'
+                    }}>Points</label>
+                    <input type="number" className='retro-input'
+                      value={question.points} onChange={(e) => 
+                        updateQuestion(qIndex, 'points', parseInt(e.target.value))}
+                        required />
                   </div>
                 </div>
               ))}
+
             </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>

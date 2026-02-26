@@ -1,4 +1,5 @@
-1. Refreshing the page would reset user session
-2. Admin CRUDs error (can no longer add users, topics, badges, etc.) 
-3. new SeedData.js
-4. Logs and yearly reset not working
+TypeError: Cannot read properties of undefined (reading 'map')
+    at file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/topics.js:71:71
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+
