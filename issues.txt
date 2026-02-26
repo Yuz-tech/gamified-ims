@@ -2,4 +2,15 @@ TypeError: Cannot read properties of undefined (reading 'map')
     at file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/topics.js:71:71
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
 
+Leaderboard logic
 
+//minimum
+quiz 70% passing = 100xp
+
+if 80% = 125xp
+if 90% = 135xp
+if 100% = 150xp
+
+disable right click when taking a quiz
+
+React router and events

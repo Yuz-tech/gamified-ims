@@ -22,111 +22,65 @@ router.get('/', async(req,res) => {
                 ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
             );
 
-            const isVideoWatched = user.watchedVideos.some(
-                wv => wv.topicId && wv.topicId.toString() === topic._id.toString()
-            );
-
             return {
                 ...topic.toObject(),
                 isCompleted,
-                isVideoWatched,
-                questions: topic.questions.map(q => ({
+                questions:
+                topic.questions.map(q=> ({
                     question: q.question,
                     options: q.options,
                     points: q.points
                 }))
             };
         });
+
         res.json(topicsWithStatus);
     } catch (error) {
-        console.error('Error getting topics: ', error);
-        res.status(500).json({ message: 'Server error', error:error.message });
+        console.error('Error getting topics ', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
-//Get single topic
+//Get Single topic
 router.get('/:topicId', async(req,res) => {
     try {
         const topic = await Topic.findById(req.params.topicId);
-
         if(!topic) {
             return res.status(404).json({ message: 'Topic not found' });
         }
 
         const user = await User.findById(req.user._id);
-
         const isCompleted = user.completedTopics.some(
             ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
-        );
-
-        const isVideoWatched = user.watchedVideos.some(
-            wv => wv.topicId && wv.topicId.toString() === topic._id.toString()
         );
 
         res.json({
             ...topic.toObject(),
             isCompleted,
-            isVideoWatched,
-            questions: isCompleted 
-                ? topic.questions 
-                : topic.questions.map(q => ({
+            questions: isCompleted
+            ? topic.questions
+            : topic.questions.map(q => ({
                 question: q.question,
                 options: q.options,
                 points: q.points
             }))
         });
-    } catch (error) {
-        console.error('Error getting topic: ', error);
+    } catch(error) {
+        console.error('Error getting topic:', error);
         res.status(500).json({ message: 'Server error', error:error.message });
     }
 });
 
-{/*TO BE REMOVED OR REVAMPED: Mark Video as Watched */}
-router.post('/:topicId/watch-video', async(req,res) => {
-    try {
-        const user = await User.findById(req.user._id);
-        const topicId = req.params.topicId;
-
-        const alreadyWatched = user.watchedVideos.some(
-            wv => wv.topicId && wv.topicId.toString() === topicId
-        );
-
-        if(!alreadyWatched) {
-            user.watchedVideos.push({ topicId });
-            await user.save();
-
-            await logActivity(user._id, 'video_watched', { topicId }, req);
-        }
-
-        res.json({ message: 'Video marked as watched '});
-    } catch (error) {
-        console.error('Error marking video as watched: ', error);
-        res.status(500).json({ message: 'Server error', error:error.message});
-    }
-});
-
-//Submit quiz
 router.post('/:topicId/submit-quiz', async(req,res) => {
     try {
         const { answers } = req.body;
         const topicId = req.params.topicId;
-
         const topic = await Topic.findById(topicId);
         if(!topic) {
             return res.status(404).json({ message: 'Topic not found' });
         }
 
         const user = await User.findById(req.user._id);
-
-        const videoWatched = user.watchedVideos.some(
-            wv => wv.topicId && wv.topicId.toString() === topicId
-        );
-
-        if(!videoWatched) {
-            return res.status(400).json({
-                message: 'You must watch the video before taking the quiz'
-            });
-        }
 
         const alreadyCompleted = user.completedTopics.some(
             ct => ct.topicId && ct.topicId.toString() === topicId
@@ -138,13 +92,13 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
 
         topic.questions.forEach((question, index) => {
             totalPoints += question.points;
-            if(answers[index] === question.correctAnswer) {
+            if (answers[index] === question.correctAnswer) {
                 correctAnswers++;
                 earnedPoints += question.points;
             }
         });
 
-        const scorePercentage = Math.round((earnedPoints/totalPoints) * 100);
+        const scorePercentage = Math.round((earnedPoints / totalPoints) * 100);
         const passed = scorePercentage >= topic.passingScore;
 
         await logActivity(user._id, 'quiz_completed', {
@@ -153,6 +107,7 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
             passed
         }, req);
 
+        // If passed, then give xp and badge
         if(passed && !alreadyCompleted) {
             user.completedTopics.push({
                 topicId,
@@ -165,7 +120,7 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
 
             const badge = await Badge.findOne({ topicId });
 
-            if (badge) {
+            if(badge) {
                 const hasBadge = user.badges.some(
                     b => b.badgeId && b.badgeId.toString() === badge._id.toString()
                 );
@@ -202,7 +157,7 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
                 score: scorePercentage,
                 correctAnswers,
                 totalQuestions: topic.questions.length,
-                message: 'Review completed'
+                message: 'You already earned the rewards for this topic'
             });
         } else {
             res.json({
@@ -214,8 +169,8 @@ router.post('/:topicId/submit-quiz', async(req,res) => {
             });
         }
     } catch (error) {
-        console.error('Error submitting quiz: ', error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        console.error('Error submitting quiz:', error);
+        res.status(500).json({ message: 'Server error', error:error.message });
     }
 });
 

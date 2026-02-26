@@ -189,8 +189,39 @@ const Home = () => {
         </motion.div>
 
         {/* IMS Portal Link Card -- change if ever man the url changes IRL*/}
-
-
+        <motion.div 
+          initial = {{ scale: 0.9, opacity: 0 }}
+          animate = {{ scale: 1, opacity: 1 }}
+          transition = {{ delay: 0.5 }}
+          className = "retro-card"
+          style = {{
+            textAlign: 'center',
+            cursor: 'pointer',
+            background: 'linear gradient(135deg, var(--bright-blue) 0%, var(--light-blue) 100%',
+            border: '3px solid var(--primary-navy)',
+            color: 'white'
+          }}
+          onClick={() => window.open('https:webmail.awsys-i.com', '_blank')}
+          >
+            <div style = {{ 
+              fontSize: '10px',
+              marginBottom: '10px',
+              opacity: 0.9
+            }}>
+              Quick Access
+            </div>
+            {/* <div style = {{ fontSize: '40px', marginBottom: '10px' }}>QUICKIE</div> */}
+            <div style = {{
+              fontSize: '12px',
+              fontWeight: 'bold',
+              marginBottom: '5px'
+            }}>
+              IMS Portal
+            </div>
+            <div style = {{ fontSize: '8px', opacity: 0.8 }}>
+              Click to open
+            </div>
+          </motion.div>
       </div>
 
       {/* Badge Gallery */}

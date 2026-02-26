@@ -10,12 +10,12 @@ const topicSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  videoUrl: {
+  documentUrl: {
     type: String,
     required: true
   },
-  videoDuration: {
-    type: Number,
+  videoUrl: {
+    type: String,
     required: true
   },
   order: {
@@ -46,6 +46,14 @@ const topicSchema = new mongoose.Schema({
       type: Number,
       required: true
     },
+    options: [{
+      type: String,
+      required: true
+    }],
+    correctAnswer: {
+      type: Number,
+      required: true
+    },
     explanation: {
       type: String,
       default: ''
@@ -63,10 +71,9 @@ const topicSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// One topic must have atleast one question
 topicSchema.pre('save', function(next) {
   if(this.questions.length === 0) {
-    next(new Error('Topic must have atleast one question'));
+    next(new Error('Topic must have at least one question'));
   } else {
     next();
   }

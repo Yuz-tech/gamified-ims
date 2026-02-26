@@ -10,8 +10,8 @@ const Topics = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    documentUrl: '',
     videoUrl: '',
-    videoDuration: 0,
     order: 1,
     questions: [
       {
@@ -187,15 +187,26 @@ const Topics = () => {
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>VIDEO URL (YouTube Embed)</label>
-              <input type="text" className="retro-input" value={formData.videoUrl} onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })} placeholder="https://www.youtube.com/embed/..." required />
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>Document Url</label>
+              <input type="text" className="retro-input" value={formData.documentUrl} onChange={(e) => setFormData({ ...formData, documentUrl: e.target.value })}
+              placeholder="https://link to document" />
+              {/*Could change to required*/}
+              <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>
+                Paste shareable Link to document
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>VIDEO URL</label>
+              <input type="text" className="retro-input" value={formData.videoUrl} onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })} placeholder="https://topic video link..." required />
+              <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>Paste shareable linkn to video</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', marginBottom: '20px' }}>
-              <div>
+              {/* <div>
                 <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>VIDEO DURATION (seconds)</label>
                 <input type="number" className="retro-input" value={formData.videoDuration} onChange={(e) => setFormData({ ...formData, videoDuration: parseInt(e.target.value) })} required />
-              </div>
+              </div> */}
               <div>
                 <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>ORDER</label>
                 <input type="number" className="retro-input" value={formData.order} onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })} required />

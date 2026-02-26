@@ -105,6 +105,7 @@ const seedData = async () => {
             'Information security'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 15
         },
         {
@@ -116,6 +117,7 @@ const seedData = async () => {
             'Process, Define, Control, Audit'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 15
         },
         {
@@ -127,6 +129,7 @@ const seedData = async () => {
             'Minimal documentation'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 15
         },
         {
@@ -138,6 +141,7 @@ const seedData = async () => {
             'Transformation'
           ],
           correctAnswer: 0,
+          explanation: 'ISO 9001 talks about quality',
           points: 15
         },
         {
@@ -149,6 +153,7 @@ const seedData = async () => {
             'Satisfy management only'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 15
         },
         {
@@ -160,6 +165,7 @@ const seedData = async () => {
             'Focusing only on profits'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 15
         },
         {
@@ -171,6 +177,7 @@ const seedData = async () => {
             'Reacting after problems occur'
           ],
           correctAnswer: 2,
+          explanation: 'ISO 9001 talks about quality',
           points: 10
         }
       ],
@@ -196,6 +203,7 @@ const seedData = async () => {
             'Information technology'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 20
         },
         {
@@ -207,6 +215,7 @@ const seedData = async () => {
             'Efficiency Measurement Standard'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 20
         },
         {
@@ -218,6 +227,7 @@ const seedData = async () => {
             'Customer complaints'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 20
         },
         {
@@ -229,6 +239,7 @@ const seedData = async () => {
             'Only the disposal phase'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 20
         },
         {
@@ -240,6 +251,7 @@ const seedData = async () => {
             'Ignored in practice'
           ],
           correctAnswer: 1,
+          explanation: 'ISO 9001 talks about quality',
           points: 20
         }
       ],
