@@ -11,6 +11,14 @@ if 80% = 125xp
 if 90% = 135xp
 if 100% = 150xp
 
+maintain video window iframe???
 disable right click when taking a quiz
 
 React router and events
+
+Buttons
+-> two checkboxes 
+each will be checked when:
+1. Opened link to video
+2. Opened link to document
+Then confirm

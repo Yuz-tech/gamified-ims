@@ -386,7 +386,7 @@ const TopicDetail = () => {
                   )}
                 </div>
 
-                {quizResults.passed && quizResultsResults.badgeEarned && (
+                {quizResults.passed && quizResults.badgeEarned && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}

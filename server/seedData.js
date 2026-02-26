@@ -21,6 +21,7 @@ const seedData = async () => {
     const topic1 = await Topic.create({
       title: 'IS0 9001',
       description: 'Learn the fundamentals of ISO 9001',
+      documentUrl: 'https://www.w3schools.com/react/react_hooks.asp',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 300,
       order: 1,
@@ -36,6 +37,7 @@ const seedData = async () => {
             'International Management Standard'
           ],
           correctAnswer: 0,
+          explanation: 'Basta search mo nalang',
           points: 20
         },
         {
@@ -47,6 +49,7 @@ const seedData = async () => {
             'ISO 50001, ISO 31000'
           ],
           correctAnswer: 0,
+          explanation: 'Basta search mo nalang',
           points: 20
         },
         {
@@ -58,6 +61,7 @@ const seedData = async () => {
             'Separate management systems'
           ],
           correctAnswer: 0,
+          explanation: 'Basta search mo nalang',
           points: 20
         },
         {
@@ -69,6 +73,7 @@ const seedData = async () => {
             'Eliminate all risks'
           ],
           correctAnswer: 1,
+          explanation: 'Basta search mo nalang',
           points: 20
         },
         {
@@ -80,6 +85,7 @@ const seedData = async () => {
             'Increased complexity'
           ],
           correctAnswer: 3,
+          explanation: 'Basta search mo nalang',
           points: 20
         }
       ],
@@ -90,6 +96,7 @@ const seedData = async () => {
     const topic2 = await Topic.create({
       title: 'ISO 27001',
       description: 'Understanding ISO 27001',
+      documentUrl: 'https://www.w3schools.com/react/react_hooks.asp',
       videoUrl: 'https://www.youtube.com/embed/wO7rWkVL3Es',
       videoDuration: 360,
       order: 2,
@@ -188,6 +195,7 @@ const seedData = async () => {
     const topic3 = await Topic.create({
       title: 'Environmental Management System (ISO 14001)',
       description: 'Learn about ISO 14001 and how organizations can minimize their environmental impact while improving sustainability.',
+      documentUrl: 'https://www.w3schools.com/react/react_hooks.asp',
       videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       videoDuration: 320,
       order: 3,
