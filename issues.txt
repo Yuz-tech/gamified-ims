@@ -14,8 +14,6 @@ if 100% = 150xp
 maintain video window iframe???
 disable right click when taking a quiz
 
-React router and events
-
 Buttons
 -> two checkboxes 
 each will be checked when:

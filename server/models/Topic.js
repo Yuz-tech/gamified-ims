@@ -46,14 +46,6 @@ const topicSchema = new mongoose.Schema({
       type: Number,
       required: true
     },
-    options: [{
-      type: String,
-      required: true
-    }],
-    correctAnswer: {
-      type: Number,
-      required: true
-    },
     explanation: {
       type: String,
       default: ''
@@ -71,8 +63,9 @@ const topicSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Validation: Must have at least 1 question
 topicSchema.pre('save', function(next) {
-  if(this.questions.length === 0) {
+  if (this.questions.length === 0) {
     next(new Error('Topic must have at least one question'));
   } else {
     next();
