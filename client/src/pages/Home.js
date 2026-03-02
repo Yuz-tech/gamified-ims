@@ -16,48 +16,55 @@ const Home = () => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const [leaderboardRes, userRes, badgesRes] = await Promise.all([
-        api.get('/leaderboard?limit=5'),
-        api.get('/auth/me'),
-        api.get('/admin/badges')
-      ]);
+const fetchData = async () => {
+  try {
+    const [leaderboardRes, userRes, badgesRes] = await Promise.all([
+      api.get('/leaderboard?limit=5'),
+      api.get('/auth/me'),
+      api.get('/admin/badges')
+    ]);
 
-      setLeaderboard(leaderboardRes.data);
-      
-      // Get all badges
-      const allBadges = badgesRes.data;
-      
-      // Get user's earned badge IDs
-      const earnedBadgeIds = (userRes.data.badges || []).map(
-        ub => ub.badgeId?._id || ub.badgeId
-      );
+    setLeaderboard(leaderboardRes.data);
+    
+    // Get all badges
+    const allBadges = badgesRes.data;
+    
+    // Get user's earned badge IDs
+    const earnedBadgeIds = (userRes.data.badges || []).map(
+      ub => ub.badgeId?._id || ub.badgeId
+    );
 
-      // Map badges with earned status
-      const badgesWithStatus = allBadges.map(badge => ({
-        ...badge,
-        earned: earnedBadgeIds.includes(badge._id)
-      }));
+    // Map badges with earned status
+    const badgesWithStatus = allBadges.map(badge => ({
+      ...badge,
+      earned: earnedBadgeIds.includes(badge._id)
+    }));
 
-      setUserBadges(badgesWithStatus);
+    setUserBadges(badgesWithStatus);
 
-      // Calculate stats
-      const earnedCount = badgesWithStatus.filter(b => b.earned).length;
-      const totalCount = badgesWithStatus.length;
+    // Calculate stats with null checks
+    const earnedCount = badgesWithStatus.filter(b => b.earned).length;
+    const totalCount = badgesWithStatus.length;
 
-      setStats({
-        level: userRes.data.level || 1,
-        xp: userRes.data.xp || 0,
-        totalBadges: earnedCount,
-        completedTopics: userRes.data.completedTopics?.length || 0
-      });
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setStats({
+      level: userRes.data?.level || 1,
+      xp: userRes.data?.xp || 0,
+      totalBadges: earnedCount,
+      completedTopics: userRes.data?.completedTopics?.length || 0
+    });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    // Set default stats on error
+    setStats({
+      level: 1,
+      xp: 0,
+      totalBadges: 0,
+      completedTopics: 0
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) {
     return (

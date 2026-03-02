@@ -59,7 +59,7 @@ router.post('/request-account', async (req, res) => {
   }
 });
 
-// Login 
+// Login
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -78,7 +78,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // JWT token with 7 day expiration
+    // Create JWT token
     const token = jwt.sign(
       { 
         _id: user._id, 
@@ -89,12 +89,14 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // Parse device info
     const deviceInfo = parseUserAgent(req.headers['user-agent']);
     deviceInfo.ipAddress = req.ip;
     deviceInfo.userAgent = req.headers['user-agent'];
 
+    // Create session
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); 
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     const session = new Session({
       userId: user._id,
@@ -112,6 +114,7 @@ router.post('/login', async (req, res) => {
       os: deviceInfo.os 
     }, req);
 
+    // Return COMPLETE user data
     res.json({
       token,
       user: {
@@ -119,14 +122,16 @@ router.post('/login', async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        level: user.level,
-        xp: user.xp,
-        badges: user.badges,
-        completedTopics: user.completedTopics
+        level: user.level || 1,  // Ensure default
+        xp: user.xp || 0,        // Ensure default
+        badges: user.badges || [],
+        completedTopics: user.completedTopics || [],
+        createdAt: user.createdAt
       },
       sessionId: session._id
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

@@ -1,22 +1,1808 @@
-TypeError: Cannot read properties of undefined (reading 'map')
-    at file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/topics.js:71:71
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
 
 Leaderboard logic
 
-//minimum
-quiz 70% passing = 100xp
+Default reward: quiz 70% passing = 100xp
 
-if 80% = 125xp
-if 90% = 135xp
-if 100% = 150xp
+>70% = 125xp
+if 100% (perfect)= 150xp
 
-maintain video window iframe???
-disable right click when taking a quiz
+2/3 -> passed
+User option: 
+proceed with next topic or complete quiz?
+Maximum 4 questions per topic:
+if 3 correct -> next topic option
 
-Buttons
--> two checkboxes 
-each will be checked when:
-1. Opened link to video
-2. Opened link to document
-Then confirm
+1. REQUIRED: Per topic -> 1 question with correct answer (100xp)
+
+2. OPTIONAL: {BONUS} FULL QUIZ (4 questions[FIXED]) (to get more rewards)
+=> For each question w/ correct answer == 50xp
+
+
+Training Materials before quiz
+
+1. Review topic after passing
+2. Link to topic document
+Document => (IMS Manual Reference)
+Video => (IMS Policy Video)
+
+3. Change color scheme of quiz (OK)
+"REVIEW BELOW" -> Change color scheme (yellow)
+
+4. Remove Description from topic card
+Retain XP Reward "100-300xp"
+Remove Passing Score
+
+5. Enable/Disable instead of Delete
+Transparency of button -> enable/disable
+
+models/Topic.js
+
+import mongoose from 'mongoose';
+
+const topicSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  documentUrl: {
+    type: String,
+    required: true
+  },
+  videoUrl: {
+    type: String,
+    required: true
+  },
+  order: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  questions: [{
+    question: {
+      type: String,
+      required: true
+    },
+    options: [{
+      type: String,
+      required: true
+    }],
+    correctAnswer: {
+      type: Number,
+      required: true
+    },
+    explanation: {
+      type: String,
+      default: ''
+    },
+    isMandatory: {
+      type: Boolean,
+      default: false
+    }
+  }],
+  isActive: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  timestamps: true
+});
+
+// Validation: Must have exactly 5 questions (1 mandatory + 4 bonus)
+topicSchema.pre('save', function(next) {
+  if (this.questions.length !== 5) {
+    next(new Error('Topic must have exactly 5 questions (1 mandatory + 4 bonus)'));
+  } else {
+    // Ensure first question is mandatory
+    if (this.questions.length > 0) {
+      this.questions[0].isMandatory = true;
+    }
+    next();
+  }
+});
+
+const Topic = mongoose.model('Topic', topicSchema);
+
+export default Topic;
+
+
+
+routes/topics.js
+import express from 'express';
+import Topic from '../models/Topic.js';
+import User from '../models/User.js';
+import Badge from '../models/Badge.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { logActivity } from '../utils/logger.js';
+
+const router = express.Router();
+
+// All topic routes require authentication
+router.use(authenticateToken);
+
+// Get all active topics
+router.get('/', async (req, res) => {
+  try {
+    const topics = await Topic.find({ isActive: true })
+      .select('-questions.correctAnswer')
+      .sort({ order: 1 });
+    
+    const user = await User.findById(req.user._id);
+    
+    const topicsWithStatus = topics.map(topic => {
+      const isCompleted = user.completedTopics.some(
+        ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
+      );
+      
+      return {
+        ...topic.toObject(),
+        isCompleted,
+        questions: topic.questions.map(q => ({
+          question: q.question,
+          options: q.options,
+          isMandatory: q.isMandatory
+        }))
+      };
+    });
+
+    res.json(topicsWithStatus);
+  } catch (error) {
+    console.error('Error getting topics:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get single topic
+router.get('/:topicId', async (req, res) => {
+  try {
+    const topic = await Topic.findById(req.params.topicId);
+
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    
+    const isCompleted = user.completedTopics.some(
+      ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
+    );
+
+    res.json({
+      ...topic.toObject(),
+      isCompleted,
+      questions: isCompleted 
+        ? topic.questions
+        : topic.questions.map(q => ({
+            question: q.question,
+            options: q.options,
+            isMandatory: q.isMandatory
+          }))
+    });
+  } catch (error) {
+    console.error('Error getting topic:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Submit quiz - NEW LOGIC
+router.post('/:topicId/submit-quiz', async (req, res) => {
+  try {
+    const { answers, stage } = req.body; // stage: 'mandatory' or 'bonus'
+    const topicId = req.params.topicId;
+
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    // Check if already completed
+    const alreadyCompleted = user.completedTopics.some(
+      ct => ct.topicId && ct.topicId.toString() === topicId
+    );
+
+    if (stage === 'mandatory') {
+      // Only check first question (mandatory)
+      const mandatoryQuestion = topic.questions[0];
+      const userAnswer = answers[0];
+      const isCorrect = userAnswer === mandatoryQuestion.correctAnswer;
+
+      if (isCorrect) {
+        // Award 100 XP for mandatory question
+        if (!alreadyCompleted) {
+          user.completedTopics.push({
+            topicId,
+            score: 100,
+            completedAt: new Date(),
+            stage: 'mandatory' // Track that only mandatory was completed
+          });
+
+          user.xp += 100;
+          user.level = Math.floor(Math.sqrt(user.xp / 100)) + 1;
+
+          const badge = await Badge.findOne({ topicId });
+          
+          if (badge) {
+            const hasBadge = user.badges.some(
+              b => b.badgeId && b.badgeId.toString() === badge._id.toString()
+            );
+            
+            if (!hasBadge) {
+              user.badges.push({ badgeId: badge._id });
+              await logActivity(user._id, 'badge_earned', { 
+                badgeId: badge._id,
+                badgeName: badge.name
+              }, req);
+            }
+          }
+
+          await user.save();
+
+          await logActivity(user._id, 'quiz_completed', { 
+            topicId, 
+            stage: 'mandatory',
+            passed: true,
+            xpEarned: 100
+          }, req);
+
+          res.json({
+            passed: true,
+            stage: 'mandatory',
+            correctAnswer: true,
+            xpEarned: 100,
+            newLevel: user.level,
+            newXP: user.xp,
+            badgeEarned: badge ? badge.name : null,
+            badgeImage: badge ? badge.imageUrl : null
+          });
+        } else {
+          // Already completed, just return success
+          res.json({
+            passed: true,
+            stage: 'mandatory',
+            correctAnswer: true,
+            message: 'Already completed - no additional XP awarded'
+          });
+        }
+      } else {
+        // Failed mandatory question
+        await logActivity(user._id, 'quiz_completed', { 
+          topicId, 
+          stage: 'mandatory',
+          passed: false
+        }, req);
+
+        res.json({
+          passed: false,
+          stage: 'mandatory',
+          correctAnswer: false,
+          correctAnswerIndex: mandatoryQuestion.correctAnswer
+        });
+      }
+    } else if (stage === 'bonus') {
+      // Check all 4 bonus questions (questions 1-4, index 1-4)
+      let correctCount = 0;
+      
+      for (let i = 1; i < 5; i++) {
+        if (answers[i] === topic.questions[i].correctAnswer) {
+          correctCount++;
+        }
+      }
+
+      const bonusXP = correctCount * 50; // 50 XP per correct bonus question
+
+      // Update the completion record
+      const completionIndex = user.completedTopics.findIndex(
+        ct => ct.topicId && ct.topicId.toString() === topicId
+      );
+
+      if (completionIndex !== -1) {
+        user.completedTopics[completionIndex].stage = 'full';
+        user.completedTopics[completionIndex].bonusScore = (correctCount / 4) * 100;
+      }
+
+      user.xp += bonusXP;
+      user.level = Math.floor(Math.sqrt(user.xp / 100)) + 1;
+
+      await user.save();
+
+      await logActivity(user._id, 'quiz_completed', { 
+        topicId, 
+        stage: 'bonus',
+        correctCount,
+        xpEarned: bonusXP
+      }, req);
+
+      res.json({
+        passed: true,
+        stage: 'bonus',
+        correctCount,
+        totalBonus: 4,
+        xpEarned: bonusXP,
+        newLevel: user.level,
+        newXP: user.xp
+      });
+    }
+  } catch (error) {
+    console.error('Error submitting quiz:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+export default router;
+
+
+pages/admin/Topics.js
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+
+const Topics = () => {
+  const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingTopic, setEditingTopic] = useState(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    documentUrl: '',
+    videoUrl: '',
+    order: 1,
+    questions: [
+      // Mandatory question
+      {
+        question: '',
+        options: ['', '', '', ''],
+        correctAnswer: 0,
+        explanation: '',
+        isMandatory: true
+      },
+      // Bonus questions (4)
+      ...Array(4).fill(null).map(() => ({
+        question: '',
+        options: ['', '', '', ''],
+        correctAnswer: 0,
+        explanation: '',
+        isMandatory: false
+      }))
+    ],
+    isActive: true
+  });
+
+  useEffect(() => {
+    fetchTopics();
+  }, []);
+
+  const fetchTopics = async () => {
+    try {
+      const response = await api.get('/admin/topics');
+      setTopics(response.data);
+    } catch (error) {
+      alert('Error fetching topics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateQuestion = (qIndex, field, value) => {
+    const updatedQuestions = [...formData.questions];
+    updatedQuestions[qIndex] = {
+      ...updatedQuestions[qIndex],
+      [field]: value
+    };
+    setFormData({ ...formData, questions: updatedQuestions });
+  };
+
+  const updateQuestionOption = (qIndex, oIndex, value) => {
+    const updatedQuestions = [...formData.questions];
+    updatedQuestions[qIndex].options[oIndex] = value;
+    setFormData({ ...formData, questions: updatedQuestions });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingTopic) {
+        await api.put(`/admin/topics/${editingTopic._id}`, formData);
+        alert('Topic updated successfully');
+      } else {
+        await api.post('/admin/topics', formData);
+        alert('Topic created successfully');
+      }
+      fetchTopics();
+      resetForm();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error saving topic');
+    }
+  };
+
+  const handleEdit = (topic) => {
+    setEditingTopic(topic);
+    setFormData({
+      title: topic.title,
+      description: topic.description,
+      documentUrl: topic.documentUrl,
+      videoUrl: topic.videoUrl,
+      order: topic.order,
+      questions: topic.questions.length === 5 ? topic.questions : [
+        {
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          explanation: '',
+          isMandatory: true
+        },
+        ...Array(4).fill(null).map(() => ({
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          explanation: '',
+          isMandatory: false
+        }))
+      ],
+      isActive: topic.isActive
+    });
+    setShowForm(true);
+  };
+
+  const handleToggle = async (topicId) => {
+    if (window.confirm('Are you sure you want to toggle this topic status?')) {
+      try {
+        await api.put(`/admin/topics/${topicId}/toggle`);
+        fetchTopics();
+      } catch (error) {
+        alert('Error toggling topic');
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      documentUrl: '',
+      videoUrl: '',
+      order: 1,
+      questions: [
+        {
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          explanation: '',
+          isMandatory: true
+        },
+        ...Array(4).fill(null).map(() => ({
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          explanation: '',
+          isMandatory: false
+        }))
+      ],
+      isActive: true
+    });
+    setEditingTopic(null);
+    setShowForm(false);
+  };
+
+  if (loading) {
+    return <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>;
+  }
+
+  return (
+    <div style={{ padding: '40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)' }}>📚 MANAGE TOPICS</h1>
+        <button onClick={() => setShowForm(!showForm)} className="retro-btn">
+          {showForm ? '✖ CANCEL' : '+ CREATE TOPIC'}
+        </button>
+      </div>
+
+      {showForm && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="retro-card"
+          style={{ marginBottom: '30px' }}
+        >
+          <h3 style={{ fontSize: '14px', marginBottom: '20px', color: 'var(--secondary-pink)' }}>
+            {editingTopic ? 'EDIT TOPIC' : 'CREATE NEW TOPIC'}
+          </h3>
+
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+                TITLE
+              </label>
+              <input
+                type="text"
+                className="retro-input"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+                DESCRIPTION
+              </label>
+              <textarea
+                className="retro-input"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows="3"
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+                TRAINING DOCUMENT URL (Google Drive)
+              </label>
+              <input
+                type="text"
+                className="retro-input"
+                value={formData.documentUrl}
+                onChange={(e) => setFormData({ ...formData, documentUrl: e.target.value })}
+                placeholder="https://drive.google.com/file/d/..."
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+                TRAINING VIDEO URL (Google Drive)
+              </label>
+              <input
+                type="text"
+                className="retro-input"
+                value={formData.videoUrl}
+                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                placeholder="https://drive.google.com/file/d/..."
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+                ORDER
+              </label>
+              <input
+                type="number"
+                className="retro-input"
+                value={formData.order}
+                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                required
+              />
+            </div>
+
+            {/* XP Rewards Info */}
+            <div style={{
+              padding: '15px',
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '2px solid var(--bright-blue)',
+              marginBottom: '20px',
+              fontSize: '10px'
+            }}>
+              <strong>XP REWARD SYSTEM:</strong>
+              <div style={{ marginTop: '10px' }}>
+                • Mandatory Question (Q1): <strong>100 XP</strong><br />
+                • Bonus Questions (Q2-Q5): <strong>50 XP each</strong><br />
+                • Total Possible: <strong>100-300 XP</strong>
+              </div>
+            </div>
+
+            {/* Questions Section */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '12px', marginBottom: '15px', color: 'var(--primary-navy)' }}>
+                QUESTIONS (Fixed: 1 Mandatory + 4 Bonus)
+              </h4>
+
+              {formData.questions.map((question, qIndex) => (
+                <div
+                  key={qIndex}
+                  style={{
+                    marginBottom: '20px',
+                    padding: '15px',
+                    border: `2px solid ${qIndex === 0 ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+                    background: qIndex === 0 ? 'rgba(249, 115, 22, 0.05)' : 'var(--bg-light)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                    <h5 style={{ fontSize: '11px', color: 'var(--primary-navy)' }}>
+                      {qIndex === 0 ? '⭐ MANDATORY QUESTION' : `BONUS QUESTION ${qIndex}`} 
+                      {qIndex === 0 && <span style={{ color: 'var(--orange-accent)', marginLeft: '10px' }}>(100 XP)</span>}
+                      {qIndex > 0 && <span style={{ color: 'var(--success-green)', marginLeft: '10px' }}>(50 XP)</span>}
+                    </h5>
+                  </div>
+
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '9px', color: 'var(--text-medium)' }}>
+                      QUESTION TEXT
+                    </label>
+                    <input
+                      type="text"
+                      className="retro-input"
+                      value={question.question}
+                      onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '9px', color: 'var(--text-medium)' }}>
+                      OPTIONS
+                    </label>
+                    {question.options.map((option, oIndex) => (
+                      <div key={oIndex} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input
+                          type="radio"
+                          checked={question.correctAnswer === oIndex}
+                          onChange={() => updateQuestion(qIndex, 'correctAnswer', oIndex)}
+                        />
+                        <input
+                          type="text"
+                          className="retro-input"
+                          value={option}
+                          onChange={(e) => updateQuestionOption(qIndex, oIndex, e.target.value)}
+                          placeholder={`Option ${oIndex + 1}`}
+                          required
+                          style={{ flex: 1 }}
+                        />
+                        <span style={{ fontSize: '8px', color: 'var(--text-light)' }}>
+                          {question.correctAnswer === oIndex ? '✓ CORRECT' : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '9px', color: 'var(--text-medium)' }}>
+                      EXPLANATION
+                    </label>
+                    <textarea
+                      className="retro-input"
+                      value={question.explanation || ''}
+                      onChange={(e) => updateQuestion(qIndex, 'explanation', e.target.value)}
+                      placeholder="Explain why this is the correct answer..."
+                      rows="2"
+                      style={{ fontSize: '10px' }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button type="submit" className="retro-btn" style={{ width: '100%' }}>
+              {editingTopic ? '💾 UPDATE TOPIC' : '✓ CREATE TOPIC'}
+            </button>
+          </form>
+        </motion.div>
+      )}
+
+      {/* Topics List */}
+      <div className="retro-card">
+        <h3 style={{ fontSize: '14px', marginBottom: '20px', color: 'var(--secondary-pink)' }}>
+          ALL TOPICS
+        </h3>
+
+        {topics.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-light)' }}>
+            No topics yet. Create your first one!
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', fontSize: '10px', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>ORDER</th>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>TITLE</th>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>QUESTIONS</th>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>XP RANGE</th>
+                  <th style={{ padding: '10px', textAlign: 'left' }}>STATUS</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topics.map((topic) => (
+                  <tr key={topic._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '10px' }}>{topic.order}</td>
+                    <td style={{ padding: '10px', fontWeight: 'bold' }}>{topic.title}</td>
+                    <td style={{ padding: '10px' }}>
+                      {topic.questions?.length || 0} (1 Mandatory + 4 Bonus)
+                    </td>
+                    <td style={{ padding: '10px', color: 'var(--success-green)' }}>
+                      100-300 XP
+                    </td>
+                    <td style={{ padding: '10px' }}>
+                      <span
+                        style={{
+                          padding: '3px 8px',
+                          background: topic.isActive ? 'var(--success-green)' : 'var(--error-red)',
+                          color: 'white',
+                          fontSize: '8px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {topic.isActive ? 'ACTIVE' : 'DISABLED'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '10px', textAlign: 'center' }}>
+                      <button
+                        onClick={() => handleEdit(topic)}
+                        className="retro-btn secondary"
+                        style={{ fontSize: '8px', padding: '5px 10px', marginRight: '5px' }}
+                      >
+                        ✎ EDIT
+                      </button>
+                      <button
+                        onClick={() => handleToggle(topic._id)}
+                        className="retro-btn"
+                        style={{
+                          fontSize: '8px',
+                          padding: '5px 10px',
+                          background: topic.isActive ? 'var(--error-red)' : 'var(--success-green)'
+                        }}
+                      >
+                        {topic.isActive ? '✖ DISABLE' : '✓ ENABLE'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Topics;
+
+
+seedData.js
+
+const topic1 = await Topic.create({
+  title: 'Introduction to Integrated Management Systems',
+  description: 'Learn the fundamentals of IMS and why integrated management systems are essential for modern organizations.',
+  documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
+  videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
+  order: 1,
+  questions: [
+    // MANDATORY QUESTION (100 XP)
+    {
+      question: 'What does IMS stand for?',
+      options: [
+        'Integrated Management System',
+        'Information Management Service',
+        'Internal Monitoring System',
+        'International Management Standard'
+      ],
+      correctAnswer: 0,
+      explanation: 'IMS stands for Integrated Management System, which combines multiple management standards into a single cohesive framework.',
+      isMandatory: true
+    },
+    // BONUS QUESTIONS (50 XP each)
+    {
+      question: 'Which ISO standards are commonly integrated in an IMS?',
+      options: [
+        'ISO 9001, ISO 14001, ISO 45001',
+        'ISO 27001 only',
+        'ISO 22000 only',
+        'ISO 50001, ISO 31000'
+      ],
+      correctAnswer: 0,
+      explanation: 'The most commonly integrated standards are ISO 9001 (Quality), ISO 14001 (Environment), and ISO 45001 (Health & Safety).',
+      isMandatory: false
+    },
+    {
+      question: 'What is the primary benefit of implementing an IMS?',
+      options: [
+        'Reduced documentation and audit efficiency',
+        'Increased number of certifications',
+        'More complex processes',
+        'Separate management systems'
+      ],
+      correctAnswer: 0,
+      explanation: 'The primary benefit of IMS is reduced documentation and improved audit efficiency.',
+      isMandatory: false
+    },
+    {
+      question: 'An IMS helps organizations to:',
+      options: [
+        'Ignore regulatory requirements',
+        'Meet multiple compliance requirements efficiently',
+        'Avoid customer feedback',
+        'Eliminate all risks'
+      ],
+      correctAnswer: 1,
+      explanation: 'An IMS helps organizations meet multiple compliance requirements efficiently.',
+      isMandatory: false
+    },
+    {
+      question: 'Which is NOT a benefit of IMS?',
+      options: [
+        'Streamlined processes',
+        'Cost reduction',
+        'Improved efficiency',
+        'Increased complexity'
+      ],
+      correctAnswer: 3,
+      explanation: 'Increased complexity is NOT a benefit - IMS reduces complexity.',
+      isMandatory: false
+    }
+  ],
+  isActive: true
+});
+
+
+pages/TopicDetail.js
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../utils/api';
+
+const TopicDetail = () => {
+  const { topicId } = useParams();
+  const navigate = useNavigate();
+  const [topic, setTopic] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [quizStage, setQuizStage] = useState(null); // null, 'mandatory', 'decision', 'bonus', 'review'
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [mandatoryResult, setMandatoryResult] = useState(null);
+  const [bonusResults, setBonusResults] = useState(null);
+  const [materialsConfirmed, setMaterialsConfirmed] = useState(false);
+
+  useEffect(() => {
+    fetchTopic();
+  }, [topicId]);
+
+  const fetchTopic = async () => {
+    try {
+      const response = await api.get(`/topics/${topicId}`);
+      setTopic(response.data);
+      if (response.data.isCompleted) {
+        setMaterialsConfirmed(true);
+      }
+    } catch (error) {
+      console.error('Error fetching topic:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartQuiz = () => {
+    if (!materialsConfirmed && !topic.isCompleted) {
+      alert('⚠️ Please confirm that you have reviewed the training materials.');
+      return;
+    }
+    
+    if (topic.isCompleted) {
+      setQuizStage('review');
+    } else {
+      setQuizStage('mandatory');
+      setSelectedAnswers({});
+      setMandatoryResult(null);
+      setBonusResults(null);
+    }
+  };
+
+  const handleAnswerSelect = (questionIndex, answerIndex) => {
+    setSelectedAnswers({
+      ...selectedAnswers,
+      [questionIndex]: answerIndex
+    });
+  };
+
+  const handleSubmitMandatory = async () => {
+    if (selectedAnswers[0] === undefined) {
+      alert('⚠️ Please select an answer before submitting.');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/topics/${topicId}/submit-quiz`, {
+        answers: selectedAnswers,
+        stage: 'mandatory'
+      });
+
+      setMandatoryResult(response.data);
+
+      if (response.data.passed && response.data.correctAnswer) {
+        // Show decision screen
+        setTimeout(() => {
+          setQuizStage('decision');
+        }, 2000);
+      } else {
+        // Failed - show result for a moment then allow retry
+        setTimeout(() => {
+          setQuizStage(null);
+          setSelectedAnswers({});
+        }, 3000);
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error submitting quiz');
+    }
+  };
+
+  const handleContinueToBonus = () => {
+    setQuizStage('bonus');
+    // Keep answer 0, clear the rest
+    const newAnswers = { 0: selectedAnswers[0] };
+    setSelectedAnswers(newAnswers);
+  };
+
+  const handleFinishEarly = () => {
+    navigate('/');
+  };
+
+  const handleSubmitBonus = async () => {
+    // Check if all 4 bonus questions are answered
+    if (!selectedAnswers[1] || !selectedAnswers[2] || !selectedAnswers[3] || !selectedAnswers[4]) {
+      alert('⚠️ Please answer all bonus questions before submitting.');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/topics/${topicId}/submit-quiz`, {
+        answers: selectedAnswers,
+        stage: 'bonus'
+      });
+
+      setBonusResults(response.data);
+      
+      // Refresh topic to update completion status
+      await fetchTopic();
+      
+      // Show results for 3 seconds, then go to review
+      setTimeout(() => {
+        setQuizStage('review');
+      }, 3000);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error submitting quiz');
+    }
+  };
+
+  const handleReturnHome = () => {
+    navigate('/');
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING TOPIC...</div>
+      </div>
+    );
+  }
+
+  if (!topic) {
+    return (
+      <div className="retro-container" style={{ paddingTop: '40px', textAlign: 'center' }}>
+        <h2 style={{ color: 'var(--error-red)' }}>Topic not found</h2>
+        <button onClick={() => navigate('/topics')} className="retro-btn" style={{ marginTop: '20px' }}>
+          ← BACK TO TOPICS
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div className="scanlines"></div>
+
+      {/* Header */}
+      <motion.div
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        style={{ marginBottom: '30px' }}
+      >
+        <button onClick={() => navigate('/topics')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
+          ← BACK TO TOPICS
+        </button>
+
+        <h1 className="neon-text" style={{ fontSize: '28px', marginBottom: '15px', color: 'var(--primary-navy)' }}>
+          {topic.title}
+        </h1>
+        <p style={{ fontSize: '12px', color: 'var(--text-medium)', lineHeight: '1.6' }}>
+          {topic.description}
+        </p>
+      </motion.div>
+
+      {/* Completion Status */}
+      {topic.isCompleted && !quizStage && (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          style={{
+            padding: '20px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '3px solid var(--success-green)',
+            marginBottom: '30px',
+            textAlign: 'center'
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>✅</div>
+          <div style={{ fontSize: '14px', color: 'var(--success-green)', marginBottom: '10px', fontWeight: 'bold' }}>
+            YOU HAVE COMPLETED THIS TOPIC
+          </div>
+          <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
+            Click below to review the correct answers and explanations
+          </div>
+        </motion.div>
+      )}
+
+      {/* Training Materials Section */}
+      {!quizStage && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="retro-card"
+          style={{ marginBottom: '30px' }}
+        >
+          <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+            📋 TRAINING MATERIALS
+          </h3>
+
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '15px', lineHeight: '1.6' }}>
+              Please review the training materials below before taking the quiz.
+            </p>
+
+            {/* Document Link */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '10px', 
+                fontSize: '10px',
+                color: 'var(--text-medium)',
+                fontWeight: 'bold'
+              }}>
+                📄 TRAINING DOCUMENT
+              </label>
+              
+                href={topic.documentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="retro-btn"
+                style={{
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  background: 'var(--bright-blue)',
+                  borderColor: 'var(--primary-navy)'
+                }}
+              >
+                📄 OPEN IN NEW TAB
+              </a>
+            </div>
+
+            {/* Embedded Video */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '10px', 
+                fontSize: '10px',
+                color: 'var(--text-medium)',
+                fontWeight: 'bold'
+              }}>
+                📺 TRAINING VIDEO
+              </label>
+              <div style={{
+                position: 'relative',
+                paddingBottom: '56.25%',
+                height: 0,
+                overflow: 'hidden',
+                background: 'var(--bg-dark)',
+                border: '3px solid var(--orange-accent)',
+                marginBottom: '10px'
+              }}>
+                <iframe
+                  src={topic.videoUrl.replace('/view', '/preview')}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%'
+                  }}
+                  frameBorder="0"
+                  allow="autoplay"
+                  allowFullScreen
+                  title={topic.title}
+                />
+              </div>
+              <div style={{
+                fontSize: '8px',
+                color: 'var(--text-light)',
+                padding: '10px',
+                background: 'rgba(59, 130, 246, 0.05)',
+                border: '1px solid var(--bright-blue)'
+              }}>
+                💡 TIP: If video doesn't play, make sure the Google Drive link is set to "Anyone with the link can view"
+              </div>
+            </div>
+          </div>
+
+          {/* Confirmation Checkbox */}
+          {!topic.isCompleted && (
+            <div style={{
+              padding: '20px',
+              background: 'rgba(59, 130, 246, 0.05)',
+              border: '2px solid var(--bright-blue)',
+              marginTop: '20px'
+            }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+                cursor: 'pointer',
+                fontSize: '11px',
+                color: 'var(--text-dark)'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={materialsConfirmed}
+                  onChange={(e) => setMaterialsConfirmed(e.target.checked)}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    cursor: 'pointer'
+                  }}
+                />
+                <span>
+                  <strong>I confirm that I have reviewed the training document and watched the training video.</strong>
+                  <br />
+                  <span style={{ fontSize: '9px', color: 'var(--text-medium)' }}>
+                    By checking this box, you acknowledge that you have completed the required training materials.
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Quiz Section */}
+      {!quizStage && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="retro-card"
+        >
+          <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+            📝 PROGRESSIVE KNOWLEDGE CHECK
+          </h3>
+
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>
+              {topic.isCompleted ? '✅' : '🎯'}
+            </div>
+            <div style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
+              {topic.isCompleted ? 'YOU PASSED THIS TOPIC!' : 'READY TO TEST YOUR KNOWLEDGE?'}
+            </div>
+
+            {/* XP Info */}
+            <div style={{
+              padding: '20px',
+              background: 'rgba(59, 130, 246, 0.05)',
+              border: '2px solid var(--bright-blue)',
+              marginBottom: '30px',
+              textAlign: 'left'
+            }}>
+              <div style={{ fontSize: '11px', color: 'var(--primary-navy)', marginBottom: '15px', fontWeight: 'bold' }}>
+                💎 XP REWARD SYSTEM
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--text-dark)', lineHeight: '1.8' }}>
+                <strong>Step 1:</strong> Answer the mandatory question → Earn <strong style={{ color: 'var(--orange-accent)' }}>100 XP</strong> + Badge<br />
+                <strong>Step 2:</strong> Choose to continue or finish<br />
+                <strong>Step 3:</strong> Answer 4 bonus questions → Earn <strong style={{ color: 'var(--success-green)' }}>50 XP each</strong> (200 XP total)<br />
+                <br />
+                <strong>Total Possible:</strong> <span style={{ color: 'var(--bright-blue)', fontSize: '12px' }}>100-300 XP</span>
+              </div>
+            </div>
+
+            {!materialsConfirmed && !topic.isCompleted && (
+              <div style={{
+                padding: '15px',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '2px solid var(--error-red)',
+                marginBottom: '20px',
+                fontSize: '10px',
+                color: 'var(--text-dark)'
+              }}>
+                ⚠️ Please confirm that you have reviewed the training materials above
+              </div>
+            )}
+
+            {topic.isCompleted && (
+              <div style={{
+                padding: '15px',
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '2px solid var(--success-green)',
+                marginBottom: '20px',
+                fontSize: '11px',
+                color: 'var(--text-dark)',
+                textAlign: 'center'
+              }}>
+                ✅ You passed! Click below to review all questions and explanations.
+              </div>
+            )}
+
+            <button
+              onClick={handleStartQuiz}
+              className="retro-btn"
+              style={{ 
+                padding: '15px 30px', 
+                fontSize: '12px',
+                opacity: (materialsConfirmed || topic.isCompleted) ? 1 : 0.5,
+                cursor: (materialsConfirmed || topic.isCompleted) ? 'pointer' : 'not-allowed'
+              }}
+              disabled={!materialsConfirmed && !topic.isCompleted}
+            >
+              {topic.isCompleted ? '📖 REVIEW ANSWERS' : materialsConfirmed ? '🎮 START QUIZ' : '🔒 CONFIRM MATERIALS FIRST'}
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* MANDATORY QUESTION */}
+      {quizStage === 'mandatory' && !mandatoryResult && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="retro-card"
+        >
+          <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+            ⭐ MANDATORY QUESTION (100 XP)
+          </h3>
+
+          <div style={{
+            padding: '15px',
+            background: 'rgba(249, 115, 22, 0.1)',
+            border: '2px solid var(--orange-accent)',
+            marginBottom: '30px',
+            fontSize: '10px',
+            color: 'var(--text-dark)'
+          }}>
+            ⭐ Answer this question correctly to pass and earn 100 XP + Badge!
+          </div>
+
+          <div style={{
+            marginBottom: '30px',
+            padding: '20px',
+            border: '3px solid var(--orange-accent)',
+            background: 'rgba(249, 115, 22, 0.05)'
+          }}>
+            <div style={{
+              fontSize: '13px',
+              color: 'var(--text-dark)',
+              marginBottom: '20px',
+              fontWeight: 'bold'
+            }}>
+              {topic.questions[0].question}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {topic.questions[0].options.map((option, oIndex) => (
+                <button
+                  key={oIndex}
+                  onClick={() => handleAnswerSelect(0, oIndex)}
+                  style={{
+                    padding: '15px',
+                    border: `3px solid ${
+                      selectedAnswers[0] === oIndex 
+                        ? 'var(--orange-accent)' 
+                        : 'var(--border-color)'
+                    }`,
+                    background: selectedAnswers[0] === oIndex 
+                      ? 'rgba(249, 115, 22, 0.1)' 
+                      : 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    fontSize: '11px',
+                    color: 'var(--text-dark)',
+                    textAlign: 'left',
+                    boxShadow: selectedAnswers[0] === oIndex 
+                      ? '3px 3px 0 var(--primary-navy)' 
+                      : 'none'
+                  }}
+                  className="quiz-option"
+                >
+                  <span style={{
+                    display: 'inline-block',
+                    width: '25px',
+                    height: '25px',
+                    borderRadius: '50%',
+                    border: `2px solid ${selectedAnswers[0] === oIndex ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+                    marginRight: '10px',
+                    textAlign: 'center',
+                    lineHeight: '21px',
+                    background: selectedAnswers[0] === oIndex ? 'var(--orange-accent)' : 'transparent',
+                    color: selectedAnswers[0] === oIndex ? 'white' : 'var(--text-medium)'
+                  }}>
+                    {String.fromCharCode(65 + oIndex)}
+                  </span>
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={handleSubmitMandatory}
+              className="retro-btn"
+              style={{ flex: 1, padding: '15px', fontSize: '12px' }}
+              disabled={selectedAnswers[0] === undefined}
+            >
+              ✓ SUBMIT ANSWER
+            </button>
+            <button
+              onClick={() => setQuizStage(null)}
+              className="retro-btn secondary"
+              style={{ flex: 1, padding: '15px', fontSize: '12px' }}
+            >
+              ✖ CANCEL
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* MANDATORY RESULT */}
+      {quizStage === 'mandatory' && mandatoryResult && (
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="retro-card"
+        >
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+              {mandatoryResult.correctAnswer ? '🎉' : '❌'}
+            </div>
+            <div style={{
+              fontSize: '24px',
+              color: mandatoryResult.correctAnswer ? 'var(--success-green)' : 'var(--error-red)',
+              marginBottom: '20px',
+              fontWeight: 'bold'
+            }}>
+              {mandatoryResult.correctAnswer ? 'CORRECT!' : 'INCORRECT'}
+            </div>
+
+            {mandatoryResult.correctAnswer ? (
+              <>
+                <div style={{
+                  padding: '20px',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '2px solid var(--success-green)',
+                  marginBottom: '20px'
+                }}>
+                  <div style={{ fontSize: '12px', color: 'var(--success-green)', marginBottom: '10px', fontWeight: 'bold' }}>
+                    ✅ You earned 100 XP and unlocked the badge!
+                  </div>
+                  {mandatoryResult.badgeEarned && mandatoryResult.badgeImage && (
+                    <img
+                      src={mandatoryResult.badgeImage.startsWith('/uploads/') 
+                        ? `http://localhost:5000${mandatoryResult.badgeImage}` 
+                        : mandatoryResult.badgeImage}
+                      alt={mandatoryResult.badgeEarned}
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        objectFit: 'contain',
+                        margin: '10px auto'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  )}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
+                  Proceeding to decision screen...
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  padding: '20px',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '2px solid var(--error-red)',
+                  marginBottom: '20px',
+                  fontSize: '11px'
+                }}>
+                  The correct answer was: <strong>{String.fromCharCode(65 + mandatoryResult.correctAnswerIndex)}</strong>
+                  <br /><br />
+                  Review the materials and try again!
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
+                  Returning to topic screen...
+                </div>
+              </>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* DECISION SCREEN */}
+      {quizStage === 'decision' && (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="retro-card"
+        >
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🎯</div>
+            <h3 style={{ fontSize: '18px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
+              GREAT JOB!
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '30px', lineHeight: '1.6' }}>
+              You've earned <strong>100 XP</strong> and unlocked the badge!<br />
+              Would you like to continue for bonus questions?
+            </p>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '20px',
+              marginBottom: '20px'
+            }}>
+              <div style={{
+                padding: '20px',
+                border: '3px solid var(--success-green)',
+                background: 'rgba(16, 185, 129, 0.05)',
+                cursor: 'pointer'
+              }}
+              onClick={handleContinueToBonus}>
+                <div style={{ fontSize: '36px', marginBottom: '10px' }}>📚</div>
+                <div style={{ fontSize: '12px', color: 'var(--success-green)', marginBottom: '10px', fontWeight: 'bold' }}>
+                  CONTINUE QUIZ
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>
+                  Answer 4 bonus questions<br />
+                  Earn up to 200 more XP<br />
+                  (50 XP per correct answer)
+                </div>
+              </div>
+
+              <div style={{
+                padding: '20px',
+                border: '3px solid var(--bright-blue)',
+                background: 'rgba(59, 130, 246, 0.05)',
+                cursor: 'pointer'
+              }}
+              onClick={handleFinishEarly}>
+                <div style={{ fontSize: '36px', marginBottom: '10px' }}>🏠</div>
+                <div style={{ fontSize: '12px', color: 'var(--bright-blue)', marginBottom: '10px', fontWeight: 'bold' }}>
+                  FINISH NOW
+                </div>
+                <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>
+                  Keep your 100 XP + Badge<br />
+                  Return to home screen<br />
+                  You can review anytime
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* BONUS QUESTIONS */}
+      {quizStage === 'bonus' && !bonusResults && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="retro-card"
+        >
+          <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+            💎 BONUS QUESTIONS (50 XP Each)
+          </h3>
+
+          <div style={{
+            padding: '15px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '2px solid var(--success-green)',
+            marginBottom: '30px',
+            fontSize: '10px',
+            color: 'var(--text-dark)'
+          }}>
+            💎 Each correct answer earns 50 XP. Answer all 4 to maximize your rewards!
+          </div>
+
+          {topic.questions.slice(1).map((question, qIndex) => {
+            const actualIndex = qIndex + 1;
+            return (
+              <div
+                key={actualIndex}
+                style={{
+                  marginBottom: '30px',
+                  padding: '20px',
+                  border: '3px solid var(--border-color)',
+                  background: 'var(--bg-light)'
+                }}
+              >
+                <div style={{
+                  fontSize: '12px',
+                  color: 'var(--primary-navy)',
+                  marginBottom: '20px',
+                  fontWeight: 'bold'
+                }}>
+                  Bonus Question {qIndex + 1} of 4 (50 XP)
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: 'var(--text-dark)',
+                  marginBottom: '20px',
+                  lineHeight: '1.6'
+                }}>
+                  {question.question}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {question.options.map((option, oIndex) => (
+                    <button
+                      key={oIndex}
+                      onClick={() => handleAnswerSelect(actualIndex, oIndex)}
+                      style={{
+                        padding: '15px',
+                        border: `3px solid ${
+                          selectedAnswers[actualIndex] === oIndex 
+                            ? 'var(--bright-blue)' 
+                            : 'var(--border-color)'
+                        }`,
+                        background: selectedAnswers[actualIndex] === oIndex 
+                          ? 'rgba(59, 130, 246, 0.1)' 
+                          : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        fontSize: '11px',
+                        color: 'var(--text-dark)',
+                        textAlign: 'left',
+                        boxShadow: selectedAnswers[actualIndex] === oIndex 
+                          ? '3px 3px 0 var(--primary-navy)' 
+                          : 'none'
+                      }}
+                      className="quiz-option"
+                    >
+                      <span style={{
+                        display: 'inline-block',
+                        width: '25px',
+                        height: '25px',
+                        borderRadius: '50%',
+                        border: `2px solid ${selectedAnswers[actualIndex] === oIndex ? 'var(--bright-blue)' : 'var(--border-color)'}`,
+                        marginRight: '10px',
+                        textAlign: 'center',
+                        lineHeight: '21px',
+                        background: selectedAnswers[actualIndex] === oIndex ? 'var(--bright-blue)' : 'transparent',
+                        color: selectedAnswers[actualIndex] === oIndex ? 'white' : 'var(--text-medium)'
+                      }}>
+                        {String.fromCharCode(65 + oIndex)}
+                      </span>
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          <button
+            onClick={handleSubmitBonus}
+            className="retro-btn"
+            style={{ width: '100%', padding: '15px', fontSize: '12px' }}
+            disabled={!selectedAnswers[1] || !selectedAnswers[2] || !selectedAnswers[3] || !selectedAnswers[4]}
+          >
+            ✓ SUBMIT BONUS QUESTIONS
+          </button>
+        </motion.div>
+      )}
+
+      {/* BONUS RESULTS */}
+      {quizStage === 'bonus' && bonusResults && (
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="retro-card"
+        >
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: '72px', marginBottom: '20px' }}>🎉</div>
+            <div style={{
+              fontSize: '24px',
+              color: 'var(--success-green)',
+              marginBottom: '20px',
+              fontWeight: 'bold'
+            }}>
+              BONUS COMPLETE!
+            </div>
+
+            <div style={{
+              fontSize: '48px',
+              color: 'var(--bright-blue)',
+              marginBottom: '20px'
+            }}>
+              {bonusResults.correctCount} / 4
+            </div>
+
+            <div style={{
+              padding: '20px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '2px solid var(--success-green)',
+              marginBottom: '20px'
+            }}>
+              <div style={{ fontSize: '12px', color: 'var(--success-green)', marginBottom: '5px', fontWeight: 'bold' }}>
+                Bonus XP Earned: +{bonusResults.xpEarned}
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
+                Total XP from this topic: {100 + bonusResults.xpEarned}
+              </div>
+            </div>
+
+            <div style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
+              Loading review screen...
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* REVIEW MODE */}
+      {quizStage === 'review' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="retro-card"
+        >
+          <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+            📖 REVIEW: ALL ANSWERS & EXPLANATIONS
+          </h3>
+
+          <div style={{
+            padding: '15px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '2px solid var(--success-green)',
+            marginBottom: '30px',
+            fontSize: '11px',
+            color: 'var(--text-dark)',
+            textAlign: 'center'
+          }}>
+            ✅ Review all questions and their correct answers with explanations
+          </div>
+
+          {topic.questions.map((question, qIndex) => (
+            <motion.div
+              key={qIndex}
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: qIndex * 0.1 }}
+              style={{
+                marginBottom: '25px',
+                padding: '20px',
+                border: `3px solid ${qIndex === 0 ? 'var(--orange-accent)' : 'var(--bright-blue)'}`,
+                background: 'white'
+              }}
+            >
+              <div style={{
+                fontSize: '11px',
+                color: 'var(--text-medium)',
+                marginBottom: '15px',
+                fontWeight: 'bold'
+              }}>
+                {qIndex === 0 ? '⭐ Mandatory Question (100 XP)' : `💎 Bonus Question ${qIndex} (50 XP)`}
+              </div>
+
+              <div style={{
+                fontSize: '13px',
+                color: 'var(--text-dark)',
+                marginBottom: '20px',
+                fontWeight: 'bold'
+              }}>
+                {question.question}
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                {question.options.map((option, oIndex) => {
+                  const isCorrectAnswer = question.correctAnswer === oIndex;
+
+                  return (
+                    <div
+                      key={oIndex}
+                      style={{
+                        padding: '12px 15px',
+                        marginBottom: '10px',
+                        border: `2px solid ${isCorrectAnswer ? 'var(--success-green)' : 'var(--border-color)'}`,
+                        background: isCorrectAnswer ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        fontSize: '11px',
+                        color: 'var(--text-dark)'
+                      }}
+                    >
+                      <span style={{
+                        width: '25px',
+                        height: '25px',
+                        borderRadius: '50%',
+                        border: '2px solid var(--border-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '9px',
+                        fontWeight: 'bold',
+                        background: isCorrectAnswer ? 'var(--success-green)' : 'transparent',
+                        color: isCorrectAnswer ? 'white' : 'var(--text-medium)',
+                        flexShrink: 0
+                      }}>
+                        {String.fromCharCode(65 + oIndex)}
+                      </span>
+                      <span style={{ flex: 1 }}>{option}</span>
+                      {isCorrectAnswer && (
+                        <span style={{
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          color: 'var(--success-green)',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          ✓ CORRECT
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {question.explanation && (
+                <div style={{
+                  padding: '15px',
+                  background: 'rgba(59, 130, 246, 0.05)',
+                  border: '2px solid var(--bright-blue)',
+                  borderLeft: '5px solid var(--bright-blue)'
+                }}>
+                  <div style={{
+                    fontSize: '9px',
+                    color: 'var(--bright-blue)',
+                    marginBottom: '8px',
+                    fontWeight: 'bold'
+                  }}>
+                    💡 EXPLANATION
+                  </div>
+                  <div style={{
+                    fontSize: '10px',
+                    color: 'var(--text-dark)',
+                    lineHeight: '1.6'
+                  }}>
+                    {question.explanation}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ))}
+
+          <button
+            onClick={handleReturnHome}
+            className="retro-btn"
+            style={{ width: '100%', padding: '15px 30px' }}
+          >
+            🏠 RETURN HOME
+          </button>
+        </motion.div>
+      )}
+
+      <style>{`
+        .quiz-option:hover {
+          transform: translateX(5px);
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default TopicDetail;
+
