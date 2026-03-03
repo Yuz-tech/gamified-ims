@@ -1,0 +1,1106 @@
+pages/Home.js
+//after welcome header and before stats 
+
+// At the top, add useState for carousel
+const [currentSlide, setCurrentSlide] = useState(0);
+
+// Add carousel data
+const carouselSlides = [
+  {
+    icon: '🎮',
+    title: 'LEVEL UP YOUR SKILLS',
+    description: 'Complete training topics to earn XP and climb the leaderboard',
+    color: 'var(--bright-blue)'
+  },
+  {
+    icon: '🏆',
+    title: 'COLLECT BADGES',
+    description: 'Unlock unique badges for each completed topic',
+    color: 'var(--orange-accent)'
+  },
+  {
+    icon: '💎',
+    title: 'BONUS REWARDS',
+    description: 'Answer bonus questions to earn up to 300 XP per topic',
+    color: 'var(--success-green)'
+  },
+  {
+    icon: '📊',
+    title: 'TRACK PROGRESS',
+    description: 'Monitor your learning journey and compete with colleagues',
+    color: 'var(--secondary-pink)'
+  }
+];
+
+// Add useEffect for auto-rotation
+useEffect(() => {
+  const timer = setInterval(() => {
+    setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
+  }, 5000);
+  return () => clearInterval(timer);
+}, []);
+
+// Add this JSX right after the welcome header, before stats grid:
+{/* Carousel */}
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.2 }}
+  style={{ marginBottom: '40px' }}
+>
+  <div style={{
+    position: 'relative',
+    padding: '60px 40px',
+    background: 'linear-gradient(135deg, var(--bg-medium) 0%, var(--bg-dark) 100%)',
+    border: '3px solid var(--bright-blue)',
+    overflow: 'hidden',
+    minHeight: '200px'
+  }}>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={currentSlide}
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -100 }}
+        transition={{ duration: 0.5 }}
+        style={{
+          textAlign: 'center',
+          color: 'white'
+        }}
+      >
+        <div style={{ fontSize: '64px', marginBottom: '20px' }}>
+          {carouselSlides[currentSlide].icon}
+        </div>
+        <h2 style={{
+          fontSize: '24px',
+          marginBottom: '15px',
+          color: carouselSlides[currentSlide].color,
+          fontWeight: 'bold'
+        }}>
+          {carouselSlides[currentSlide].title}
+        </h2>
+        <p style={{
+          fontSize: '12px',
+          color: 'var(--text-light)',
+          maxWidth: '600px',
+          margin: '0 auto'
+        }}>
+          {carouselSlides[currentSlide].description}
+        </p>
+      </motion.div>
+    </AnimatePresence>
+
+    {/* Navigation Dots */}
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      gap: '10px',
+      marginTop: '30px'
+    }}>
+      {carouselSlides.map((_, index) => (
+        <button
+          key={index}
+          onClick={() => setCurrentSlide(index)}
+          style={{
+            width: '12px',
+            height: '12px',
+            borderRadius: '50%',
+            border: 'none',
+            background: currentSlide === index ? 'var(--bright-blue)' : 'var(--bg-medium)',
+            cursor: 'pointer',
+            transition: 'all 0.3s'
+          }}
+        />
+      ))}
+    </div>
+
+    {/* Navigation Arrows */}
+    <button
+      onClick={() => setCurrentSlide((prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length)}
+      style={{
+        position: 'absolute',
+        left: '10px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        background: 'rgba(59, 130, 246, 0.2)',
+        border: '2px solid var(--bright-blue)',
+        color: 'white',
+        fontSize: '20px',
+        width: '40px',
+        height: '40px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      ‹
+    </button>
+    <button
+      onClick={() => setCurrentSlide((prev) => (prev + 1) % carouselSlides.length)}
+      style={{
+        position: 'absolute',
+        right: '10px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        background: 'rgba(59, 130, 246, 0.2)',
+        border: '2px solid var(--bright-blue)',
+        color: 'white',
+        fontSize: '20px',
+        width: '40px',
+        height: '40px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      ›
+    </button>
+  </div>
+</motion.div>
+
+add animatePresence at the top:
+import { motion, AnimatePresence } from 'framer-motion';
+
+Manual Testing
+# IMS Training Arcade - Testing Checklist
+
+## Authentication Tests
+- [ ] Register new user (should require admin approval)
+- [ ] Login with approved employee
+- [ ] Login with admin
+- [ ] Logout and verify session cleared
+- [ ] Try accessing protected routes without login
+- [ ] Login from multiple devices simultaneously
+
+## Quiz Flow Tests
+- [ ] Complete materials checkbox verification
+- [ ] Answer mandatory question correctly (earn 100 XP + badge)
+- [ ] Answer mandatory question incorrectly (retry)
+- [ ] Choose "Finish Early" after mandatory (keep 100 XP)
+- [ ] Choose "Continue" and complete bonus questions
+- [ ] Earn 50 XP per correct bonus answer
+- [ ] Total XP calculation (100-300 range)
+- [ ] Review mode shows all correct answers
+- [ ] Explanations display properly
+
+## Admin Panel Tests
+- [ ] Create new topic (5 questions required)
+- [ ] Edit existing topic
+- [ ] Enable/disable topics
+- [ ] Upload custom badge images
+- [ ] View activity logs
+- [ ] Filter activity logs by user/action
+- [ ] Export logs to CSV
+- [ ] Approve/reject pending users
+- [ ] View leaderboard
+
+## UI/UX Tests
+- [ ] Carousel auto-rotates every 5 seconds
+- [ ] Manual carousel navigation works
+- [ ] Search topics functionality
+- [ ] Filter topics by status
+- [ ] Mobile responsive navbar
+- [ ] Badge images load properly
+- [ ] Google Drive videos embed correctly
+- [ ] All buttons have proper hover states
+
+## Edge Cases
+- [ ] Take quiz without watching video (should be blocked)
+- [ ] Submit quiz with missing answers
+- [ ] Retake already completed topic
+- [ ] Network error handling
+- [ ] Large number of topics (100+)
+- [ ] Very long topic titles/descriptions
+- [ ] Special characters in usernames
+
+## Performance Tests
+- [ ] Page load times < 3 seconds
+- [ ] Quiz submission response < 1 second
+- [ ] Leaderboard loads quickly with 100+ users
+- [ ] Badge images optimized and load fast
+- [ ] No memory leaks after extended use
+
+Automated testing setup
+# Install testing libraries
+cd client
+npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
+
+example: pages/__tests__/Home.test.js
+import { render, screen } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import Home from '../Home';
+import { AuthProvider } from '../../context/AuthContext';
+
+test('renders welcome message', () => {
+  render(
+    <BrowserRouter>
+      <AuthProvider>
+        <Home />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+  
+  expect(screen.getByText(/WELCOME/i)).toBeInTheDocument();
+});
+
+REFACTORING.md 
+# Code Refactoring Opportunities
+
+## High Priority
+1. **Extract Quiz Logic**
+   - Move quiz submission logic to custom hook: `useQuiz.js`
+   - Reduces TopicDetail.js complexity
+
+2. **Create Reusable Components**
+   - `QuizQuestion.js` - Display question with options
+   - `StatsCard.js` - Reusable stat display
+   - `BadgeCard.js` - Badge display component
+   - `Modal.js` - Generic modal wrapper
+
+3. **Environment Variables**
+   - Move all URLs to .env files
+   - API base URL
+   - Backend URL for image serving
+
+## Medium Priority
+4. **Error Boundary**
+   - Add React Error Boundary for graceful error handling
+   
+5. **Loading States**
+   - Create unified LoadingSpinner component
+   - Consistent loading UX across app
+
+6. **API Layer**
+   - Create service layer: `services/topicService.js`
+   - Centralize all API calls
+   - Better error handling
+
+## Low Priority
+7. **Constants File**
+   - Extract magic numbers (XP values, timers)
+   - `constants/quiz.js`
+
+8. **Styling**
+   - Consider CSS modules or styled-components
+   - Reduce inline styles
+
+client/src/constants/quiz.js
+export const QUIZ_CONSTANTS = {
+  MANDATORY_XP: 100,
+  BONUS_XP_PER_QUESTION: 50,
+  TOTAL_QUESTIONS: 5,
+  MANDATORY_QUESTIONS: 1,
+  BONUS_QUESTIONS: 4,
+  AUTO_REDIRECT_DELAY: 3000,
+  CAROUSEL_INTERVAL: 5000
+};
+
+export const XP_RANGES = {
+  MIN: 100,
+  MAX: 300
+};
+
+export const QUIZ_STAGES = {
+  IDLE: null,
+  MANDATORY: 'mandatory',
+  DECISION: 'decision',
+  BONUS: 'bonus',
+  REVIEW: 'review'
+};
+
+client/src/components/LoadingSpinner.js
+import React from 'react';
+
+const LoadingSpinner = ({ message = 'Loading...' }) => {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '80vh'
+    }}>
+      <div className="loading neon-text">{message}</div>
+    </div>
+  );
+};
+
+export default LoadingSpinner;
+
+components/StatsCard.js
+import React from 'react';
+import { motion } from 'framer-motion';
+
+const StatsCard = ({ icon, label, value, color, delay = 0, onClick }) => {
+  return (
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay }}
+      className="retro-card"
+      style={{
+        textAlign: 'center',
+        cursor: onClick ? 'pointer' : 'default'
+      }}
+      onClick={onClick}
+    >
+      <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+        {label}
+      </div>
+      <div style={{ fontSize: '48px', color: color, fontWeight: 'bold' }}>
+        {value}
+      </div>
+      <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
+        {icon}
+      </div>
+    </motion.div>
+  );
+};
+
+export default StatsCard;
+
+components/ErrorBoundary.js
+import React from 'react';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          padding: '20px',
+          textAlign: 'center'
+        }}>
+          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>❌</h1>
+          <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>Oops! Something went wrong</h2>
+          <p style={{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '20px' }}>
+            {this.state.error?.message || 'An unexpected error occurred'}
+          </p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="retro-btn"
+          >
+            🏠 Return Home
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+
+client/src/index.js
+import ErrorBoundary from './components/ErrorBoundary';
+
+root.render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>
+);
+
+client/.env
+REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_BACKEND_URL=http://localhost:5000
+
+client.env.production
+REACT_APP_API_URL=https://your-production-api.com/api
+REACT_APP_BACKEND_URL=https://your-production-api.com
+
+// Instead of:
+src={`http://localhost:5000${badge.imageUrl}`}
+
+// Use:
+src={`${process.env.REACT_APP_BACKEND_URL}${badge.imageUrl}`}
+
+models/User.js
+email: {
+  type: String,
+  unique: true,
+  sparse: true, // Allows null/undefined values
+  lowercase: true,
+  trim: true
+},
+
+routes/auth.js
+// Register - NO EMAIL REQUIRED
+router.post('/register', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Check if username exists
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username already exists' });
+    }
+
+    // Create user WITHOUT email
+    const user = new User({
+      username,
+      password,
+      role: 'employee',
+      isApproved: false // Still requires admin approval
+    });
+
+    await user.save();
+
+    await logActivity(user._id, 'user_registered', { username }, req);
+
+    res.status(201).json({
+      message: 'Registration successful. Please wait for admin approval.',
+      username: user.username
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+pages/Register.js
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../utils/api';
+
+const Register = () => {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      await api.post('/auth/register', {
+        username: formData.username,
+        password: formData.password
+      });
+
+      setSuccess(true);
+      setTimeout(() => navigate('/login'), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed');
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="auth-container">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="auth-card"
+        >
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>✅</div>
+            <h2 style={{ fontSize: '24px', marginBottom: '20px', color: 'var(--success-green)' }}>
+              Registration Successful!
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
+              Your account has been created and is pending admin approval.
+              <br />
+              You will be redirected to login...
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-container">
+      <motion.div
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="auth-card"
+      >
+        <h1 className="neon-text" style={{ textAlign: 'center', marginBottom: '30px' }}>
+          🎮 REGISTER
+        </h1>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px' }}>
+              USERNAME
+            </label>
+            <input
+              type="text"
+              className="retro-input"
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              required
+              autoFocus
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px' }}>
+              PASSWORD
+            </label>
+            <input
+              type="password"
+              className="retro-input"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px' }}>
+              CONFIRM PASSWORD
+            </label>
+            <input
+              type="password"
+              className="retro-input"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              required
+            />
+          </div>
+
+          {error && (
+            <div style={{
+              padding: '10px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '2px solid var(--error-red)',
+              marginBottom: '20px',
+              fontSize: '10px',
+              color: 'var(--error-red)'
+            }}>
+              {error}
+            </div>
+          )}
+
+          <button type="submit" className="retro-btn" style={{ width: '100%', marginBottom: '20px' }}>
+            REGISTER
+          </button>
+
+          <div style={{ textAlign: 'center', fontSize: '10px' }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: 'var(--bright-blue)' }}>
+              Login here
+            </Link>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
+
+export default Register;
+
+components/Navbar.js
+<button
+  onClick={() => navigate('/games')}
+  className={`nav-tab ${location.pathname.includes('/games') ? 'active' : ''}`}
+>
+  GAMES
+</button>
+
+
+
+ Pre-Deployment Checklist
+1. Prepare Your Code
+bash# Make sure everything is committed
+git add .
+git commit -m "Pre-deployment preparation"
+git push origin main
+```
+
+### 2. **Create Required Files**
+
+#### **File: `server/.gitignore`** (Make sure this exists)
+```
+node_modules/
+.env
+uploads/
+*.log
+.DS_Store
+```
+
+#### **File: `client/.gitignore`** (Make sure this exists)
+```
+node_modules/
+build/
+.env.local
+.env.production.local
+.DS_Store
+```
+
+---
+
+## 🗄️ STEP 1: Setup MongoDB Atlas (Database)
+
+### **A. Create Account & Cluster**
+
+1. Go to [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
+2. Click "Try Free"
+3. Sign up with Google/GitHub (easiest)
+4. Choose **FREE M0 Cluster**
+   - Cloud Provider: AWS
+   - Region: Choose closest to you
+   - Cluster Name: `ims-training-arcade`
+5. Click "Create Cluster" (takes 3-5 minutes)
+
+### **B. Configure Database Access**
+
+1. Click "Database Access" (left sidebar)
+2. Click "Add New Database User"
+   - Authentication Method: Password
+   - Username: `imsadmin`
+   - Password: Click "Autogenerate Secure Password" → **SAVE THIS PASSWORD**
+   - Database User Privileges: "Read and write to any database"
+3. Click "Add User"
+
+### **C. Configure Network Access**
+
+1. Click "Network Access" (left sidebar)
+2. Click "Add IP Address"
+3. Click "Allow Access from Anywhere" (0.0.0.0/0)
+   - This is needed for Render to connect
+4. Click "Confirm"
+
+### **D. Get Connection String**
+
+1. Click "Database" (left sidebar)
+2. Click "Connect" on your cluster
+3. Choose "Connect your application"
+4. Copy the connection string (looks like):
+```
+   mongodb+srv://imsadmin:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
+
+Replace <password> with your actual password
+Add database name: mongodb+srv://imsadmin:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/ims-training?retryWrites=true&w=majority
+
+SAVE THIS - You'll need it!
+
+🔧 STEP 2: Prepare Backend for Deployment
+A. Update Package.json
+File: server/package.json (ADD/UPDATE)
+json{
+  "name": "ims-training-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node seedData.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    // ... your existing dependencies
+  }
+}
+B. Update Server.js for Production
+File: server/server.js (UPDATE CORS)
+javascript// CORS configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-app.vercel.app'] // We'll update this later
+    : ['http://localhost:3000'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+C. Create Render Configuration
+File: server/render.yaml (CREATE NEW)
+yamlservices:
+  - type: web
+    name: ims-training-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+```
+
+---
+
+## 🚀 STEP 3: Deploy Backend to Render
+
+### **A. Create Render Account**
+
+1. Go to [render.com](https://render.com)
+2. Sign up with GitHub (recommended)
+3. Authorize Render to access your repositories
+
+### **B. Create New Web Service**
+
+1. Click "New +" → "Web Service"
+2. Connect your GitHub repository
+3. Select your project repo
+4. Configure:
+   - **Name:** `ims-training-backend`
+   - **Region:** Oregon (Free)
+   - **Branch:** `main`
+   - **Root Directory:** `server`
+   - **Environment:** Node
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+   - **Plan:** Free
+
+### **C. Add Environment Variables**
+
+Click "Advanced" → "Add Environment Variable":
+```
+NODE_ENV=production
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+MONGODB_URI=mongodb+srv://imsadmin:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/ims-training?retryWrites=true&w=majority
+FRONTEND_URL=https://your-app.vercel.app
+PORT=10000
+Important:
+
+Use your actual MongoDB connection string
+Generate a strong JWT_SECRET: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+We'll update FRONTEND_URL after deploying frontend
+
+D. Deploy
+
+Click "Create Web Service"
+Wait 5-10 minutes for deployment
+You'll get a URL like: https://ims-training-backend.onrender.com
+
+SAVE THIS URL!
+E. Seed Database (One Time)
+After deployment succeeds:
+
+Go to your service dashboard
+Click "Shell" tab
+Run:
+
+bash   npm run seed
+
+Wait for it to complete
+
+
+🎨 STEP 4: Prepare Frontend for Deployment
+A. Update Environment Variables
+File: client/.env.production (CREATE)
+envREACT_APP_API_URL=https://ims-training-backend.onrender.com/api
+REACT_APP_BACKEND_URL=https://ims-training-backend.onrender.com
+B. Update API Configuration
+File: client/src/utils/api.js (VERIFY)
+javascriptconst api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  headers: { 'Content-Type': 'application/json' }
+});
+C. Update Image URLs
+Find all instances of http://localhost:5000 and replace with:
+javascript`${process.env.REACT_APP_BACKEND_URL}${badge.imageUrl}`
+D. Build Test Locally
+bashcd client
+npm run build
+```
+
+If this succeeds, you're ready!
+
+---
+
+## 🌐 STEP 5: Deploy Frontend to Vercel
+
+### **A. Create Vercel Account**
+
+1. Go to [vercel.com](https://vercel.com)
+2. Sign up with GitHub
+3. Authorize Vercel
+
+### **B. Import Project**
+
+1. Click "Add New" → "Project"
+2. Import your Git repository
+3. Configure:
+   - **Framework Preset:** Create React App
+   - **Root Directory:** `client`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `build`
+
+### **C. Add Environment Variables**
+
+Click "Environment Variables":
+```
+REACT_APP_API_URL=https://ims-training-backend.onrender.com/api
+REACT_APP_BACKEND_URL=https://ims-training-backend.onrender.com
+```
+
+### **D. Deploy**
+
+1. Click "Deploy"
+2. Wait 2-3 minutes
+3. You'll get a URL like: `https://ims-training-arcade.vercel.app`
+
+**SAVE THIS URL!**
+
+---
+
+## 🔄 STEP 6: Update CORS (Important!)
+
+### **A. Update Backend CORS**
+
+Go to Render dashboard → Your service → Environment:
+
+Update `FRONTEND_URL`:
+```
+FRONTEND_URL=https://ims-training-arcade.vercel.app
+B. Update server.js CORS
+Update your code:
+javascriptconst corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+};
+Commit and push:
+bashgit add .
+git commit -m "Update CORS for production"
+git push
+Render will auto-redeploy.
+
+📁 STEP 7: Handle File Uploads (Badge Images)
+Problem: Render's free tier doesn't persist uploaded files.
+Solution: Use Cloudinary (Free)
+A. Setup Cloudinary
+
+Go to cloudinary.com
+Sign up for free (10GB storage, 25 monthly credits)
+Get your credentials from dashboard:
+
+Cloud Name
+API Key
+API Secret
+
+
+
+B. Install Cloudinary
+bashcd server
+npm install cloudinary multer-storage-cloudinary
+C. Update Upload Route
+File: server/routes/upload.js (REPLACE)
+javascriptimport express from 'express';
+import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { authenticateToken, isAdmin } from '../middleware/auth.js';
+
+const router = express.Router();
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configure Multer with Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ims-badges',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'webp'],
+    transformation: [{ width: 512, height: 512, crop: 'limit' }]
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
+
+// Upload badge
+router.post('/badge', authenticateToken, isAdmin, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    res.json({
+      url: req.file.path, // Cloudinary URL
+      publicId: req.file.filename
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ message: 'Upload failed', error: error.message });
+  }
+});
+
+// Delete badge
+router.delete('/badge/:publicId', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const result = await cloudinary.uploader.destroy(`ims-badges/${req.params.publicId}`);
+    res.json({ message: 'Badge deleted', result });
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({ message: 'Delete failed', error: error.message });
+  }
+});
+
+export default router;
+```
+
+#### **D. Add Cloudinary Env Variables to Render**
+```
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+✅ STEP 8: Test Your Deployed App
+Checklist:
+
+Visit your Vercel URL
+Register a new user
+Login as admin:
+
+Username: admin
+Password: admin123
+
+
+Approve the new user
+Login as employee
+Upload a badge image (test Cloudinary)
+Create a topic (5 questions)
+Take a quiz
+Check leaderboard
+
+
+🔧 STEP 9: Ongoing Maintenance
+Auto-Deploy on Git Push
+Both Vercel and Render auto-deploy when you push to GitHub:
+bash# Make changes locally
+git add .
+git commit -m "Your changes"
+git push origin main
+
+# Automatically:
+# - Vercel rebuilds frontend
+# - Render rebuilds backend
+```
+
+### **View Logs**
+
+**Backend logs:** Render dashboard → Your service → Logs  
+**Frontend logs:** Vercel dashboard → Your project → Deployments → View logs
+
+### **Monitor Usage**
+
+**Render free tier limits:**
+- 750 hours/month (enough for one app 24/7)
+- Spins down after 15 minutes of inactivity
+- Spins up automatically when accessed (15-30 second delay)
+
+**MongoDB Atlas free tier:**
+- 512MB storage (enough for thousands of users)
+- No connection limits
+
+**Cloudinary free tier:**
+- 25 credits/month (plenty for badge uploads)
+- 10GB storage
+
+---
+
+## 📝 STEP 10: Custom Domain (Optional)
+
+### **If You Have a Domain:**
+
+#### **Vercel:**
+1. Go to project settings → Domains
+2. Add your domain
+3. Follow DNS instructions
+
+#### **Render:**
+1. Go to service settings → Custom Domain
+2. Add your domain
+3. Follow DNS instructions
+
+---
+
+## 🚨 Common Issues & Solutions
+
+### **Issue 1: CORS Errors**
+
+**Solution:** Make sure FRONTEND_URL in Render matches your Vercel URL exactly (no trailing slash).
+
+### **Issue 2: Backend Spins Down**
+
+**Solution:** This is normal on free tier. First request takes 15-30 seconds.
+
+**Workaround:** Use a service like [UptimeRobot](https://uptimerobot.com) (free) to ping your backend every 5 minutes.
+
+### **Issue 3: MongoDB Connection Fails**
+
+**Solution:** 
+- Check MongoDB Atlas Network Access (should allow 0.0.0.0/0)
+- Verify connection string in Render environment variables
+- Check MongoDB user has read/write permissions
+
+### **Issue 4: Images Not Loading**
+
+**Solution:**
+- Check Cloudinary credentials in Render
+- Verify image URLs in database start with `https://res.cloudinary.com`
+
+---
+
+## 📊 Quick Reference Card
+```
+PRODUCTION URLs:
+Frontend:  https://your-app.vercel.app
+Backend:   https://ims-training-backend.onrender.com
+Database:  MongoDB Atlas
+
+ADMIN LOGIN:
+Username: admin
+Password: admin123
+
+EMPLOYEE TEST:
+Username: employee
+Password: employee123
+
+IMPORTANT NOTES:
+- Backend spins down after 15 min inactivity (free tier)
+- First request after spin-down takes 15-30 seconds
+- All deployments are automatic on git push
