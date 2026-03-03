@@ -23,16 +23,6 @@ const topicSchema = new mongoose.Schema({
     required: true,
     default: 0
   },
-  xpReward: {
-    type: Number,
-    default: 100,
-    immutable: true
-  },
-  passingScore: {
-    type: Number,
-    default: 70,
-    immutable: true
-  },
   questions: [{
     question: {
       type: String,
@@ -50,9 +40,9 @@ const topicSchema = new mongoose.Schema({
       type: String,
       default: ''
     },
-    points: {
-      type: Number,
-      default: 10
+    isMandatory: {
+      type: Boolean,
+      default: false
     }
   }],
   isActive: {
@@ -63,11 +53,14 @@ const topicSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Validation: Must have at least 1 question
+//Validation Logic (A topic must have 5 questions max [1 required + 4 bonus])
 topicSchema.pre('save', function(next) {
-  if (this.questions.length === 0) {
-    next(new Error('Topic must have at least one question'));
+  if(this.questions.length !== 5) {
+    next(new Error('Topic must have exactly 5 questions'));
   } else {
+    if(this.questions.length > 0) {
+      this.questions[0].isMandatory = true;
+    }
     next();
   }
 });

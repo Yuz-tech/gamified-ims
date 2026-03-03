@@ -6,53 +6,48 @@ import { authenticateToken } from '../middleware/auth.js';
 import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
-
-// All topic routes require authentication
 router.use(authenticateToken);
 
-// Get all active topics
-router.get('/', async (req, res) => {
+//Get all topics
+router.get('/', async(req,res) => {
   try {
     const topics = await Topic.find({ isActive: true })
       .select('-questions.correctAnswer')
       .sort({ order: 1 });
-    
+
     const user = await User.findById(req.user._id);
-    
     const topicsWithStatus = topics.map(topic => {
       const isCompleted = user.completedTopics.some(
         ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
       );
-      
+
       return {
         ...topic.toObject(),
         isCompleted,
         questions: topic.questions.map(q => ({
           question: q.question,
           options: q.options,
-          points: q.points
+          isMandatory: q.isMandatory
         }))
       };
     });
 
     res.json(topicsWithStatus);
   } catch (error) {
-    console.error('Error getting topics:', error);
+    console.error('Error getting topics: ', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Get single topic
-router.get('/:topicId', async (req, res) => {
+//Get single topic
+router.get('/:topicId', async(req,res) => {
   try {
     const topic = await Topic.findById(req.params.topicId);
-
-    if (!topic) {
+    if(!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
 
     const user = await User.findById(req.user._id);
-    
     const isCompleted = user.completedTopics.some(
       ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
     );
@@ -60,141 +55,154 @@ router.get('/:topicId', async (req, res) => {
     res.json({
       ...topic.toObject(),
       isCompleted,
-      questions: isCompleted 
+      questions: isCompleted
         ? topic.questions
         : topic.questions.map(q => ({
-            question: q.question,
-            options: q.options,
-            points: q.points
-          }))
+          question: q.question,
+          options: q.options,
+          isMandatory: q.isMandatory
+        }))
     });
-  } catch (error) {
+  } catch(error) {
     console.error('Error getting topic:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Submit quiz
-router.post('/:topicId/submit-quiz', async (req, res) => {
+// Submit Quiz
+router.post('/:topicId/submit-quiz', async(req,res) => {
   try {
-    const { answers } = req.body;
+    const { answers, stage } = req.body;
     const topicId = req.params.topicId;
-
     const topic = await Topic.findById(topicId);
-    if (!topic) {
+    if(!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
 
     const user = await User.findById(req.user._id);
 
-    // Check if already completed
     const alreadyCompleted = user.completedTopics.some(
       ct => ct.topicId && ct.topicId.toString() === topicId
     );
 
-    // Calculate score
-    let correctAnswers = 0;
-    let totalPoints = 0;
-    let earnedPoints = 0;
+    if(stage === 'mandatory') {
+      const mandatoryQuestion = topic.questions[0];
+      const userAnswer = answers[0];
+      const isCorrect = userAnswer === mandatoryQuestion.correctAnswer;
 
-    topic.questions.forEach((question, index) => {
-      totalPoints += question.points;
-      if (answers[index] === question.correctAnswer) {
-        correctAnswers++;
-        earnedPoints += question.points;
-      }
-    });
+      if(isCorrect) {
+        //100 xp for mandatory question
+        if(!alreadyCompleted) {
+          user.completedTopics.push({
+            topicId,
+            score: 100,
+            completedAt: new Date(),
+            stage: 'mandatory'
+          });
+          user.xp += 100;
+          user.level = Math.floor(Math.sqrt(user.xp/100)) + 1;
+          const badge = await Badge.findOne({ topicId });
 
-    const scorePercentage = Math.round((earnedPoints / totalPoints) * 100);
-    const passed = scorePercentage >= topic.passingScore;
+          if(badge) {
+            const hasBadge = user.badges.some(
+              b => b.badgeId && b.badgeId.toString() === badge._id.toString()
+            );
 
-    // Calculate XP based on performance
-    let xpEarned = 0;
-    if (passed) {
-      if (scorePercentage === 100) {
-        xpEarned = 150;
-      } else if (scorePercentage >= 90) {
-        xpEarned = 135;
-      } else if (scorePercentage >= 80) {
-        xpEarned = 125;
-      } else {
-        // 70-79% gets base 100 XP
-        xpEarned = 100;
-      }
-    }
+            if(!hasBadge) {
+              user.badges.push({ badgeId: badge._id })
+              await logActivity(user._id, 'badge_earned', {
+                badgeId: badge._id,
+                badgeName: badge.name
+              }, req);
+            }
+          }
 
-    await logActivity(user._id, 'quiz_completed', { 
-      topicId, 
-      score: scorePercentage,
-      passed,
-      xpEarned
-    }, req);
+          await user.save();
 
-    // Only award XP and badge if passed AND not already completed
-    if (passed && !alreadyCompleted) {
-      user.completedTopics.push({
-        topicId,
-        score: scorePercentage,
-        completedAt: new Date()
-      });
-
-      user.xp += xpEarned;
-      user.level = Math.floor(Math.sqrt(user.xp / 100)) + 1;
-
-      const badge = await Badge.findOne({ topicId });
-      
-      if (badge) {
-        const hasBadge = user.badges.some(
-          b => b.badgeId && b.badgeId.toString() === badge._id.toString()
-        );
-        
-        if (!hasBadge) {
-          user.badges.push({ badgeId: badge._id });
-          await logActivity(user._id, 'badge_earned', { 
-            badgeId: badge._id,
-            badgeName: badge.name
+          await logActivity(user._id, 'quiz_completed', {
+            topicId,
+            stage: 'mandatory',
+            passed: true,
+            xpEarned: 100
           }, req);
+
+          res.json({
+            passed: true,
+            stage: 'mandatory',
+            correctAnswer: true,
+            xpEarned: 100,
+            newLevel: user.level,
+            newXP: user.xp,
+            badgeEarned: badge ? badge.name : null,
+            badgeImage: badge ? badge.imageUrl : null
+          });
+        } else {
+          res.json({
+            passed: true,
+            stage: 'mandatory',
+            correctAnswer: true,
+            message: 'Already completed'
+          });
+        }
+      } else {
+        await logActivity(user._id, 'quiz_completed', {
+          topicId,
+          stage: 'mandatory',
+          passed: false
+        }, req);
+
+        res.json({
+          passed: false,
+          stage: 'mandatory',
+          correctAnswer: 'false',
+          correctAnswerIndex: mandatoryQuestion.correctAnswer
+        });
+      }
+    } else if (stage === 'bonus') {
+      let correctCount = 0;
+
+      for (let i = 1; i<5; i++) {
+        if (answers[i] === topic.questions[i].correctAnswer) {
+          correctCount++;
         }
       }
 
+      const bonusXP = correctCount * 50; //50 xp per correct bonus question
+
+      const completionIndex = user.completedTopics.findIndex(
+        ct => ct.topicId && ct.topicId.toString() === topicId
+      );
+
+      if(completionIndex !== -1) {
+        user.completedTopics[completionIndex].stage = 'full';
+        user.completedTopics[completionIndex].bonusScore = (correctCount/4) * 100;
+      }
+
+      user.xp += bonusXP;
+      user.level = Math.floor(Math.sqrt(user.xp / 100)) + 1;
+
       await user.save();
 
-      const totalBadges = await Badge.countDocuments();
-      const allBadgesCollected = user.badges.length >= totalBadges;
+      await logActivity(user._id, 'quiz_completed', {
+        topicId,
+        stage: 'bonus',
+        correctCount,
+        xpEarned: bonusXP
+      }, req);
 
       res.json({
         passed: true,
-        score: scorePercentage,
-        correctAnswers,
-        totalQuestions: topic.questions.length,
-        xpEarned: xpEarned,
+        stage: 'bonus',
+        correctCount,
+        totalBonus: 4,
+        xpEarned: bonusXP,
         newLevel: user.level,
-        newXP: user.xp,
-        badgeEarned: badge ? badge.name : null,
-        badgeImage: badge ? badge.imageUrl : null,
-        allBadgesCollected
-      });
-    } else if (passed && alreadyCompleted) {
-      res.json({
-        passed: true,
-        score: scorePercentage,
-        correctAnswers,
-        totalQuestions: topic.questions.length,
-        message: 'Review completed - you already earned rewards for this topic',
-        previousXP: xpEarned
-      });
-    } else {
-      res.json({
-        passed: false,
-        score: scorePercentage,
-        correctAnswers,
-        totalQuestions: topic.questions.length,
-        requiredScore: topic.passingScore
+        newXP: user.xp
       });
     }
   } catch (error) {
-    console.error('Error submitting quiz:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error submitting quiz: ', error);
+    res.status(500).json({ message: 'Server error', error:error.message});
   }
 });
 
