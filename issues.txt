@@ -39,5 +39,29 @@ Quiz Issues:
 wrong answer -> shows correct display
 users should be able to take the bonus questions anytime or have the option to whenever they have free time
 Progress was not saved when refreshing the page of bonus questions
+Users that did not take the bonus questions should not be able to see the review for the bonus questions
+Submit Button for Bonus Questions is locked somehow
+XP and Level did not reflect in homepage
 
+When creating a topic, the order must be fixed to be the latest/newest
+or remove order of topics
+
+When creating a topic, uploading the badge for that topic should be within the same tab as well so we don't have to navigate to the badges tab and upload a badge for every created topic
+
+Use google icons from google fonts downloaded locally instead of emoticons
+
+User takes quiz ->
+User takes mandatory question(1) 
+If Passed:
+-> finish topic, get rewards, and move on to the next
+-> may or may not continue with bonus questions
+-> can review only unlocked questions. Hence, if user did not take bonus questions, then user cannot review those questions
+If Failed: 
+-> Redo mandatory question(1)
+
+W3Schools quiz but with an explanation
+
+Add next topic button perhaps??? after finishing a topic
+Easter Egg: If all badges are collected -> pop-up GForms
+No profile tab for users
 
