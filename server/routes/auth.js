@@ -34,28 +34,35 @@ const parseUserAgent = (userAgent) => {
 // Request new account
 router.post('/request-account', async (req, res) => {
   try {
-    const { username, email } = req.body;
+    const { username, password } = req.body;
 
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Username or email already exists' });
+    const existingUser = await User.findOne({ username });
+    if(existingUser) {
+      return res.status(400).json({
+        message: 'Username already exists'
+      });
     }
 
     const user = new User({
       username,
-      email,
-      password: Math.random().toString(36).slice(-8),
-      isApproved: false,
-      requestedAt: new Date()
+      password,
+      role: 'employee',
+      isApproved: false
     });
 
     await user.save();
 
-    res.status(201).json({ 
-      message: 'Account request submitted. Please wait for admin approval.' 
+    await logActivity(user._id, 'user_registered', { username }, req);
+
+    res.status(201).json({
+      message: 'Registration successful. Please wait for admin approval.',
+      username: user.username
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Registration error: ', error);
+    res.status(500).json({
+      message: 'Server error', error: error.message
+    });
   }
 });
 

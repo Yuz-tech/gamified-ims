@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
@@ -11,9 +11,40 @@ const Home = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [userBadges, setUserBadges] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+const carouselSlides = [
+        {
+          title: 'Level up your Skills',
+          description: 'Complete topics and earn XP',
+          color: 'var(--bright-blue)'
+        },
+        {
+          title: 'Bonus rewards',
+          description: 'Answer Bonus Questions to earn more rewards',
+          color: 'var(--success-green)'
+        },
+        {
+          title: 'Track progress',
+          description: 'Monitor your training journey and compete with colleagues',
+          color: 'var(--bright-blue)'
+        },
+        {
+          title: 'Collect Badges',
+          description: 'Unlock unique badges for each completed topic',
+          color: 'var(--orange-accent)'
+        }
+      ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
+    }, 4500);
+      return () => clearInterval(timer);      
   }, []);
 
 const fetchData = async () => {
@@ -93,6 +124,78 @@ const fetchData = async () => {
         <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
           Ready to train?
         </p>
+      </motion.div>
+
+      {/* Carousel */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={{ marginBottom: '40px' }}
+      >
+        <div style = {{
+          position: 'relative',
+          padding: '60px 40px',
+          background: 'linear-gradient(135deg, var(--bg-medium) 0%, var(--bg-dark) 100%',
+          border: '3px solid var(--bright-blue)',
+          overflow: 'hidden',
+          minHeight: '200px'
+        }}>
+          <AnimatePresence mode = "wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.5 }}
+              style={{
+                textAlign: 'center',
+                color: 'white'
+              }}
+            >
+              <h2 style={{
+                fontSize: '24px',
+                marginBottom: '15px',
+                color: carouselSlides[currentSlide].color,
+                fontWeight: 'bold'
+              }}>
+                {carouselSlides[currentSlide].title}
+              </h2>
+              <p style={{
+                fontSize: '12px',
+                color: 'var(--text-light)',
+                maxWidth: '600px',
+                margin: '0 auto'
+              }}>
+                {carouselSlides[currentSlide].description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '10px',
+            marginTop: '30px'
+          }}>
+            {carouselSlides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => 
+                  setCurrentSlide(index)}
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: currentSlide === index ? 'var(--bright-blue)' : 'var(--bg-medium)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+              />
+            ))}
+          </div>
+        </div>
       </motion.div>
 
       {/* Stats Grid */}
