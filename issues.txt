@@ -36,19 +36,11 @@ Remove Passing Score
 Transparency of button -> enable/disable
 
 Quiz Issues:
-wrong answer -> shows correct display
-users should be able to take the bonus questions anytime or have the option to whenever they have free time
-Progress was not saved when refreshing the page of bonus questions
-Users that did not take the bonus questions should not be able to see the review for the bonus questions
-Submit Button for Bonus Questions is locked somehow
-XP and Level did not reflect in homepage
-
-When creating a topic, the order must be fixed to be the latest/newest
-or remove order of topics
-
-When creating a topic, uploading the badge for that topic should be within the same tab as well so we don't have to navigate to the badges tab and upload a badge for every created topic
-
-Use google icons from google fonts downloaded locally instead of emoticons
+a. wrong answer -> still shows "correct" display
+b. users should be able to take the bonus questions anytime or have the option to whenever they have free time
+c. Progress was not saved when refreshing the page of bonus questions
+d. Users that did not take the bonus questions should not be able to see the review for the bonus questions
+e. Submit Button for Bonus Questions is locked somehow, even after picking choices
 
 User takes quiz ->
 User takes mandatory question(1) 
@@ -59,9 +51,21 @@ If Passed:
 If Failed: 
 -> Redo mandatory question(1)
 
-W3Schools quiz but with an explanation
+Admin Issues:
+a. When creating a topic, the order must be fixed to be the latest/newest
+or just remove order of topics since it's quite pointless
+b. When creating a topic, uploading the badge for that topic should be within the same tab as well so we don't have to navigate to the badges tab and upload a badge for every created topic
+c. Admin yearly Reset button not working
 
-Add next topic button perhaps??? after finishing a topic
-Easter Egg: If all badges are collected -> pop-up GForms
-No profile tab for users
+UI Issues:
+a. Use google icons from google fonts downloaded locally instead of emoticons
+b. XP and Level did not reflect in homepage
+c. No profile tab for users
+d. I made some customized profile avatars (pngs) that can be used
 
+Some ponders or suggestions:
+1. Replicate W3Schools quiz but with an explanation or use bootstrap templates for quiz
+2. Perhaps Add "next topic" button when opting to finish a topic
+3. Home Tab -> "Locked Finish Training Button"
+  -> will only be unlocked when all badges are unlocked
+  -> if unlocked, clicking it will direct the user to go to a google form that needs to be filled up to get their approval
