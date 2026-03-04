@@ -14,9 +14,9 @@ dotenv.config();
 
 const seedData = async () => {
   try {
-    console.log('🔄 Connecting to MongoDB...');
+    console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
     const badgesDir = path.join(__dirname, 'uploads', 'badges');
     let badgeImages = [];
@@ -99,8 +99,6 @@ const seedData = async () => {
       isActive: true
     });
 
-    // Check/Create Admin User
-    console.log('Checking admin user...');
     const adminExists = await User.findOne({ username: 'admin' });
     if (!adminExists) {
       await User.create({
@@ -115,8 +113,6 @@ const seedData = async () => {
       console.log('Admin user already exists');
     }
 
-    // Check/Create Employee User
-    console.log('Checking employee user...');
     const employeeExists = await User.findOne({ username: 'employee' });
     if (!employeeExists) {
       await User.create({
