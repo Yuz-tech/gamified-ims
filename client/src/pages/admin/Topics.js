@@ -7,14 +7,19 @@ const Topics = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingTopic, setEditingTopic] = useState(null);
+  const [badgePreview, setBadgePreview] = useState(null);
+  const [uploadingBadge, setUploadingBadge] = useState(false);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     documentUrl: '',
     videoUrl: '',
-    order: 1,
+    badgeImage: '',
+    badgeName: '',
+    badgeDescription: '',
     questions: [
-      //Mandatroy question
+      // Required/Mandatory Question
       {
         question: '',
         options: ['','','',''],
@@ -22,6 +27,7 @@ const Topics = () => {
         explanation: '',
         isMandatory: true
       },
+      // Bonus Questions (4)
       ...Array(4).fill(null).map(() => ({
         question: '',
         options: ['','','',''],
@@ -40,11 +46,48 @@ const Topics = () => {
   const fetchTopics = async () => {
     try {
       const response = await api.get('/admin/topics');
-      setTopics(response.data); 
+      setTopics(response.data);
     } catch (error) {
       alert('Error fetching topics');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBadgeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    setUploadingBadge(true);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('badge', file);
+
+      const response = await api.post('/upload/badge', formDataUpload, {
+        headers: { 'Content-Type': 'mutlipart/form-data' }
+      });
+
+      setFormData({
+        ...formData, badgeImage: response.data.url
+      });
+      setBadgePreview(response.data.url);
+      alert('Badge uploaded successfully!');
+    } catch (error) {
+      console.error('Upload error: ', error);
+      alert ('Failed to upload badge');
+    } finally {
+      setUploadingBadge(false);
     }
   };
 
@@ -67,10 +110,16 @@ const Topics = () => {
     });
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.badgeImage) {
+      alert('Please upload a badge image');
+      return;
+    }
+
     try {
-      if(editingTopic) {
+      if (editingTopic) {
         await api.put(`/admin/topics/${editingTopic._id}`, formData);
         alert('Topic updated successfully');
       } else {
@@ -80,7 +129,7 @@ const Topics = () => {
       fetchTopics();
       resetForm();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error saving topic');
+      alert (error.response?.data?.message || 'Error saving topic');
     }
   };
 
@@ -91,35 +140,37 @@ const Topics = () => {
       description: topic.description,
       documentUrl: topic.documentUrl,
       videoUrl: topic.videoUrl,
-      order: topic.order,
-      questions: topic.questions.length === 5 ? topic.questions : [
-        {
-          question: '',
-          options: ['','','',''],
-          correctAnswer: 0,
-          explanation: '',
-          isMandatory: true
-        },
-        ...Array(4).fill(null).map(() => ({
-          question: '',
-          options: ['','','',''],
-          correctAnswer: 0,
-          explanation: '',
-          isMandatory: false
-        }))
-      ],
-      isActive: topic.isActive
+      badgeImage: topic.badgeImage || '',
+      badgeName: topic.badgeName || '',
+      badgeDescription: topic.badgeDescription || '',
+      questions: topic.questions.length === 5 ? topic.questions : [{
+        question: '',
+        options: ['','','',''],
+        correctAnswer: 0,
+        explanation: '',
+        isMandatory: true
+      },
+      ...Array(4).fill(null).map(() => ({
+        question: '',
+        options: ['','','',''],
+        correctAnswer: 0,
+        explanation: '',
+        isMandatory: false
+      }))
+    ],
+    isActive: topic.isActive
     });
+    setBadgePreview(topic.badgeImage || null);
     setShowForm(true);
   };
 
-  const handleToggle = async(topicId) => {
+  const handleToggle = async (topicId) => {
     if(window.confirm('Are you sure you want to toggle this topic status?')) {
       try {
         await api.put(`/admin/topics/${topicId}/toggle`);
         fetchTopics();
-      } catch (error) {
-        alert('Error toggling topic');
+      } catch(error) {
+        alert ('Error toggling topic');
       }
     }
   };
@@ -130,7 +181,9 @@ const Topics = () => {
       description: '',
       documentUrl: '',
       videoUrl: '',
-      order: 1,
+      badgeImage: '',
+      badgeName: '',
+      badgeDescription: '',
       questions: [
         {
           question: '',
@@ -151,15 +204,11 @@ const Topics = () => {
     });
     setEditingTopic(null);
     setShowForm(false);
+    setBadgePreview(null);
   };
 
   if(loading) {
-    return <div style = {{
-      padding: '40px',
-      textAlign: 'center'
-    }}>
-      Loading...
-    </div>
+    return <div style = {{ padding: '40px', textAlign: 'center' }}>Loading...</div>;
   }
 
   return (
@@ -170,25 +219,21 @@ const Topics = () => {
         alignItems: 'center',
         marginBottom: '30px'
       }}>
-        <h1 style = {{
-          fontSize: '24px',
-          color: 'var(--primary-navy)'
-        }}>
-          Manage Topics
-        </h1>
-        <button onClick={() => setShowForm(!showForm)} className="retro-btn">
-          {showForm ? 'Cancel' : 'Create Topic'}
-        </button>
+        <h1 style = {{ fontSize: '24px', color: 'var(--primary-navy)' }}>Manage Topics</h1>
+        <button onClick = {() => setShowForm(!showForm)}
+          className="retro-btn">
+            {showForm ? 'Cancel' : '+ Create Topic'}
+          </button>
       </div>
 
       {showForm && (
         <motion.div 
-          initial = {{ opacity: 0, y: -20 }}
-          animate = {{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
           className="retro-card"
-          style = {{ marginBottom: '30px' }}
+          style={{ marginBottom: '30px' }}
         >
-          <h3 style = {{
+          <h3 style={{
             fontSize: '14px',
             marginBottom: '20px',
             color: 'var(--secondary-pink)'
@@ -196,15 +241,15 @@ const Topics = () => {
             {editingTopic ? 'Edit Topic' : 'Create New Topic'}
           </h3>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit = {handleSubmit}>
             <div style = {{ marginBottom: '20px' }}>
-              <label style = {{
+              <label style = {{ 
                 display: 'block',
                 marginBottom: '10px',
                 fontSize: '10px',
                 color: 'var(--text-medium)'
               }}>
-                Title
+                TITLE
               </label>
               <input 
                 type="text"
@@ -212,25 +257,25 @@ const Topics = () => {
                 value={formData.title}
                 onChange={(e) => setFormData({
                   ...formData, title: e.target.value
-                })} required />
+                })}
+                required
+                />
             </div>
 
-            <div style = {{ marginBottom: '20px' }}>
+            <div style = {{ marginBottom: '20px'}}>
               <label style = {{
                 display: 'block',
                 marginBottom: '10px',
                 fontSize: '10px',
                 color: 'var(--text-medium)'
               }}>
-                Description
+                DESCRIPTION
               </label>
-              <textarea 
-                className="retro-input"
-                value={formData.description}
+              <textarea className="retro-input" value={formData.description}
                 onChange={(e) => setFormData({
                   ...formData, description: e.target.value
                 })}
-                rows = "3"
+                rows="3"
                 required
               />
             </div>
@@ -244,203 +289,243 @@ const Topics = () => {
               }}>
                 IMS Manual Reference
               </label>
-              <input 
-                type = "text"
-                className = "retro-input"
-                value = {formData.documentUrl}
-                onChange = {(e) => setFormData({
+              <input type = "text"
+                className="retro-input"
+                value={formData.documentUrl} onChange={(e) => setFormData({
                   ...formData, documentUrl: e.target.value
                 })}
-                placeholder = "https://reference link here..."
+                placeholder="https://place link here..."
                 required
               />
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
+            <div style = {{ marginBottom: '20px' }}>
               <label style = {{
                 display: 'block',
                 marginBottom: '10px',
                 fontSize: '10px',
                 color: 'var(--text-medium)'
               }}>
-                IMS Video Policy
+                IMS Policy Video
               </label>
-              <input 
-                type = "text"
-                className = "retro-input"
-                value = {formData.videoUrl}
-                onChange = {(e) => setFormData({
-                  ...formData, videoUrl: e.target.value
-                })}
-                placeholder="https://video reference link here..."
+              <input type = "text" className="retro-input" value={formData.videoUrl} onChange={(e) => setFormData({
+                ...formData, videoUrl: e.target.value
+              })}
+                placeholder="https://video link here..."
                 required
               />
+            </div>
 
-              <div style = {{ marginBottom: '20px' }}>
+            {/* Badge Section */}
+            <div style = {{
+              padding: '20px',
+              background: 'rgba(249, 115, 22, 0.05)',
+              border: '2px solid var(--orange-accent)',
+              marginBottom: '20px'
+            }}>
+              <h4 style = {{
+                fontSize: '12px',
+                marginBottom: '15px',
+                color: 'var(--orange-accent)'
+              }}>
+                Badge Configuration
+              </h4>
+
+              <div style = {{ marginBottom: '15px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '10px',
+                  fontSize: '10px',
+                  color: 'var(--text-medium)'
+                }}>
+                  Badge Name
+                </label>
+                <input type = "text" className="retro-input"
+                  value = {formData.badgeName} onChange={(e) => setFormData({
+                    ...formData, badgeName: e.target.value
+                  })}
+                  placeholder = "ISO 9001 Master"
+                  required
+                />
+              </div>
+
+              <div style = {{ marginBottom: '15px' }}>
                 <label style = {{
                   display: 'block',
                   marginBottom: '10px',
                   fontSize: '10px',
                   color: 'var(--text-medium)'
                 }}>
-                  Order
+                  Badge Description
                 </label>
-                <input
-                  type = "number"
-                  className="retro-input"
-                  value = {formData.order}
-                  onChange={(e) => setFormData({
-                    ...formData, order: parseInt(e.target.value)
-                  })}
-                  required
+                <textarea className="retro-input" value={formData.badgeDescription} onChange={(e) => setFormData({
+                  ...formData, badgeDescription: e.target.value
+                })}
+                  placeholder="description here..."
+                  rows = "2"
                 />
               </div>
 
-              <div style = {{
-                padding: '15px',
-                background: 'rgba(59,130,246,0.1)',
-                border: '2px solid var(--bright-blue)',
-                marginBottom: '20px',
-                fontSize: '10px'
-              }}>
-                <strong>XP Reward System</strong>
-                <div style = {{ marginTop: '10px' }}>
-                  MANDATORY Question:
-                  <strong>100 XP</strong><br />
-                  BONUS Questions:
-                  <strong>50 XP each</strong><br />
-                  TOTAL Possible:
-                  <strong>100-300 XP</strong>
-                </div>
-              </div>
-
-              {/* Questions Section */}
-              <div style = {{ marginBottom: '20px' }}>
-                <h4 style={{
-                  fontSize: '12px',
-                  marginBottom: '15px',
-                  color: 'var(--primary-navy)'
+              <div style = {{ marginBottom: '15px' }}>
+                <label style = {{ 
+                  display: 'block',
+                  marginBottom: '10px',
+                  fontSize: '10px',
+                  color: 'var(--text-medium)'
                 }}>
-                  Questions
-                </h4>
-
-                {formData.questions.map((question, qIndex) => (
-                  <div 
-                    key = {qIndex}
-                    style = {{
-                      marginBottom: '20px',
-                      padding: '15px',
-                      border: `2px solid ${qIndex === 0 ? 'var(--orange-accent)' : 'var(--border-color)'}`,
-                      background: qIndex === 0 ? 'rgba(249,115,22,0.05)' : 'var(--bg-light)'
-                    }}
-                  >
-                    <div style = {{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '15px'
-                    }}>
-                      <h5 style={{
-                        fontSize: '11px',
-                        color: 'var(--primary-navy)'
-                      }}>
-                        {qIndex === 0 ? 'Mandatory Question' : `Bonus Question ${qIndex}`}
-                        {qIndex === 0 && <span style={{
-                          color: 'var(--orange-accent)',
-                          marginLeft: '10px'
-                        }}>(100 XP)</span>}
-                        {qIndex > 0 && <span style={{
-                          color: 'var(--success-green)',
-                          marginLeft: '10px'
-                        }}>(50 XP)</span>}
-                      </h5>
-                    </div>
-
-                    <div style = {{ marginBottom: '15px' }}>
-                        <label style = {{
-                          display: 'block',
-                          marginBottom: '8px',
-                          fontSize: '9px',
-                          color: 'var(--text-medium)'
-                        }}>
-                          Question Text
-                        </label>
-                        <input
-                          type="text"
-                          className="retro-input"
-                          value={question.question}
-                          onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)}
-                          required
-                        />
-                    </div>
-
-                    <div style = {{ marginBottom: '15px' }}>
-                        <label style = {{
-                          display: 'block',
-                          marginBottom: '8px',
-                          fontSize: '9px',
-                          color: 'var(--text-medium)'
-                        }}>
-                          Options
-                        </label>
-
-                        {question.options.map((option, oIndex) => (
-                          <div key = {oIndex} style = {{
-                            marginBottom: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px'
-                          }}>
-                          <input type = "radio"
-                            checked = {question.correctAnswer === oIndex}
-                            onChange={() => updateQuestion(qIndex, 'correctAnswer', oIndex)} />
-                          <input type = "text"
-                            className="retro-input"
-                            value = {option}
-                            onChange = {(e) => updateQuestionOption(qIndex, oIndex, e.target.value)}
-                            placeholder={`Option ${oIndex + 1}`}
-                            required
-                            style={{ flex: 1 }}
-                          />
-                          <span style = {{ fontSize: '8px', color: 'var(--text-light)' }}>
-                            {question.correctAnswer === oIndex ? 'Correct' : ''}
-                          </span>
-                          </div>
-                        ))}
-                    </div>
-
-                    <div style = {{ marginBottom: '15px' }}>
-                        <label style = {{
-                          display: 'block',
-                          marginBottom: '8px',
-                          fontSize: '9px',
-                          color: 'var(--text-medium)'
-                        }}>
-                          Explanation
-                        </label>
-                        <textarea className="retro-input"
-                          value={question.explanation || ''}
-                          onChange = {(e) => updateQuestion(qIndex, 'explanation', e.target.value)}
-                          placeholder="correct answer explanation"
-                          rows = "2"
-                          style = {{ fontSize: '10px' }}
-                        />
-                    </div>
+                  Badge Image (PNG, max 5MB)
+                </label>
+                <input type = "file" accept="image/*"
+                  onChange={handleBadgeUpload}
+                  style={{ marginBottom: '10px' }}
+                  disabled={uploadingBadge}
+                />
+                {uploadingBadge && (
+                  <div style = {{ fontSize: '10px', color: 'var(--bright-blue)' }}>
+                    Uploading...
                   </div>
-                ))}
+                )}
+                {badgePreview && (
+                  <div style={{ marginTop: '10px' }}>
+                    <img src = {badgePreview.startsWith('/uploads')
+                      ? `http://localhost:5000${badgePreview}` //change to actual IP
+                      : badgePreview}
+                      alt="Badge preview"
+                      style={{
+                        width: '100px',
+                        height: '100px',
+                        objectFit: 'contain',
+                        border: '2px solid var(--border-color)',
+                        padding: '10px',
+                        background: 'white'
+                      }}
+                    />
+                  </div>
+                )}
               </div>
-
-              <button type = "submit" className="retro-btn" style={{ width: '100%' }}>
-                {editingTopic ? 'Update Topic' : 'Create Topic' }
-              </button>
             </div>
+
+            {/* XP Infor */}
+            <div style = {{
+              padding: '15px',
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '2px solid var(--bright-blue)',
+              marginBottom: '20px',
+              fontSize: '10px'
+            }}>
+              <strong>XP Reward System</strong>
+              <div style = {{ marginTop: '10px' }}>
+                Mandatory Question: <strong>100 XP and Badge</strong>
+                Bonus Questions: <strong>50 XP each</strong>
+                Total Possible: <strong>100-300 XP</strong>
+              </div>
+            </div>
+
+            {/* Questions section */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{
+                fontSize: '12px',
+                marginBottom: '15px',
+                color: 'var(--primary-navy)'
+              }}>
+                Questions
+              </h4>
+
+              {formData.questions.map((question, qIndex) => (
+                <div key = {qIndex}
+                  style={{
+                    marginBottom: '20px',
+                    padding: '15px',
+                    border: `2px solid ${qIndex === 0 ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+                    background: qIndex === 0 ? 'rgba(249, 115, 22, 0.05)' : 'var(--bg-light)'
+                  }}
+                >
+                  <div style = {{ marginBottom: '15px' }}>
+                    <h5 style={{ fontSize: '11px', color: 'var(--primary-navy)' }}>
+                      {qIndex === 0 ? 'Mandatory Question' : `Bonus Question ${qIndex}`}
+                      {qIndex === 0 && <span style = {{ color: 'var(--orange-accent)', marginLeft: '10px' }}>100 XP</span>}
+                      {qIndex > 0 && <span style = {{ color: 'var(--success-green)', marginLeft: '10px' }}>50 XP</span>}
+                    </h5>
+                  </div>
+
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '9px',
+                      color: 'var(--text-medium)'
+                    }}>
+                      Question Text
+                    </label>
+                    <input type = "text" className="retro-input" value={question.question} onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)} required />
+                  </div>
+
+                  <div style = {{ marginBottom: '15px' }}>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '9px',
+                      color: 'var(--text-medium)'
+                    }}>
+                      Options
+                    </label>
+
+                    {question.options.map((option, oIndex) => (
+                      <div key = {oIndex} style = {{
+                        marginBottom: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}>
+                        <input type = "radio" checked = {question.correctAnswer === oIndex}
+                          onChange={() => updateQuestion(qIndex, 'correctAnswer', oIndex)} />
+                          <input type = "text" className="retro-input" value={option} onChange={(e) =>
+                            updateQuestionOption(qIndex, oIndex, e.target.value)}
+                            placeholder={`Option ${oIndex} + 1`}
+                            required
+                            style={{ flex: 1 }} />
+                            <span style={{
+                              fontSize: '8px', 
+                              color: 'var(--text-light)',
+                              minWidth: '60px'
+                            }}>
+                              {question.correctAnswer === oIndex ? 'Correct': ''}
+                            </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style = {{ marginBottom: '15px' }}>
+                    <label style = {{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '9px',
+                      color: 'var(--text-medium)'
+                    }}>
+                      Explanation
+                    </label>
+                    <textarea className="retro-input" value={question.explanation || ''} onChange={(e) =>
+                      updateQuestion(qIndex, 'explanation', e.target.value)
+                    }
+                    placeholder="Explain why this is the correct answer..."
+                    rows="2"
+                    style={{ fontSize: '10px' }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button type = "submit" className="retro-btn" style = {{ width: '100%' }} disabled={uploadingBadge}>
+              {editingTopic ? 'Update Topic' : 'Create Topic'}
+            </button>
           </form>
         </motion.div>
       )}
 
       {/* Topics List */}
-      <div className = "retro-card">
-        <h3 style = {{
+      <div className="retro-card">
+        <h3 style = {{ 
           fontSize: '14px',
           marginBottom: '20px',
           color: 'var(--secondary-pink)'
@@ -464,76 +549,59 @@ const Topics = () => {
               borderCollapse: 'collapse'
             }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-color)'}}>
-                  <th style = {{ padding: '10px', textAlign: 'left' }}>
-                    Order
-                  </th>
-                  <th style={{ padding: '10px', textAlign: 'left' }}>
-                    Title
-                  </th>
-                  <th style={{ padding: '10px', textAlign: 'left' }}>
-                    Questions
-                  </th>
-                  <th style={{ padding: '10px', textAlign: 'left' }}>
-                    XP Range
-                  </th>
-                  <th style={{ padding: '10px', textAlign: 'left' }}>
-                    Status
-                  </th>
-                  <th style={{ padding: '10px', textAlign: 'center' }}>
-                    Actions
-                  </th>
+                <tr style = {{ borderBottom: '2px solid var(--border-color)' }}>
+                  <th style = {{ padding: '10px', textAlign: 'left' }}>TITLE</th>
+                  <th style = {{ padding: '10px', textAlign: 'left' }}>BADGE</th>
+                  <th style = {{ padding: '10px', textAlign: 'left' }}>QUESTIONS</th>
+                  <th style = {{ padding: '10px', textAlign: 'left' }}>XP RANGE</th>
+                  <th style = {{ padding: '10px', textAlign: 'left' }}>STATUS</th>
+                  <th style = {{ padding: '10px', textAlign: 'left' }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {topics.map((topic) => (
-                  <tr key = {topic._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style = {{ padding: '10px' }}>
-                      {topic.order}
-                    </td>
+                  <tr key = {topic._id} style={{ borderBottom: '1px solid var(--border-color)'}}>
                     <td style = {{ padding: '10px', fontWeight: 'bold' }}>
                       {topic.title}
                     </td>
                     <td style = {{ padding: '10px' }}>
-                      {topic.questions?.length || 0}
+                      {topic.badgeImage && (
+                        <img src = {topic.badgeImage.startsWith('/uploads/')
+                          ? `http://localhost:5000${topic.badgeImage}`
+                          : topic.badgeImage}
+                          alt="Badge"
+                          style={{ width: '30px', height: '30px', objectFit: 'contain' }}
+                        />
+                      )}
                     </td>
-                    <td style = {{
-                      padding: '10px',
-                      color: 'var(--success-green)'
-                    }}>
-                      100-300 XP
-                    </td>
+                    <td style={{ padding: '10px' }}> 5 </td>
+                    <td style = {{ padding: '10px', color: 'var(--success-green)' }}>100-300 XP</td>
                     <td style = {{ padding: '10px' }}>
-                      <span style={{
+                      <span style = {{ 
                         padding: '3px 8px',
                         background: topic.isActive ? 'var(--success-green)' : 'var(--error-red)',
                         color: 'white',
                         fontSize: '8px',
                         fontWeight: 'bold'
-                      }}
-                      >
-                        {topic.isActive ? 'ACTIVE' : 'DISABLED'}
+                      }}>
+                        {topic.isActive ? 'Active' : 'Disabled'}
                       </span>
                     </td>
                     <td style = {{ padding: '10px', textAlign: 'center' }}>
-                      <button onClick={() => handleEdit(topic)}
-                        className="retro-btn secondary"
-                        style={{ 
-                          fontSize: '8px',
-                          padding: '5px 10px',
-                          marginRight: '5px'
-                        }}>
-                          Edit
-                        </button>
-                        <button onClick={() => handleToggle(topic._id)}
-                          className="retro-btn"
-                          style = {{
-                            fontSize: '8px',
-                            padding: '5px 10px',
-                            background: topic.isActive ? 'var(--error-red)' : 'var(--success-green)'
-                          }}>
-                            {topic.isActive ? 'Disable' : 'Enable'}
-                          </button>
+                      <button onClick={() => handleEdit(topic)} className="retro-btn secondary" style = {{
+                        fontSize: '8px',
+                        padding: '5px 10px',
+                        marginRight: '5px'
+                      }}>
+                        Edit
+                      </button>
+                      <button onClick={() => handleToggle(topic._id)} className="retro-btn" style = {{
+                        fontSize: '8px',
+                        padding: '5px 10px',
+                        background: topic.isActive ? 'var(--error-red)' : 'var(--success-green)'
+                      }}>
+                        {topic.isActive ? 'DISABLE' : 'ENABLE'}
+                      </button>
                     </td>
                   </tr>
                 ))}

@@ -6,24 +6,24 @@ import { authenticateToken } from '../middleware/auth.js';
 import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
+
 router.use(authenticateToken);
 
-//Get all topics
+// GET all topics
 router.get('/', async(req,res) => {
   try {
-    const topics = await Topic.find({ isActive: true })
-      .select('-questions.correctAnswer')
-      .sort({ order: 1 });
-
+    const topics = (await Topic.find({ isActive: true })).toSorted({ createdAt: -1 });
     const user = await User.findById(req.user._id);
     const topicsWithStatus = topics.map(topic => {
-      const isCompleted = user.completedTopics.some(
+      const completion = user.completedTopics.find(
         ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
       );
 
       return {
         ...topic.toObject(),
-        isCompleted,
+        mandatoryCompleted: completion?.mandatoryCompleted || false,
+        bonusCompleted: completion?.bonusCompleted || false,
+        bonusCorrect: completion?.bonusCorrect || 0,
         questions: topic.questions.map(q => ({
           question: q.question,
           options: q.options,
@@ -39,7 +39,7 @@ router.get('/', async(req,res) => {
   }
 });
 
-//Get single topic
+// GET single topic
 router.get('/:topicId', async(req,res) => {
   try {
     const topic = await Topic.findById(req.params.topicId);
@@ -48,161 +48,168 @@ router.get('/:topicId', async(req,res) => {
     }
 
     const user = await User.findById(req.user._id);
-    const isCompleted = user.completedTopics.some(
+    const completion = user.completedTopics.find(
       ct => ct.topicId && ct.topicId.toString() === topic._id.toString()
     );
 
+    const mandatoryCompleted = completion?.mandatoryCompleted || false;
+    const bonusCompleted = completion?.bonusCompleted || false;
+
     res.json({
       ...topic.toObject(),
-      isCompleted,
-      questions: isCompleted
-        ? topic.questions
-        : topic.questions.map(q => ({
-          question: q.question,
-          options: q.options,
-          isMandatory: q.isMandatory
-        }))
+      mandatoryCompleted, bonusCompleted, bonusCorrect: completion?.bonusCorrect || 0,
+      questions: mandatoryCompleted ? topic.questions : topic.questions.map(q => ({
+        question: q.question,
+        options: q.options,
+        isMandatory: q.isMandatory
+      }))
     });
-  } catch(error) {
+  } catch (error) {
     console.error('Error getting topic:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message});
   }
 });
 
-// Submit Quiz
-router.post('/:topicId/submit-quiz', async(req,res) => {
+// Submit question 1 (mandatory/required)
+router.post('/:topicId/submit-mandatory', async (req,res) => {
   try {
-    const { answers, stage } = req.body;
+    const { answer } = req.body;
     const topicId = req.params.topicId;
+
     const topic = await Topic.findById(topicId);
-    if(!topic) {
+    if (!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
 
     const user = await User.findById(req.user._id);
+    const mandatoryQuestion = topic.questions[0];
+    const isCorrect = answer === mandatoryQuestion.correctAnswer;
 
-    const alreadyCompleted = user.completedTopics.some(
+    if (!isCorrect) {
+      return res.json({
+        passed: false,
+        correctAnswer: false,
+        correctAnswerIndex: mandatoryQuestion.correctAnswer, 
+        explanation: mandatoryQuestion.explanation
+      });
+    }
+
+    let completion = user.completedTopics.find(
       ct => ct.topicId && ct.topicId.toString() === topicId
     );
 
-    if(stage === 'mandatory') {
-      const mandatoryQuestion = topic.questions[0];
-      const userAnswer = answers[0];
-      const isCorrect = userAnswer === mandatoryQuestion.correctAnswer;
+    if (!completion) {
+      user.completedTopics.push({
+        topicId,
+        mandatoryCompleted: true,
+        bonusCompleted: false,
+        bonusCorrect: 0
+      });
 
-      if(isCorrect) {
-        //100 xp for mandatory question
-        if(!alreadyCompleted) {
-          user.completedTopics.push({
-            topicId,
-            score: 100,
-            completedAt: new Date(),
-            stage: 'mandatory'
-          });
-          user.xp += 100;
-          user.level = Math.floor(Math.sqrt(user.xp/100)) + 1;
-          const badge = await Badge.findOne({ topicId });
-
-          if(badge) {
-            const hasBadge = user.badges.some(
-              b => b.badgeId && b.badgeId.toString() === badge._id.toString()
-            );
-
-            if(!hasBadge) {
-              user.badges.push({ badgeId: badge._id })
-              await logActivity(user._id, 'badge_earned', {
-                badgeId: badge._id,
-                badgeName: badge.name
-              }, req);
-            }
-          }
-
-          await user.save();
-
-          await logActivity(user._id, 'quiz_completed', {
-            topicId,
-            stage: 'mandatory',
-            passed: true,
-            xpEarned: 100
-          }, req);
-
-          res.json({
-            passed: true,
-            stage: 'mandatory',
-            correctAnswer: true,
-            xpEarned: 100,
-            newLevel: user.level,
-            newXP: user.xp,
-            badgeEarned: badge ? badge.name : null,
-            badgeImage: badge ? badge.imageUrl : null
-          });
-        } else {
-          res.json({
-            passed: true,
-            stage: 'mandatory',
-            correctAnswer: true,
-            message: 'Already completed'
-          });
-        }
-      } else {
-        await logActivity(user._id, 'quiz_completed', {
-          topicId,
-          stage: 'mandatory',
-          passed: false
-        }, req);
-
-        res.json({
-          passed: false,
-          stage: 'mandatory',
-          correctAnswer: 'false',
-          correctAnswerIndex: mandatoryQuestion.correctAnswer
-        });
-      }
-    } else if (stage === 'bonus') {
-      let correctCount = 0;
-
-      for (let i = 1; i<5; i++) {
-        if (answers[i] === topic.questions[i].correctAnswer) {
-          correctCount++;
-        }
-      }
-
-      const bonusXP = correctCount * 50; //50 xp per correct bonus question
-
-      const completionIndex = user.completedTopics.findIndex(
-        ct => ct.topicId && ct.topicId.toString() === topicId
-      );
-
-      if(completionIndex !== -1) {
-        user.completedTopics[completionIndex].stage = 'full';
-        user.completedTopics[completionIndex].bonusScore = (correctCount/4) * 100;
-      }
-
-      user.xp += bonusXP;
+      user.xp += 100;
       user.level = Math.floor(Math.sqrt(user.xp / 100)) + 1;
+
+      if (topic.badgeImage) {
+        const hasBadge = user.badges.some(
+          b => b.topicId && b.topicId.toString() === topicId
+        );
+        if (!hasBadge) {
+          user.badges.push({
+            topicId,
+            badgeName: topic.badgeName || topic.title,
+            badgeImage: topic.badgeImage
+          });
+        }
+      }
 
       await user.save();
 
       await logActivity(user._id, 'quiz_completed', {
         topicId,
-        stage: 'bonus',
-        correctCount,
-        xpEarned: bonusXP
+        stage: 'mandatory',
+        passed: true,
+        xpEarned: 100
       }, req);
 
       res.json({
         passed: true,
-        stage: 'bonus',
-        correctCount,
-        totalBonus: 4,
-        xpEarned: bonusXP,
+        correctAnswer: true,
+        firstTime: true,
+        xpEarned: 100,
         newLevel: user.level,
-        newXP: user.xp
+        newXP: user.xp,
+        badgeEarned: topic.badgeName || topic.title,
+        badgeImage: topic.badgeImage 
+      });
+    } else {
+      res.json({
+        passed: true,
+        correctAnswer: true,
+        firstTime: false,
+        message: 'Already completed'
       });
     }
   } catch (error) {
     console.error('Error submitting quiz: ', error);
-    res.status(500).json({ message: 'Server error', error:error.message});
+    res.status(500).json({ message: 'Server error', error: error.message});
+  }
+});
+
+// Submit bonus questions
+router.post('/:topicId/submit-bonus', async(req,res) => {
+  try {
+    const { answers } = req.body;
+    const topicId = req.params.topicId;
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    let completion = user.completedTopics.find(
+      ct => ct.topicId && ct.topicId.toString() === topicId
+    );
+
+    if (!completion || !completion.mandatoryCompleted) {
+      return res.status(400).json({ message: 'Must complete mandatory question first' });
+    }
+
+    // Calculate correct answers
+    let correctCount = 0;
+    for (let i=1; i<=4; i++) {
+      if (answers[i] === topic.questions[i].correctAnswer) {
+        correctCount++;
+      }
+    }
+
+    const bonusXP = correctCount * 50;
+
+    completion.bonusCompleted = true;
+    completion.bonusCorrect = correctCount;
+
+    user.xp += bonusXP;
+    user.level = Math.floor(Math.sqrt(user.xp / 100)) + 1;
+
+    await user.save();
+
+    await logActivity(user._id, 'quiz_completed', {
+      topicId,
+      stage: 'bonus',
+      correctCount,
+      xpEarned: bonusXP
+    }, req);
+
+    res.json({
+      passed: true,
+      correctCount,
+      totalBonus: 4,
+      xpEarned: bonusXP,
+      newLevel: user.level,
+      newXP: user.xp
+    });
+  } catch (error) {
+    console.error('Error submitting bonus: ', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 

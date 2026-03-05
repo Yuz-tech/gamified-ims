@@ -18,10 +18,17 @@ const topicSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  order: {
-    type: Number,
-    required: true,
-    default: 0
+  badgeImage: {
+    type: String,
+    default: null
+  },
+  badgeName: {
+    type: String,
+    default: ''
+  },
+  badgeDescription: {
+    type: String,
+    default: ''
   },
   questions: [{
     question: {
@@ -53,12 +60,12 @@ const topicSchema = new mongoose.Schema({
   timestamps: true
 });
 
-//Validation Logic (A topic must have 5 questions max [1 required + 4 bonus])
+// Topics must have 5 questions (fixed for now pero in case na mapalitan, eto yung code)
 topicSchema.pre('save', function(next) {
-  if(this.questions.length !== 5) {
+  if (this.questions.length !== 5) {
     next(new Error('Topic must have exactly 5 questions'));
   } else {
-    if(this.questions.length > 0) {
+    if (this.questions.length > 0) {
       this.questions[0].isMandatory = true;
     }
     next();
