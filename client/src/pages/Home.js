@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
@@ -11,96 +11,61 @@ const Home = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [userBadges, setUserBadges] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [allTopicsCompleted, setAllTopicsCompleted] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-const carouselSlides = [
-        {
-          title: 'Level up your Skills',
-          description: 'Complete topics and earn XP',
-          color: 'var(--bright-blue)'
-        },
-        {
-          title: 'Bonus rewards',
-          description: 'Answer Bonus Questions to earn more rewards',
-          color: 'var(--success-green)'
-        },
-        {
-          title: 'Track progress',
-          description: 'Monitor your training journey and compete with colleagues',
-          color: 'var(--bright-blue)'
-        },
-        {
-          title: 'Collect Badges',
-          description: 'Unlock unique badges for each completed topic',
-          color: 'var(--orange-accent)'
-        }
-      ];
+  const fetchData = async () => {
+    try {
+      const [leaderboardRes, userRes, topicsRes] = await Promise.all([
+        api.get('/leaderboard?limit=5'),
+        api.get('/auth/me'),
+        api.get('/topics')
+      ]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
-    }, 4500);
-      return () => clearInterval(timer);      
-  }, []);
+      setLeaderboard(leaderboardRes.data || []);
 
-const fetchData = async () => {
-  try {
-    const [leaderboardRes, userRes, badgesRes] = await Promise.all([
-      api.get('/leaderboard?limit=5'),
-      api.get('/auth/me'),
-      api.get('/admin/badges')
-    ]);
+      const badges = userRes.data.badges || [];
+      setUserBadges(badges);
 
-    setLeaderboard(leaderboardRes.data);
-    
-    // Get all badges
-    const allBadges = badgesRes.data;
-    
-    // Get user's earned badge IDs
-    const earnedBadgeIds = (userRes.data.badges || []).map(
-      ub => ub.badgeId?._id || ub.badgeId
-    );
+      const earnedCount = badges.length;
+      const totalTopics = topicsRes.data.length;
+      const completedCount = userRes.data.completedTopics?.filter(ct => ct.mandatoryCompleted).length || 0;
 
-    // Map badges with earned status
-    const badgesWithStatus = allBadges.map(badge => ({
-      ...badge,
-      earned: earnedBadgeIds.includes(badge._id)
-    }));
+      setStats({
+        level: userRes.data.level || 1,
+        xp: userRes.data.xp || 0,
+        totalBadges: earnedCount,
+        completedTopics: completedCount
+      });
 
-    setUserBadges(badgesWithStatus);
+      setAllTopicsCompleted(completedCount === totalTopics && totalTopics > 0);
+    } catch (error) {
+      console.error('Error fetching home data: ', error);
 
-    // Calculate stats with null checks
-    const earnedCount = badgesWithStatus.filter(b => b.earned).length;
-    const totalCount = badgesWithStatus.length;
+      setStats({
+        level: user?.level || 1,
+        xp: user?.xp || 0,
+        totalBadges: 0,
+        completedTopics: 0
+      });
+      setUserBadges([]);
+      setLeaderboard([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    setStats({
-      level: userRes.data?.level || 1,
-      xp: userRes.data?.xp || 0,
-      totalBadges: earnedCount,
-      completedTopics: userRes.data?.completedTopics?.length || 0
-    });
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    // Set default stats on error
-    setStats({
-      level: 1,
-      xp: 0,
-      totalBadges: 0,
-      completedTopics: 0
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleFinishTraining = () => {
+    window.open('Your_Google_Form_URL_Here', '_blank');
+  };
 
-  if (loading) {
+  if(loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING...</div>
+      <div style = {{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">Loading...</div>
       </div>
     );
   }
@@ -119,107 +84,35 @@ const fetchData = async () => {
         style={{ marginBottom: '40px', textAlign: 'center' }}
       >
         <h1 className="neon-text" style={{ fontSize: '32px', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-          KONNICHIWA, {user?.username?.toUpperCase()}!
+          Konnichiwa, {user?.username?.toUpperCase()}!
         </h1>
         <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
-          Ready to train?
+          Ready to Train?
         </p>
       </motion.div>
 
-      {/* Carousel */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        style={{ marginBottom: '40px' }}
-      >
-        <div style = {{
-          position: 'relative',
-          padding: '60px 40px',
-          background: 'linear-gradient(135deg, var(--bg-medium) 0%, var(--bg-dark) 100%',
-          border: '3px solid var(--bright-blue)',
-          overflow: 'hidden',
-          minHeight: '200px'
-        }}>
-          <AnimatePresence mode = "wait">
-            <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.5 }}
-              style={{
-                textAlign: 'center',
-                color: 'white'
-              }}
-            >
-              <h2 style={{
-                fontSize: '24px',
-                marginBottom: '15px',
-                color: carouselSlides[currentSlide].color,
-                fontWeight: 'bold'
-              }}>
-                {carouselSlides[currentSlide].title}
-              </h2>
-              <p style={{
-                fontSize: '12px',
-                color: 'var(--text-light)',
-                maxWidth: '600px',
-                margin: '0 auto'
-              }}>
-                {carouselSlides[currentSlide].description}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '10px',
-            marginTop: '30px'
-          }}>
-            {carouselSlides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => 
-                  setCurrentSlide(index)}
-                style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  border: 'none',
-                  background: currentSlide === index ? 'var(--bright-blue)' : 'var(--bg-medium)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s'
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Stats Grid */}
-      <div style={{
+      {/* Stats */}
+      <div style = {{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '20px',
         marginBottom: '40px'
       }}>
         {/* Level Card */}
-        <motion.div
+        <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1 }}
           className="retro-card"
           style={{ textAlign: 'center' }}
         >
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+          <div style = {{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
             LEVEL
           </div>
-          <div style={{ fontSize: '48px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>
+          <div style = {{ fontSize: '48px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>
             {stats.level}
           </div>
-          <div style={{
+          <div style = {{
             marginTop: '15px',
             background: 'var(--bg-dark)',
             border: '2px solid var(--primary-navy)',
@@ -227,14 +120,14 @@ const fetchData = async () => {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{
+            <div style = {{
               background: 'linear-gradient(90deg, var(--bright-blue), var(--light-blue))',
               height: '100%',
               width: `${progressToNextLevel}%`,
               transition: 'width 0.5s ease'
             }} />
           </div>
-          <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>
+          <div style = {{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>
             {Math.round(progressToNextLevel)}% to Level {stats.level + 1}
           </div>
         </motion.div>
@@ -247,13 +140,13 @@ const fetchData = async () => {
           className="retro-card"
           style={{ textAlign: 'center' }}
         >
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+          <div style = {{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
             TOTAL XP
           </div>
-          <div style={{ fontSize: '48px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>
+          <div style = {{ fontSize: '48px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>
             {stats.xp}
           </div>
-          <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
+          <div style = {{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
             Experience Points
           </div>
         </motion.div>
@@ -267,72 +160,80 @@ const fetchData = async () => {
           style={{ textAlign: 'center', cursor: 'pointer' }}
           onClick={() => navigate('/achievements')}
         >
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-            BADGES EARNED
+          <div style = {{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            Badges Earned
           </div>
-          <div style={{ fontSize: '48px', color: 'var(--success-green)', fontWeight: 'bold' }}>
+          <div style = {{ fontSize: '48px', color: 'var(--success-green)', fontWeight: 'bold' }}>
             {stats.totalBadges}
           </div>
-          <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
-            Click to view all
+          <div style = {{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
+            Click to View All
           </div>
         </motion.div>
 
         {/* Topics Card */}
-        <motion.div
+        <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.4 }}
           className="retro-card"
-          style={{ textAlign: 'center', cursor: 'pointer' }}
-          onClick={() => navigate('/topics')}
+          style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => navigate('/topics')}
         >
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-            COMPLETED TOPICS
+          <div style = {{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            Completed Topics
           </div>
-          <div style={{ fontSize: '48px', color: 'var(--light-blue)', fontWeight: 'bold' }}>
+          <div style = {{ fontSize: '48px', color: 'var(--light-blue)', fontWeight: 'bold' }}>
             {stats.completedTopics}
           </div>
-          <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
-            Click to continue
+          <div style = {{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px' }}>
+            Click to Continue
           </div>
         </motion.div>
+      </div>
 
-        {/* IMS Portal Link Card -- change if ever man the url changes IRL*/}
+      {/* Finish Training Button */}
+      {allTopicsCompleted ? (
+        <motion.div
+          initial = {{ scale: 0.9, opacity: 0 }}
+          animate = {{ scale: 1, opacity: 1 }}
+          className="retro-card"
+          style = {{
+            marginBottom: '40px',
+            textAlign: 'center',
+            background: 'linear-gradient(135deg, var(--success-green) 0%, #059669 100%)',
+            border: '3px solid #047857'
+          }}>
+            <div style = {{ fontSize: '18px', color: 'white', marginBottom: '15px', fontWeight: 'bold' }}>
+              Congratulations!
+            </div>
+            <p style = {{ fontSize: '11px', color: 'white', marginBottom: '20px', opacity: 0.9 }}>
+              You've completed all training topics! Click below to submit your completion form.
+            </p>
+            <button onClick={handleFinishTraining}
+              className="retro-btn"
+              style={{
+                background: 'white',
+                color: 'var(--success-green)',
+                border: '3px solid white'
+              }}>
+                Submit Completion Form
+              </button>
+          </motion.div>
+      ) : (
         <motion.div 
           initial = {{ scale: 0.9, opacity: 0 }}
           animate = {{ scale: 1, opacity: 1 }}
-          transition = {{ delay: 0.5 }}
-          className = "retro-card"
-          style = {{
-            textAlign: 'center',
-            cursor: 'pointer',
-            background: 'linear gradient(135deg, var(--bright-blue) 0%, var(--light-blue) 100%',
-            border: '3px solid var(--primary-navy)',
-            color: 'white'
-          }}
-          onClick={() => window.open('https:webmail.awsys-i.com', '_blank')}
-          >
-            <div style = {{ 
-              fontSize: '10px',
-              marginBottom: '10px',
-              opacity: 0.9
-            }}>
-              Quick Access
-            </div>
-            {/* <div style = {{ fontSize: '40px', marginBottom: '10px' }}>QUICKIE</div> */}
-            <div style = {{
-              fontSize: '12px',
-              fontWeight: 'bold',
-              marginBottom: '5px'
-            }}>
-              IMS Portal
-            </div>
-            <div style = {{ fontSize: '8px', opacity: 0.8 }}>
-              Click to open
-            </div>
-          </motion.div>
-      </div>
+          className="retro-card"
+          style={{ marginBottom: '40px', textAlign: 'center', opacity: 0.6 }}
+        >
+          <h3 style = {{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            Finish All Training
+          </h3>
+          <p style = {{ fontSize: '10px', color: 'var(--text-light)' }}>
+            Complete ALL topics to unlock the completion form
+          </p>
+        </motion.div>
+      )}
 
       {/* Badge Gallery */}
       <motion.div
@@ -342,88 +243,69 @@ const fetchData = async () => {
         className="retro-card"
         style={{ marginBottom: '40px' }}
       >
-        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          YOUR BADGE COLLECTION
+        <h3 style = {{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          Your Recent Badges
         </h3>
 
         {userBadges.length > 0 ? (
-          <div style={{
+          <div style = {{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
             gap: '20px'
           }}>
-            {userBadges.map((badge, index) => {
-              const imageUrl = badge.imageUrl.startsWith('/uploads/') 
-                ? `http://localhost:5000${badge.imageUrl}` 
-                : badge.imageUrl;
+            {userBadges.slice(0, 6).map((badge, index) => {
+              const imageUrl = badge.badgeImage?.startsWith('/uploads/')
+              ? `http://localhost:5000/${badge.badgeImage}`
+              : badge.badgeImage;
 
               return (
                 <motion.div
-                  key={badge._id}
+                  key={index}
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: 0.6 + index * 0.1, type: 'spring' }}
-                  style={{
-                    textAlign: 'center',
-                    opacity: badge.earned ? 1 : 0.3,
-                    filter: badge.earned ? 'none' : 'grayscale(100%)'
-                  }}
-                  title={badge.name}
+                  style={{ textAlign: 'center' }}
+                  title={badge.badgeName}
                 >
-                  <div style={{
+                  <div style = {{
                     width: '80px',
                     height: '80px',
                     margin: '0 auto 10px',
-                    border: `3px solid ${badge.earned ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+                    border: '3px solid var(--orange-accent)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: badge.earned ? 'var(--bg-lightest)' : 'var(--bg-medium)',
-                    boxShadow: badge.earned ? '3px 3px 0 var(--primary-navy)' : 'none',
+                    background: 'var(--bg-lightest)',
+                    boxShadow: '3px 3px 0 var(--primary-navy)',
                     position: 'relative',
                     overflow: 'hidden'
                   }}>
-                    {badge.earned ? (
+                    {imageUrl ? (
                       <>
-                        <img 
-                          src={imageUrl}
-                          alt={badge.name}
-                          style={{
-                            maxWidth: '90%',
-                            maxHeight: '90%',
-                            objectFit: 'contain',
-                            imageRendering: 'pixelated'
-                          }}
-                          onError={(e) => {
-                            console.error('Badge image failed to load:', imageUrl);
-                            e.target.style.display = 'none';
-                            e.target.parentElement.innerHTML = '<div style="font-size: 40px;">🏆</div>';
-                          }}
+                        <img src = {imageUrl} alt={badge.badgeName} style={{
+                          maxWidth: '90%', maxHeight: '90%', objectFit: 'contain'
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentElement.innerHTML += '<div style = "font-size: 40px;"></div>;'
+                        }}
                         />
-                        {/* Shine effect */}
                         <div style={{
                           position: 'absolute',
                           top: '-50%',
                           left: '-50%',
                           width: '200%',
                           height: '200%',
-                          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+                          background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%)',
                           animation: 'shine 3s infinite',
                           pointerEvents: 'none'
                         }} />
                       </>
                     ) : (
-                      <div style={{ fontSize: '40px', color: 'var(--text-lighter)' }}>
-                        🔒
+                      <div style = {{ fontSize: '8px', color: 'var(--text-dark)', fontWeight: 'bold' }}>
+                        {badge.badgeName}
                       </div>
                     )}
-                  </div>
-                  <div style={{ 
-                    fontSize: '8px', 
-                    color: badge.earned ? 'var(--text-dark)' : 'var(--text-light)',
-                    fontWeight: badge.earned ? 'bold' : 'normal'
-                  }}>
-                    {badge.name}
                   </div>
                 </motion.div>
               );
@@ -431,18 +313,18 @@ const fetchData = async () => {
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-light)' }}>
-            <div style={{ fontSize: '48px', marginBottom: '10px' }}>🏆</div>
-            <div style={{ fontSize: '12px' }}>No badges yet - complete topics to earn badges!</div>
+            <div style = {{ fontSize: '12px' }}>No badges yet</div>
           </div>
         )}
 
-        <button
-          onClick={() => navigate('/achievements')}
-          className="retro-btn"
-          style={{ marginTop: '20px', width: '100%' }}
-        >
-          VIEW ALL ACHIEVEMENTS →
-        </button>
+        {userBadges.length > 0 && (
+          <button onClick={() => navigate('/achievements')}
+            className="retro-btn"
+            style={{ marginTop: '20px', width: '100%' }}
+          >
+            View All Achievements
+          </button>
+        )}
       </motion.div>
 
       {/* Leaderboard */}
@@ -452,12 +334,12 @@ const fetchData = async () => {
         transition={{ delay: 0.7 }}
         className="retro-card"
       >
-        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          TOP PERFORMERS
+        <h3 style = {{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          Top Performers
         </h3>
 
         {leaderboard.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style = {{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {leaderboard.map((player, index) => (
               <motion.div
                 key={player._id || index}
@@ -473,23 +355,18 @@ const fetchData = async () => {
                   boxShadow: index === 0 ? '3px 3px 0 var(--primary-navy)' : 'none'
                 }}
               >
-                <div style={{
-                  fontSize: '20px',
-                  marginRight: '15px',
-                  minWidth: '30px',
-                  textAlign: 'center'
-                }}>
+                <div style={{ fontSize: '20px', marginRight: '15px', minWidth: '30px', textAlign: 'center' }}>
                   {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '11px', color: 'var(--primary-navy)', fontWeight: 'bold' }}>
+                <div style = {{ flex: 1 }}>
+                  <div style = {{ fontSize: '11px', color: 'var(--primary-navy)', fontWeight: 'bold' }}>
                     {player.username}
                   </div>
-                  <div style={{ fontSize: '8px', color: 'var(--text-light)' }}>
-                    Level {player.level} • {player.xp} XP
+                  <div style = {{ fontSize: '8px', color: 'var(--text-light)' }}>
+                    Level {player.level} • {player.xp} XP 
                   </div>
                 </div>
-                <div style={{
+                <div style = {{
                   fontSize: '10px',
                   color: 'var(--orange-accent)',
                   padding: '5px 10px',
@@ -499,25 +376,26 @@ const fetchData = async () => {
                   alignItems: 'center',
                   gap: '5px'
                 }}>
-                  <span style={{ opacity: player.badgeCount > 0 ? 1 : 0.3 }}>🏆</span>
-                  {player.badgeCount}
+                  {player.badgeCount || 0}
                 </div>
               </motion.div>
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-light)' }}>
+          <div style = {{ textAlign: 'center', padding: '40px', color: 'var(--text-light)' }}>
             No leaderboard data yet
           </div>
         )}
       </motion.div>
 
-      <style>{`
+      <style>
+        {`
         @keyframes shine {
           0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
           100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

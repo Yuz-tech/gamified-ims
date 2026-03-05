@@ -69,3 +69,6 @@ Some ponders or suggestions:
 3. Home Tab -> "Locked Finish Training Button"
   -> will only be unlocked when all badges are unlocked
   -> if unlocked, clicking it will direct the user to go to a google form that needs to be filled up to get their approval
+
+
+Add 500 XP when all topics are completed for the year
