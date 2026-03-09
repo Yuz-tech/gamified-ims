@@ -1,74 +1,826 @@
+1. Topic sort
+2. XP and Level system
+3. Quiz
 
-Leaderboard logic
+Notes:
+Training video confirmation
 
-Default reward: quiz 70% passing = 100xp
+100xp
+75 xp to Level
 
->70% = 125xp
-if 100% (perfect)= 150xp
+Level up module:
+Level 10 and above == 25% more
 
-2/3 -> passed
-User option: 
-proceed with next topic or complete quiz?
-Maximum 4 questions per topic:
-if 3 correct -> next topic option
+Current System:
+javascriptlevel = Math.floor(Math.sqrt(xp / 100)) + 1
+How it works:
 
-1. REQUIRED: Per topic -> 1 question with correct answer (100xp)
+Level 1: 0 XP
+Level 2: 100 XP (√100 = 10, floor(10/10) = 1, +1 = 2)
+Level 3: 400 XP (√400 = 20, floor(20/10) = 2, +1 = 3)
+Level 4: 900 XP
+Level 5: 1,600 XP
 
-2. OPTIONAL: {BONUS} FULL QUIZ (4 questions[FIXED]) (to get more rewards)
-=> For each question w/ correct answer == 50xp
+Problem: Progression is too fast early on, then becomes unreasonably slow.
 
-
-Training Materials before quiz
-
-1. Review topic after passing
-2. Link to topic document
-Document => (IMS Manual Reference)
-Video => (IMS Policy Video)
-
-3. Change color scheme of quiz (OK)
-"REVIEW BELOW" -> Change color scheme (yellow)
-
-4. Remove Description from topic card
-Retain XP Reward "100-300xp"
-Remove Passing Score
-
-5. Enable/Disable instead of Delete
-Transparency of button -> enable/disable
-
-Quiz Issues:
-a. wrong answer -> still shows "correct" display
-b. users should be able to take the bonus questions anytime or have the option to whenever they have free time
-c. Progress was not saved when refreshing the page of bonus questions
-d. Users that did not take the bonus questions should not be able to see the review for the bonus questions
-e. Submit Button for Bonus Questions is locked somehow, even after picking choices
-
-User takes quiz ->
-User takes mandatory question(1) 
-If Passed:
--> finish topic, get rewards, and move on to the next
--> may or may not continue with bonus questions
--> can review only unlocked questions. Hence, if user did not take bonus questions, then user cannot review those questions
-If Failed: 
--> Redo mandatory question(1)
-
-Admin Issues:
-a. When creating a topic, the order must be fixed to be the latest/newest
-or just remove order of topics since it's quite pointless
-b. When creating a topic, uploading the badge for that topic should be within the same tab as well so we don't have to navigate to the badges tab and upload a badge for every created topic
-c. Admin yearly Reset button not working
-
-UI Issues:
-a. Use google icons from google fonts downloaded locally instead of emoticons
-b. XP and Level did not reflect in homepage
-c. No profile tab for users
-d. I made some customized profile avatars (pngs) that can be used
-
-Some ponders or suggestions:
-1. Replicate W3Schools quiz but with an explanation or use bootstrap templates for quiz
-2. Perhaps Add "next topic" button when opting to finish a topic
-3. Home Tab -> "Locked Finish Training Button"
-  -> will only be unlocked when all badges are unlocked
-  -> if unlocked, clicking it will direct the user to go to a google form that needs to be filled up to get their approval
+// Level XP Requirements (Pokemon-inspired)
+const LEVEL_THRESHOLDS = [
+  0,      // Level 1
+  100,    // Level 2 (1 topic)
+  250,    // Level 3 (1-2 topics)
+  450,    // Level 4 (2 topics)
+  700,    // Level 5 (3 topics)
+  1000,   // Level 6 (4 topics)
+  1350,   // Level 7 (5 topics)
+  1750,   // Level 8 (6 topics)
+  2200,   // Level 9 (7 topics)
+  2700,   // Level 10 (9 topics)
+  3250,   // Level 11
+  3850,   // Level 12
+  4500,   // Level 13
+  5200,   // Level 14
+  5950,   // Level 15
+  // Continues scaling...
+];
 
 
-Add 500 XP when all topics are completed for the year
+server/utils/levelSystem.js
+
+// Pokemon-inspired level thresholds
+const LEVEL_THRESHOLDS = [
+  0,      // Level 1
+  100,    // Level 2
+  250,    // Level 3
+  450,    // Level 4
+  700,    // Level 5
+  1000,   // Level 6
+  1350,   // Level 7
+  1750,   // Level 8
+  2200,   // Level 9
+  2700,   // Level 10
+  3250,   // Level 11
+  3850,   // Level 12
+  4500,   // Level 13
+  5200,   // Level 14
+  5950,   // Level 15
+  6750,   // Level 16
+  7600,   // Level 17
+  8500,   // Level 18
+  9450,   // Level 19
+  10450,  // Level 20
+  11500,  // Level 21
+  12600,  // Level 22
+  13750,  // Level 23
+  14950,  // Level 24
+  16200,  // Level 25
+  17500,  // Level 26
+  18850,  // Level 27
+  20250,  // Level 28
+  21700,  // Level 29
+  23200,  // Level 30
+];
+
+// Calculate level from XP
+export const calculateLevel = (xp) => {
+  let level = 1;
+  
+  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (xp >= LEVEL_THRESHOLDS[i]) {
+      level = i + 1;
+      break;
+    }
+  }
+  
+  return level;
+};
+
+// Get XP required for next level
+export const getXPForNextLevel = (currentLevel) => {
+  if (currentLevel >= LEVEL_THRESHOLDS.length) {
+    // If beyond defined thresholds, use formula
+    const lastThreshold = LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1];
+    const increment = 1300 + (currentLevel - LEVEL_THRESHOLDS.length) * 150;
+    return lastThreshold + increment;
+  }
+  return LEVEL_THRESHOLDS[currentLevel];
+};
+
+// Get XP required for current level
+export const getXPForCurrentLevel = (currentLevel) => {
+  if (currentLevel <= 1) return 0;
+  return LEVEL_THRESHOLDS[currentLevel - 1] || 0;
+};
+
+// Get progress percentage to next level
+export const getLevelProgress = (xp, currentLevel) => {
+  const currentLevelXP = getXPForCurrentLevel(currentLevel);
+  const nextLevelXP = getXPForNextLevel(currentLevel);
+  const xpIntoLevel = xp - currentLevelXP;
+  const xpNeededForLevel = nextLevelXP - currentLevelXP;
+  
+  return Math.min(100, Math.max(0, (xpIntoLevel / xpNeededForLevel) * 100));
+};
+
+export default {
+  calculateLevel,
+  getXPForNextLevel,
+  getXPForCurrentLevel,
+  getLevelProgress,
+  LEVEL_THRESHOLDS
+};
+
+server/routes/topics.js
+import express from 'express';
+import Topic from '../models/Topic.js';
+import User from '../models/User.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { logActivity } from '../utils/logger.js';
+import { calculateLevel } from '../utils/levelSystem.js';
+
+const router = express.Router();
+
+router.use(authenticateToken);
+
+// ... (keep all existing routes until submit-mandatory)
+
+// Submit mandatory question
+router.post('/:topicId/submit-mandatory', async (req, res) => {
+  try {
+    const { answer } = req.body;
+    const topicId = req.params.topicId;
+
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    const mandatoryQuestion = topic.questions[0];
+    const isCorrect = answer === mandatoryQuestion.correctAnswer;
+
+    if (!isCorrect) {
+      return res.json({
+        passed: false,
+        correctAnswer: false,
+        correctAnswerIndex: mandatoryQuestion.correctAnswer,
+        explanation: mandatoryQuestion.explanation
+      });
+    }
+
+    let completion = user.completedTopics.find(
+      ct => ct.topicId && ct.topicId.toString() === topicId
+    );
+
+    if (!completion) {
+      user.completedTopics.push({
+        topicId,
+        mandatoryCompleted: true,
+        bonusCompleted: false,
+        bonusCorrect: 0
+      });
+
+      user.xp += 100;
+      user.level = calculateLevel(user.xp); // NEW LEVEL SYSTEM
+
+      if (topic.badgeImage) {
+        const hasBadge = user.badges.some(
+          b => b.topicId && b.topicId.toString() === topicId
+        );
+        if (!hasBadge) {
+          user.badges.push({
+            topicId,
+            badgeName: topic.badgeName || topic.title,
+            badgeImage: topic.badgeImage
+          });
+        }
+      }
+
+      await user.save();
+
+      await logActivity(user._id, 'quiz_completed', { 
+        topicId, 
+        stage: 'mandatory',
+        passed: true,
+        xpEarned: 100
+      }, req);
+
+      res.json({
+        passed: true,
+        correctAnswer: true,
+        firstTime: true,
+        xpEarned: 100,
+        newLevel: user.level,
+        newXP: user.xp,
+        badgeEarned: topic.badgeName || topic.title,
+        badgeImage: topic.badgeImage
+      });
+    } else {
+      res.json({
+        passed: true,
+        correctAnswer: true,
+        firstTime: false,
+        message: 'Already completed'
+      });
+    }
+  } catch (error) {
+    console.error('Error submitting mandatory:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Submit bonus questions
+router.post('/:topicId/submit-bonus', async (req, res) => {
+  try {
+    const { answers } = req.body;
+    const topicId = req.params.topicId;
+
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    let completion = user.completedTopics.find(
+      ct => ct.topicId && ct.topicId.toString() === topicId
+    );
+
+    if (!completion || !completion.mandatoryCompleted) {
+      return res.status(400).json({ message: 'Must complete mandatory question first' });
+    }
+
+    let correctCount = 0;
+    for (let i = 1; i <= 4; i++) {
+      if (answers[i] === topic.questions[i].correctAnswer) {
+        correctCount++;
+      }
+    }
+
+    const bonusXP = correctCount * 50;
+    completion.bonusCompleted = true;
+    completion.bonusCorrect = correctCount;
+
+    user.xp += bonusXP;
+    user.level = calculateLevel(user.xp); // NEW LEVEL SYSTEM
+
+    await user.save();
+
+    await logActivity(user._id, 'quiz_completed', { 
+      topicId, 
+      stage: 'bonus',
+      correctCount,
+      xpEarned: bonusXP
+    }, req);
+
+    res.json({
+      passed: true,
+      correctCount,
+      totalBonus: 4,
+      xpEarned: bonusXP,
+      newLevel: user.level,
+      newXP: user.xp
+    });
+  } catch (error) {
+    console.error('Error submitting bonus:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+export default router;
+
+pages/Home.js
+// Add this helper function at the top
+const LEVEL_THRESHOLDS = [
+  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700,
+  3250, 3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10450,
+  11500, 12600, 13750, 14950, 16200, 17500, 18850, 20250, 21700, 23200
+];
+
+const getXPForNextLevel = (currentLevel) => {
+  if (currentLevel >= LEVEL_THRESHOLDS.length) {
+    const lastThreshold = LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1];
+    const increment = 1300 + (currentLevel - LEVEL_THRESHOLDS.length) * 150;
+    return lastThreshold + increment;
+  }
+  return LEVEL_THRESHOLDS[currentLevel];
+};
+
+const getXPForCurrentLevel = (currentLevel) => {
+  if (currentLevel <= 1) return 0;
+  return LEVEL_THRESHOLDS[currentLevel - 1] || 0;
+};
+
+// Then in your component, update the progress calculation:
+const currentLevelXP = getXPForCurrentLevel(stats.level);
+const nextLevelXP = getXPForNextLevel(stats.level);
+const xpIntoLevel = stats.xp - currentLevelXP;
+const xpNeededForLevel = nextLevelXP - currentLevelXP;
+const progressToNextLevel = (xpIntoLevel / xpNeededForLevel) * 100;
+
+
+pages/Home.js
+{userBadges.length > 0 ? (
+  <div style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+    gap: '20px'
+  }}>
+    {userBadges.slice(0, 6).map((badge, index) => {
+      // FIX: Access badge image correctly
+      const imageUrl = badge.badgeImage 
+        ? (badge.badgeImage.startsWith('/uploads/') 
+            ? `http://localhost:5000${badge.badgeImage}` 
+            : badge.badgeImage)
+        : null;
+
+      return (
+        <motion.div
+          key={index}
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.6 + index * 0.1, type: 'spring' }}
+          style={{ textAlign: 'center' }}
+          title={badge.badgeName}
+        >
+          <div style={{
+            width: '80px',
+            height: '80px',
+            margin: '0 auto 10px',
+            border: '3px solid var(--orange-accent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'var(--bg-lightest)',
+            boxShadow: '3px 3px 0 var(--primary-navy)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {imageUrl ? (
+              <>
+                <img 
+                  src={imageUrl}
+                  alt={badge.badgeName}
+                  style={{
+                    maxWidth: '90%',
+                    maxHeight: '90%',
+                    objectFit: 'contain'
+                  }}
+                  onError={(e) => {
+                    console.error('Badge image failed to load:', imageUrl);
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML += '<div style="font-size: 40px;">🏆</div>';
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '-50%',
+                  left: '-50%',
+                  width: '200%',
+                  height: '200%',
+                  background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+                  animation: 'shine 3s infinite',
+                  pointerEvents: 'none'
+                }} />
+              </>
+            ) : (
+              <div style={{ fontSize: '40px' }}>🏆</div>
+            )}
+          </div>
+          <div style={{ fontSize: '8px', color: 'var(--text-dark)', fontWeight: 'bold' }}>
+            {badge.badgeName}
+          </div>
+        </motion.div>
+      );
+    })}
+  </div>
+) : (
+  // ... rest of no badges message
+)}
+
+src/pages/Achievements.js
+
+{topic.earned ? (
+  imageUrl ? (
+    <>
+      <img 
+        src={imageUrl}
+        alt={topic.badgeName}
+        style={{
+          maxWidth: '90%',
+          maxHeight: '90%',
+          objectFit: 'contain'
+        }}
+        onError={(e) => {
+          console.error('Badge image failed:', imageUrl);
+          e.target.style.display = 'none';
+          e.target.parentElement.innerHTML += '<div style="font-size: 48px;">🏆</div>';
+        }}
+      />
+      {/* shine animation div */}
+    </>
+  ) : (
+    <div style={{ fontSize: '48px' }}>🏆</div>
+  )
+) : (
+  <div style={{ fontSize: '48px', color: 'var(--text-lighter)' }}>🔒</div>
+)}
+
+src/App.js
+import Profile from './pages/Profile';
+
+// In your routes section:
+<Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      <Layout>
+        <Profile />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
+
+components/Navbar.js
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+
+const Navbar = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setShowDropdown(false);
+    setMobileMenuOpen(false);
+  }, [location]);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  if (!user) return null;
+
+  return (
+    <nav style={{
+      background: 'var(--bg-light)',
+      borderBottom: '3px solid var(--primary-navy)',
+      padding: '15px 30px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000,
+      boxShadow: '0 2px 0 var(--primary-navy)'
+    }}>
+      {/* Logo & Title */}
+      <div 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '15px',
+          cursor: 'pointer'
+        }}
+        onClick={() => navigate('/')}
+      >
+        <img 
+          src="/uploads/logo.png"
+          alt="IMS Arcade"
+          style={{
+            height: '40px',
+            width: 'auto',
+            objectFit: 'contain',
+            imageRendering: 'crisp-edges'
+          }}
+          onError={(e) => {
+            console.error('Logo failed to load');
+            e.target.style.display = 'none';
+          }}
+        />
+        <h1 style={{ 
+          fontSize: '16px', 
+          color: 'var(--primary-navy)', 
+          margin: 0,
+          fontWeight: 'bold',
+          letterSpacing: '1px'
+        }}>
+          IMS TRAINING ARCADE
+        </h1>
+      </div>
+
+      {/* Desktop Navigation */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '20px', 
+        alignItems: 'center',
+        fontSize: '11px'
+      }}
+      className="desktop-nav">
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            background: location.pathname === '/' ? 'var(--bright-blue)' : 'transparent',
+            border: location.pathname === '/' ? '2px solid var(--primary-navy)' : 'none',
+            color: location.pathname === '/' ? 'white' : 'var(--text-dark)',
+            padding: '8px 15px',
+            cursor: 'pointer',
+            fontWeight: location.pathname === '/' ? 'bold' : 'normal'
+          }}
+        >
+          🏠 HOME
+        </button>
+
+        <button
+          onClick={() => navigate('/topics')}
+          style={{
+            background: location.pathname.startsWith('/topics') ? 'var(--bright-blue)' : 'transparent',
+            border: location.pathname.startsWith('/topics') ? '2px solid var(--primary-navy)' : 'none',
+            color: location.pathname.startsWith('/topics') ? 'white' : 'var(--text-dark)',
+            padding: '8px 15px',
+            cursor: 'pointer',
+            fontWeight: location.pathname.startsWith('/topics') ? 'bold' : 'normal'
+          }}
+        >
+          📚 TOPICS
+        </button>
+
+        <button
+          onClick={() => navigate('/achievements')}
+          style={{
+            background: location.pathname === '/achievements' ? 'var(--bright-blue)' : 'transparent',
+            border: location.pathname === '/achievements' ? '2px solid var(--primary-navy)' : 'none',
+            color: location.pathname === '/achievements' ? 'white' : 'var(--text-dark)',
+            padding: '8px 15px',
+            cursor: 'pointer',
+            fontWeight: location.pathname === '/achievements' ? 'bold' : 'normal'
+          }}
+        >
+          🏆 ACHIEVEMENTS
+        </button>
+
+        {/* User Stats */}
+        <div 
+          style={{ 
+            fontSize: '10px',
+            color: 'var(--bright-blue)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            flex: '0 0 auto'
+          }}
+          className="desktop-stats"
+        >
+          <span>LVL {user?.level || 1}</span>
+          <span>|</span>
+          <span>⭐ {user?.xp || 0} XP</span>
+        </div>
+
+        {/* User Menu */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            style={{
+              background: 'var(--primary-navy)',
+              color: 'white',
+              border: '2px solid var(--primary-navy)',
+              padding: '8px 15px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontWeight: 'bold'
+            }}
+          >
+            👤 {user?.username}
+            <span style={{ fontSize: '8px' }}>▼</span>
+          </button>
+
+          {/* Dropdown Menu */}
+          {showDropdown && (
+            <div style={{
+              position: 'absolute',
+              top: '50px',
+              right: '0',
+              background: 'var(--bg-light)',
+              border: '3px solid var(--primary-navy)',
+              boxShadow: '5px 5px 0 var(--primary-navy)',
+              minWidth: '200px',
+              zIndex: 1000
+            }}>
+              <button
+                onClick={() => {
+                  navigate('/profile');
+                  setShowDropdown(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '2px solid var(--border-color)',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  color: 'var(--text-dark)'
+                }}
+                onMouseOver={(e) => e.target.style.background = 'var(--bg-medium)'}
+                onMouseOut={(e) => e.target.style.background = 'transparent'}
+              >
+                👤 Profile
+              </button>
+              
+              {user?.role === 'admin' && (
+                <button
+                  onClick={() => {
+                    navigate('/admin/dashboard');
+                    setShowDropdown(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '15px',
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: '2px solid var(--border-color)',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    color: 'var(--text-dark)'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--bg-medium)'}
+                  onMouseOut={(e) => e.target.style.background = 'transparent'}
+                >
+                  ⚙️ Admin Panel
+                </button>
+              )}
+              
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  background: 'transparent',
+                  border: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  color: 'var(--error-red)'
+                }}
+                onMouseOver={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.1)'}
+                onMouseOut={(e) => e.target.style.background = 'transparent'}
+              >
+                🚪 Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        className="mobile-menu-btn"
+        style={{
+          display: 'none',
+          background: 'var(--primary-navy)',
+          color: 'white',
+          border: 'none',
+          padding: '10px 15px',
+          cursor: 'pointer',
+          fontSize: '14px'
+        }}
+      >
+        ☰
+      </button>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            className="mobile-menu"
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: '80%',
+              maxWidth: '300px',
+              background: 'var(--bg-light)',
+              borderLeft: '3px solid var(--primary-navy)',
+              boxShadow: '-5px 0 10px rgba(0,0,0,0.2)',
+              zIndex: 2000,
+              padding: '20px',
+              overflowY: 'auto'
+            }}
+          >
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'transparent',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: 'var(--text-dark)'
+              }}
+            >
+              ✖
+            </button>
+
+            <div style={{
+              padding: '10px',
+              background: 'var(--bg-medium)',
+              border: '2px solid var(--bright-blue)',
+              textAlign: 'center',
+              fontSize: '10px',
+              color: 'var(--bright-blue)',
+              marginBottom: '20px',
+              marginTop: '40px'
+            }}>
+              👤 {user?.username} | LVL {user?.level || 1} | ⭐ {user?.xp || 0} XP
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={() => navigate('/')}
+                className="retro-btn"
+                style={{ width: '100%', textAlign: 'left' }}
+              >
+                🏠 HOME
+              </button>
+              <button
+                onClick={() => navigate('/topics')}
+                className="retro-btn"
+                style={{ width: '100%', textAlign: 'left' }}
+              >
+                📚 TOPICS
+              </button>
+              <button
+                onClick={() => navigate('/achievements')}
+                className="retro-btn"
+                style={{ width: '100%', textAlign: 'left' }}
+              >
+                🏆 ACHIEVEMENTS
+              </button>
+              <button
+                onClick={() => navigate('/profile')}
+                className="retro-btn"
+                style={{ width: '100%', textAlign: 'left' }}
+              >
+                👤 PROFILE
+              </button>
+
+              {user?.role === 'admin' && (
+                <button
+                  onClick={() => navigate('/admin/dashboard')}
+                  className="retro-btn"
+                  style={{ width: '100%', textAlign: 'left', background: 'var(--orange-accent)' }}
+                >
+                  ⚙️ ADMIN PANEL
+                </button>
+              )}
+
+              <button
+                onClick={handleLogout}
+                className="retro-btn secondary"
+                style={{ width: '100%', textAlign: 'left', marginTop: '20px', color: 'var(--error-red)' }}
+              >
+                🚪 LOGOUT
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .desktop-nav {
+            display: none !important;
+          }
+          .mobile-menu-btn {
+            display: block !important;
+          }
+        }
+      `}</style>
+    </nav>
+  );
+};
+
+export default Navbar;
+```
+
+---
+
+## Part 3: Logo Setup Instructions
+
+Place your logo file in the public folder:
+```
+client/public/uploads/logo.png

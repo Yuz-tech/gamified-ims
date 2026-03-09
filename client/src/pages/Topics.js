@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import api from "../utils/api";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../utils/api';
 
 const Topics = () => {
+  const navigate = useNavigate();
   const [topics, setTopics] = useState([]);
   const [filteredTopics, setFilteredTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchTopics();
@@ -17,15 +17,15 @@ const Topics = () => {
 
   useEffect(() => {
     filterTopics();
-  }, [searchTerm, filterStatus, Topics]);
+  }, [topics, searchTerm, filterStatus]);
 
   const fetchTopics = async () => {
     try {
       const response = await api.get('/topics');
       setTopics(response.data);
-      setFilteredTopics(response.data);
     } catch (error) {
-      console.error('Error fetching topics: ', error);
+      console.error('Error fetching topics:', error);
+      alert('Error loading topics');
     } finally {
       setLoading(false);
     }
@@ -34,18 +34,18 @@ const Topics = () => {
   const filterTopics = () => {
     let filtered = [...topics];
 
-    if(searchTerm) {
-      filtered = filtered.filter(topic => 
-        topic.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        topic.description.toLowerCase().includes(searchTerm.toLowerCase())
+    if (searchTerm) {
+      filtered = filtered.filter(topic =>
+        topic.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    if(filterStatus === 'completed') {
-      filtered = filtered.filter(topic => topic.isCompleted);
+    if (filterStatus === 'completed') {
+      filtered = filtered.filter(topic => topic.mandatoryCompleted);
     } else if (filterStatus === 'incomplete') {
-      filtered = filtered.filter(topic => !topic.isCompleted);
+      filtered = filtered.filter(topic => !topic.mandatoryCompleted);
     }
+
     setFilteredTopics(filtered);
   };
 
@@ -54,288 +54,207 @@ const Topics = () => {
     setFilterStatus('all');
   };
 
-  if(loading) {
+  if (loading) {
     return (
-      <div style = {{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '80vh'
-      }}>
-        <div className="loading neon-text">
-          Loading Topics...
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING...</div>
       </div>
     );
   }
 
   return (
-    <div className="retro-container" style = {{ paddingTop: '40px' }}>
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
       <div className="scanlines"></div>
-      <motion.h1 
+
+      <motion.h1
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="neon-text"
-        style={{
-          fontSize: '28px',
-          marginBottom: '40px',
-          textAlign: 'center',
-          color: 'var(--primary-navy)'
-        }}>
-          IMS Awareness Topics
-        </motion.h1>
+        style={{ fontSize: '28px', marginBottom: '30px', textAlign: 'center', color: 'var(--primary-navy)' }}
+      >
+        TRAINING TOPICS
+      </motion.h1>
 
-        {/*Search and Filter*/}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="retro-card"
-          style={{ marginBottom: '30px' }}
-          >
-            <h3 style = {{
-              fontSize: '14px',
-              color: 'var(--secondary-pink)',
-              marginBottom: '20px'
-            }}>
-              Search and Filter
-            </h3>
+      {/* XP Information Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, var(--bg-light) 100%)' }}
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          ⭐ XP REWARD SYSTEM
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+          <div style={{ padding: '15px', border: '2px solid var(--orange-accent)', background: 'rgba(249, 115, 22, 0.05)' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>MANDATORY QUESTION</div>
+            <div style={{ fontSize: '24px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>100 XP</div>
+            <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>1 Question • Pass to Unlock Badge</div>
+          </div>
+          <div style={{ padding: '15px', border: '2px solid var(--bright-blue)', background: 'rgba(59, 130, 246, 0.05)' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>BONUS QUESTIONS</div>
+            <div style={{ fontSize: '24px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>50 XP EACH</div>
+            <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>4 Questions • Optional • 0-200 XP Total</div>
+          </div>
+          <div style={{ padding: '15px', border: '2px solid var(--success-green)', background: 'rgba(16, 185, 129, 0.05)' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>TOTAL POSSIBLE</div>
+            <div style={{ fontSize: '24px', color: 'var(--success-green)', fontWeight: 'bold' }}>100-300 XP</div>
+            <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>Per Topic • Badge Included</div>
+          </div>
+        </div>
+      </motion.div>
 
-            <div style = {{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '15px',
-              marginBottom: '15px'
-            }}>
-              {/*Search input*/}
-              <div>
-                <label style = {{
-                  display: 'block',
-                  marginBottom: '10px',
-                  fontSize: '10px',
-                  color: 'var(--text-medium)'
-                }}>
-                  Search by Title or Description
-                </label>
-                <input 
-                  type="text"
-                  className="retro-input"
-                  placeholder="Type to search..."
-                  value = {searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/*Status filter*/}
-              <div>
-                <label style = {{
-                  display: 'block',
-                  marginBottom: '10px',
-                  fontSize: '10px',
-                  color: 'var(--text-medium)'
-                }}>
-                  Filter by Status
-                </label>
-                <select 
-                  className="retro-input"
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                >
-                  <option value = "all">All Topics</option>
-                  <option value = "completed">Completed Topics</option>
-                  <option value = "incomplete">Incomplete Topics</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Results counter and clear button */}
-            <div style = {{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '10px'
-            }}>
-              <div style = {{ fontSize: '10px', color: 'var(--success-green)' }}>
-                Showing {filteredTopics.length} of {topics.length} topics
-              </div>
-              {(searchTerm || filterStatus !== 'all') && (
-                <button 
-                  onClick={handleClearFilters}
-                  className="retro-btn secondary"
-                  style={{ fontSize: '10px', padding: '8px 15px' }}
-                >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Topics Grid */}
-          {filteredTopics.length > 0 ? (
-            <div style = {{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '30px'
-            }}>
-              {filteredTopics.map((topic, index) => (
-                <motion.div 
-                  key = {topic._id}
-                  initial = {{ opacity: 0, y: 50 }}
-                  animate = {{ opacity: 1, y: 0 }}
-                  transition = {{ delay: index * 0.1 }}
-                  className="retro-card"
-                  style = {{
-                    cursor: 'pointer',
-                    position: 'relative',
-                    opacity: topic.isCompleted ? 0.85 : 1
-                  }}
-                  onClick = {() => navigate(`/topics/${topic._id}`)}
-                  whileHover = {{ scale: 1.02 }}
-                  >
-                    {topic.isCompleted && (
-                      <div style = {{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        background: 'var(--success-green)',
-                        color: 'white',
-                        padding: '5px 10px',
-                        fontSize: '10px',
-                        fontWeight: 'bold',
-                        boxShadow: '2px 2px 0 var(--primary-navy)',
-                        zIndex: 1
-                      }}>
-                        Completed
-                      </div>
-                    )}
-
-                    <div style = {{
-                      width: '100%',
-                      height: '150px',
-                      background: 'linear-gradient(135deg, var(--bg-medium) 0%, var(--bg-dark) 100%)',
-                      border: '2px solid var(--bright-blue)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '48px',
-                      marginBottom: '20px',
-                      boxShadow: 'inset 0 0 20px rgba(59, 130, 246, 0.2)'
-                    }}>
-                      {topic.isCompleted ? '✅' : '📖'}
-                    </div>
-
-                    <h3 style = {{
-                      fontSize: '14px',
-                      color: 'var(--primary-navy)',
-                      marginBottom: '15px',
-                      fontWeight: 'bold'
-                    }}>
-                      {topic.title}
-                    </h3>
-
-                    <p style = {{
-                      fontSize: '10px',
-                      color: 'var(--text-medium)',
-                      lineHeight: '1.6',
-                      marginBottom: '20px',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}>
-                      {topic.description}
-                    </p>
-
-                    <div style = {{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
-                      gap: '10px',
-                      fontSize: '9px',
-                      marginTop: '20px'
-                    }}>
-                      <div style = {{
-                        padding: '10px',
-                        border: '2px solid var(--orange-accent)',
-                        textAlign: 'center',
-                        boxShadow: '2px 2px 0 var(--primary-navy)'
-                      }}>
-                        <div style = {{ color: 'var(--text-medium)'}}>
-                          XP Reward
-                        </div>
-                        <div style = {{
-                          color: 'var(--orange-accent)',
-                          marginTop: '5px',
-                          fontSize: '14px'
-                        }}>
-                          {topic.xpReward}
-                        </div>
-                      </div>
-                      <div style = {{
-                        padding: '10px',
-                        border: '2px solid var(--bright-blue)',
-                        textAlign: 'center',
-                        boxShadow: '2px 2px 0 var(--primary-navy)'
-                      }}>
-                        <div style = {{ color: 'var(--text-medium)'}}>
-                          Passing
-                        </div>
-                        <div style = {{ color: 'var(--bright-blue)', marginTop: '5px', fontSize: '14px' }}>
-                          {topic.passingScore}%
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style = {{
-                      marginTop: '20px',
-                      padding: '10px',
-                      background: topic.isCompleted
-                        ? 'rgba(16, 185, 129, 0.1)'
-                        : 'rgba(249, 115, 22, 0.1)',
-                      border: `2px solid ${topic.isCompleted ? 'var(--success-green)' : 'var(--orange-accent)'}`,
-                      textAlign: 'center',
-                      fontSize: '10px',
-                      color: topic.isCompleted ? 'var(--success-green)' : 'var(--orange-accent)',
-                      fontWeight: 'bold'
-                    }}>
-                      {topic.isCompleted ? 'Badge Earned' : 'Start Topic' }
-                    </div>
-                  </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="retro-card" style={{ textAlign: 'center', padding: '60px' }}>
-              <div style = {{ fontSize: '48px', marginBottom: '20px' }}>
-                {topics.length === 0}
-              </div>
-              <div style = {{ fontSize: '14px', color: 'var(--bright-blue)' }}>
-                {topics.length === 0 ? 'No topics available' : 'No topics found'}
-              </div>
-              <div style = {{
-                fontSize: '10px',
-                color: 'var(--text-light)',
-                marginTop: '10px'
-              }}>
-                {topics.length === 0 ? 'Check back soon!' : 'Try adjusting your filters'}
-              </div>
-              {topics.length === 0 ? (
-                <button 
-                  onClick={fetchTopics}
-                  className="retro-btn"
-                  style={{ marginTop: '20px' }}
-                >
-                  Refresh
-                </button>
-              ) : (
-                <button
-                  onClick={handleClearFilters}
-                  className="retro-btn"
-                  style = {{ marginTop: '20px' }}
-                >
-                  Clear Filters
-                </button>
-              )}
-            </div>
+      {/* Search & Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginBottom: '15px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              SEARCH
+            </label>
+            <input
+              type="text"
+              className="retro-input"
+              placeholder="Search topics..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              FILTER
+            </label>
+            <select
+              className="retro-input"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="all">All Topics</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+            </select>
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--text-medium)' }}>
+          <div>SHOWING {filteredTopics.length} OF {topics.length} TOPICS</div>
+          {(searchTerm || filterStatus !== 'all') && (
+            <button onClick={handleClearFilters} className="retro-btn secondary" style={{ fontSize: '9px', padding: '5px 10px' }}>
+              CLEAR
+            </button>
           )}
+        </div>
+      </motion.div>
+
+      {/* Topics Grid */}
+      {filteredTopics.length === 0 ? (
+        <div className="retro-card" style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.5 }}>📚</div>
+          <h3 style={{ fontSize: '14px', color: 'var(--text-medium)' }}>NO TOPICS FOUND</h3>
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '20px'
+        }}>
+          {filteredTopics.map((topic, index) => (
+            <motion.div
+              key={topic._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="retro-card"
+              style={{
+                cursor: 'pointer',
+                textAlign: 'center',
+                background: topic.mandatoryCompleted 
+                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, var(--bg-light) 100%)' 
+                  : 'var(--bg-light)',
+                borderColor: topic.mandatoryCompleted ? 'var(--success-green)' : 'var(--border-color)',
+                borderWidth: topic.mandatoryCompleted ? '3px' : '2px'
+              }}
+              onClick={() => navigate(`/topics/${topic._id}`)}
+            >
+              {/* Title */}
+              <h3 style={{
+                fontSize: '14px',
+                color: 'var(--primary-navy)',
+                marginBottom: '20px',
+                fontWeight: 'bold',
+                minHeight: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {topic.title}
+              </h3>
+
+              {/* Status Badge */}
+              {topic.mandatoryCompleted ? (
+                <div style={{
+                  padding: '10px',
+                  background: topic.bonusCompleted 
+                    ? 'var(--success-green)' 
+                    : 'rgba(16, 185, 129, 0.2)',
+                  color: topic.bonusCompleted ? 'white' : 'var(--success-green)',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  marginBottom: '15px',
+                  border: `2px solid var(--success-green)`
+                }}>
+                  {topic.bonusCompleted ? '✓ FULLY COMPLETE' : '✓ PASSED'}
+                </div>
+              ) : (
+                <div style={{
+                  padding: '10px',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  color: 'var(--bright-blue)',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  marginBottom: '15px',
+                  border: '2px solid var(--bright-blue)'
+                }}>
+                  NOT STARTED
+                </div>
+              )}
+
+              {/* Button */}
+              <button
+                className="retro-btn"
+                style={{
+                  width: '100%',
+                  background: topic.mandatoryCompleted 
+                    ? (topic.bonusCompleted ? 'var(--success-green)' : 'var(--bright-blue)')
+                    : 'var(--orange-accent)',
+                  fontSize: '11px',
+                  padding: '12px'
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/topics/${topic._id}`);
+                }}
+              >
+                {topic.mandatoryCompleted 
+                  ? (topic.bonusCompleted ? 'VIEW TOPIC' : 'CONTINUE')
+                  : 'START TOPIC'}
+              </button>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      <style>{`
+        .retro-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 5px 5px 0 var(--primary-navy);
+        }
+      `}</style>
     </div>
   );
 };

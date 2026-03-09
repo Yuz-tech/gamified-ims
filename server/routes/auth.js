@@ -146,21 +146,26 @@ router.post('/login', async (req, res) => {
 // Get current user
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
-      .select('-password')
-      .populate('badges.badgeId')
-      .populate('completedTopics.topicId');
-
+    const user = await User.findById(req.user._id);
+    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (req.session) {
-      await req.session.updateActivity();
-    }
-
-    res.json(user);
+    res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      level: user.level,
+      xp: user.xp,
+      badges: user.badges, // Don't populate, just return raw
+      completedTopics: user.completedTopics,
+      createdAt: user.createdAt
+    });
   } catch (error) {
+    console.error('Get user error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

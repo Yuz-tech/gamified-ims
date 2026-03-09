@@ -71,8 +71,14 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Topic'
     },
-    badgeName: String,
-    badgeImage: String,
+    badgeName: {
+      type: String,
+      default: ''
+    },
+    badgeImage: {
+      type: String,
+      default: ''
+    },
     earnedAt: {
       type: Date,
       default: Date.now

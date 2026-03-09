@@ -122,12 +122,19 @@ router.delete('/users/:userId', async (req, res) => {
 
 // ===== TOPIC MANAGEMENT =====
 
-// Get all topics
-router.get('/topics', async (req, res) => {
+// Get all topics (admin)
+router.get('/topics', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const topics = await Topic.find().sort({ order: 1 });
+    const topics = await Topic.find({});
+    
+    // Sort in JavaScript
+    topics.sort((a, b) => {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    
     res.json(topics);
   } catch (error) {
+    console.error('Error getting admin topics:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

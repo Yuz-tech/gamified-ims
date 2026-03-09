@@ -17,46 +17,54 @@ const Home = () => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const [leaderboardRes, userRes, topicsRes] = await Promise.all([
-        api.get('/leaderboard?limit=5'),
-        api.get('/auth/me'),
-        api.get('/topics')
-      ]);
+ const fetchData = async () => {
+  try {
+    console.log('Fetching home page data...');
+    
+    const [leaderboardRes, userRes, topicsRes] = await Promise.all([
+      api.get('/leaderboard?limit=5'),
+      api.get('/auth/me'),
+      api.get('/topics')
+    ]);
 
-      setLeaderboard(leaderboardRes.data || []);
+    console.log('Data fetched:', userRes.data);
 
-      const badges = userRes.data.badges || [];
-      setUserBadges(badges);
+    setLeaderboard(leaderboardRes.data || []);
+    
+    // Get user badges (no population needed)
+    const badges = userRes.data.badges || [];
+    setUserBadges(badges);
 
-      const earnedCount = badges.length;
-      const totalTopics = topicsRes.data.length;
-      const completedCount = userRes.data.completedTopics?.filter(ct => ct.mandatoryCompleted).length || 0;
+    // Calculate stats
+    const earnedCount = badges.length;
+    const totalTopics = topicsRes.data.length;
+    const completedCount = userRes.data.completedTopics?.filter(ct => ct.mandatoryCompleted).length || 0;
 
-      setStats({
-        level: userRes.data.level || 1,
-        xp: userRes.data.xp || 0,
-        totalBadges: earnedCount,
-        completedTopics: completedCount
-      });
+    setStats({
+      level: userRes.data.level || 1,
+      xp: userRes.data.xp || 0,
+      totalBadges: earnedCount,
+      completedTopics: completedCount
+    });
 
-      setAllTopicsCompleted(completedCount === totalTopics && totalTopics > 0);
-    } catch (error) {
-      console.error('Error fetching home data: ', error);
+    // Check if all topics completed
+    setAllTopicsCompleted(completedCount === totalTopics && totalTopics > 0);
 
-      setStats({
-        level: user?.level || 1,
-        xp: user?.xp || 0,
-        totalBadges: 0,
-        completedTopics: 0
-      });
-      setUserBadges([]);
-      setLeaderboard([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (error) {
+    console.error(' Error fetching home data:', error);
+    
+    setStats({
+      level: user?.level || 1,
+      xp: user?.xp || 0,
+      totalBadges: 0,
+      completedTopics: 0
+    });
+    setUserBadges([]);
+    setLeaderboard([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleFinishTraining = () => {
     window.open('Your_Google_Form_URL_Here', '_blank');
