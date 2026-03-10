@@ -75,7 +75,7 @@ const TopicDetail = () => {
           setCurrentStage(null);
         }, 5000);
       } else {
-        // Failed - show error for 3 seconds then reset
+        // Failed - show error then reset
         setTimeout(() => {
           setCurrentStage(null);
           setSelectedAnswer(null);
@@ -167,9 +167,8 @@ const TopicDetail = () => {
             textAlign: 'center'
           }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>✅</div>
           <div style={{ fontSize: '14px', color: 'var(--success-green)', marginBottom: '10px', fontWeight: 'bold' }}>
-            MANDATORY QUESTION COMPLETED
+            Mandatory Question Completed
           </div>
           <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
             You earned 100 XP and a badge! {!topic.bonusCompleted && 'You can still take bonus questions for extra XP.'}
@@ -206,7 +205,7 @@ const TopicDetail = () => {
                 className="retro-btn"
                 style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}
               >
-                Open Reference
+                View Reference
               </a>
             </div>
 
@@ -345,7 +344,7 @@ const TopicDetail = () => {
 
                 <div style={{ textAlign: 'center', padding: '20px' }}>
                   <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
-                    Review the {topic.bonusCompleted ? 'mandatory and bonus' : 'mandatory'} questions with explanations.
+                    Review the {topic.bonusCompleted ? 'bonus questions and mandatory' : 'mandatory'} question with explanations.
                   </div>
 
                   <button onClick={handleStartReview} className="retro-btn" style={{ width: '100%' }}>

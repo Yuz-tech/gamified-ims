@@ -83,23 +83,20 @@ const Topics = () => {
         style={{ marginBottom: '30px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, var(--bg-light) 100%)' }}
       >
         <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          XP Reward System
+          Reward System
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
           <div style={{ padding: '15px', border: '2px solid var(--orange-accent)', background: 'rgba(249, 115, 22, 0.05)' }}>
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>MANDATORY QUESTION</div>
-            <div style={{ fontSize: '24px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>100 XP</div>
-            <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>1 Question • Pass to Unlock Badge</div>
+            <div style={{ fontSize: '24px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>100 XP + Badge</div>
           </div>
           <div style={{ padding: '15px', border: '2px solid var(--bright-blue)', background: 'rgba(59, 130, 246, 0.05)' }}>
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>BONUS QUESTIONS</div>
             <div style={{ fontSize: '24px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>50 XP EACH</div>
-            <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>4 Questions • Optional • 0-200 XP Total</div>
           </div>
           <div style={{ padding: '15px', border: '2px solid var(--success-green)', background: 'rgba(16, 185, 129, 0.05)' }}>
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>TOTAL POSSIBLE</div>
             <div style={{ fontSize: '24px', color: 'var(--success-green)', fontWeight: 'bold' }}>100-300 XP</div>
-            <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>Per Topic • Badge Included</div>
           </div>
         </div>
       </motion.div>

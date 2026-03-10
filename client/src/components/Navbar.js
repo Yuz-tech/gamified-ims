@@ -176,7 +176,7 @@ const Navbar = () => {
 
               {user?.role === 'admin' && (
                 <button onClick={() => {
-                  navigate('/admin/dashboard');
+                  navigate('/admin');
                   setShowDropdown(false);
                 }}
                 style={{
@@ -295,7 +295,7 @@ const Navbar = () => {
               </button>
 
               {user?.role === 'admin' && (
-                <button onClick={() => navigate('/admin/dashboard')} className="retro-btn" style={{ width: '100%', textAlign: 'left', background: 'var(--orange-accent)' }}>
+                <button onClick={() => navigate('/admin/')} className="retro-btn" style={{ width: '100%', textAlign: 'left', background: 'var(--orange-accent)' }}>
                   Admin
                 </button>
               )}

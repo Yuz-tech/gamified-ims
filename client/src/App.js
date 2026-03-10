@@ -13,6 +13,7 @@ import AdminUsers from './pages/admin/Users';
 import AdminTopics from './pages/admin/Topics';
 import AdminBadges from './pages/admin/Badges';
 import ActivityLogs from './pages/admin/ActivityLogs';
+import Analytics from './pages/admin/Analytics';
 import './styles/retro.css';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -195,6 +196,16 @@ const AppRoutes = () => {
               </AdminLayout>
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/admin/analytics"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminLayout>
+                <Analytics />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
         />        
         
         <Route path="*" element={<Navigate to="/" />} />
