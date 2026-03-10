@@ -1348,3 +1348,558 @@ Level	XP_Required	XP_Per_Level	Topics_Approx
 19	9450	950	47.25
 20	10450	1000	52.25
 
+
+
+
+import mongoose from 'mongoose';
+import Game from './models/Game.js';
+import Topic from './models/Topic.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const seedAllGames = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('✅ Connected to MongoDB\n');
+
+    // Clear existing games
+    await Game.deleteMany({});
+    console.log('🗑️  Cleared existing games\n');
+
+    const topics = await Topic.find({});
+
+    const allGames = [
+      // ============================================
+      // WORD SCRAMBLE GAMES (10 games)
+      // ============================================
+      {
+        title: 'ISO Standards Scramble',
+        type: 'word_scramble',
+        difficulty: 'easy',
+        relatedTopics: [
+          topics.find(t => t.title.includes('ISO 9001'))?._id,
+          topics.find(t => t.title.includes('ISO 27001'))?._id
+        ].filter(Boolean),
+        xpReward: 30,
+        timeLimit: 300,
+        gameData: {
+          words: [
+            { scrambled: 'AUDTIQLY', answer: 'QUALITY', hint: 'ISO 9001 focus area' },
+            { scrambled: 'CYPDA', answer: 'PDCA', hint: 'Continuous improvement cycle' },
+            { scrambled: 'IFECRATETIC', answer: 'CERTIFICATE', hint: 'ISO compliance proof' },
+            { scrambled: 'MISG', answer: 'ISMS', hint: 'Information Security Management System' },
+            { scrambled: 'TIAUD', answer: 'AUDIT', hint: 'Compliance verification process' },
+            { scrambled: 'LIPCYMNACE', answer: 'COMPLIANCE', hint: 'Meeting requirements' },
+            { scrambled: 'NADARTDS', answer: 'STANDARDS', hint: 'ISO creates these' },
+            { scrambled: 'MCNUEODT', answer: 'DOCUMENT', hint: 'Policy or procedure' },
+            { scrambled: 'IEWVER', answer: 'REVIEW', hint: 'Management assessment' },
+            { scrambled: 'OCPSSRE', answer: 'PROCESS', hint: 'Series of actions' }
+          ]
+        },
+        isActive: true
+      },
+      {
+        title: 'Security Threats Scramble',
+        type: 'word_scramble',
+        difficulty: 'medium',
+        relatedTopics: [
+          topics.find(t => t.title.includes('Anti-Malware'))?._id,
+          topics.find(t => t.title.includes('Email Rules'))?._id
+        ].filter(Boolean),
+        xpReward: 40,
+        timeLimit: 360,
+        gameData: {
+          words: [
+            { scrambled: 'AWMLERA', answer: 'MALWARE', hint: 'Malicious software' },
+            { scrambled: 'HPNISHGI', answer: 'PHISHING', hint: 'Fraudulent email attack' },
+            { scrambled: 'WMAREOSNAR', answer: 'RANSOMWARE', hint: 'Encrypts files for money' },
+            { scrambled: 'RIVSU', answer: 'VIRUS', hint: 'Self-replicating malware' },
+            { scrambled: 'TRNJOA', answer: 'TROJAN', hint: 'Disguised malware' },
+            { scrambled: 'WYSAPER', answer: 'SPYWARE', hint: 'Monitors user activity' },
+            { scrambled: 'PAMS', answer: 'SPAM', hint: 'Unwanted emails' },
+            { scrambled: 'KNIGCHA', answer: 'HACKING', hint: 'Unauthorized access attempt' },
+            { scrambled: 'CREBHA', answer: 'BREACH', hint: 'Security violation' },
+            { scrambled: 'HTTEAR', answer: 'THREAT', hint: 'Potential danger' }
+          ]
+        },
+        isActive: true
+      },
+      {
+        title: 'Access Control Scramble',
+        type: 'word_scramble',
+        difficulty: 'easy',
+        relatedTopics: [
+          topics.find(t => t.title.includes('Access Control'))?._id,
+          topics.find(t => t.title.includes('Username & Password'))?._id
+        ].filter(Boolean),
+        xpReward: 30,
+        timeLimit: 300,
+        gameData: {
+          words: [
+            { scrambled: 'SDORASPW', answer: 'PASSWORD', hint: 'Secret authentication' },
+            { scrambled: 'ESMNUARE', answer: 'USERNAME', hint: 'User identifier' },
+            { scrambled: 'FAM', answer: 'MFA', hint: 'Multi-factor authentication' },
+            { scrambled: 'OELR', answer: 'ROLE', hint: 'Job-based access' },
+            { scrambled: 'IPVIREGEL', answer: 'PRIVILEGE', hint: 'Access permission' },
+            { scrambled: 'TNAUCTIOTHIANE', answer: 'AUTHENTICATION', hint: 'Identity verification' },
+            { scrambled: 'NOLGI', answer: 'LOGIN', hint: 'Access credentials' },
+            { scrambled: 'ESASCC', answer: 'ACCESS', hint: 'Permission to enter' },
+            { scrambled: 'EDNYG', answer: 'DENIED', hint: 'Not permitted' },
+            { scrambled: 'RNATG', answer: 'GRANT', hint: 'Give permission' }
+          ]
+        },
+        isActive: true
+      },
+      {
+        title: 'Network Security Scramble',
+        type: 'word_scramble',
+        difficulty: 'medium',
+        relatedTopics: [
+          topics.find(t => t.title.includes('Network Access'))?._id,
+          topics.find(t => t.title.includes('Cryptographic'))?._id
+        ].filter(Boolean),
+        xpReward: 40,
+        timeLimit: 360,
+        gameData: {
+          words: [
+            { scrambled: 'LALFWIRE', answer: 'FIREWALL', hint: 'Network barrier' },
+            { scrambled: 'NPV', answer: 'VPN', hint: 'Virtual private network' },
+            { scrambled: 'PERYCINONT', answer: 'ENCRYPTION', hint: 'Data scrambling' },
+            { scrambled: 'TSPTH', answer: 'HTTPS', hint: 'Secure web protocol' },
+            { scrambled: 'SLT', answer: 'TLS', hint: 'Transport layer security' },
+            { scrambled: 'RTUORE', answer: 'ROUTER', hint: 'Network device' },
+            { scrambled: 'TWICHE', answer: 'SWITCH', hint: 'Network connector' },
+            { scrambled: 'FIIW', answer: 'WIFI', hint: 'Wireless network' },
+            { scrambled: 'YEK', answer: 'KEY', hint: 'Encryption secret' },
+            { scrambled: 'PROT', answer: 'PORT', hint: 'Network endpoint' }
+          ]
+        },
+        isActive: true
+      },
+      {
+        title: 'Data Protection Scramble',
+        type: 'word_scramble',
+        difficulty: 'hard',
+        relatedTopics: [
+          topics.find(t => t.title.includes('Data Protection'))?._id,
+          topics.find(t => t.title.includes('Backup'))?._id
+        ].filter(Boolean),
+        xpReward: 50,
+        timeLimit: 420,
+        gameData: {
+          words: [
+            { scrambled: 'RGDP', answer: 'GDPR', hint: 'EU privacy regulation' },
+            { scrambled: 'BAUKCP', answer: 'BACKUP', hint: 'Data copy' },
+            { scrambled: 'YEOVCRER', answer: 'RECOVERY', hint: 'Restore data' },
+            { scrambled: 'PYIRACV', answer: 'PRIVACY', hint: 'Personal data right' },
+            { scrambled: 'CFDIALITNTEOYNI', answer: 'CONFIDENTIALITY', hint: 'Keep secret' },
+            { scrambled: 'TYIGRNTIE', answer: 'INTEGRITY', hint: 'Data accuracy' },
+            { scrambled: 'ALIIIVLBATAY', answer: 'AVAILABILITY', hint: 'Access when needed' },
+            { scrambled: 'PLD', answer: 'DLP', hint: 'Data leak prevention' },
+            { scrambled: 'SERHA', answer: 'SHRED', hint: 'Destroy documents' },
+            { scrambled: 'IRNETTONE', answer: 'RETENTION', hint: 'Keep for period' }
+          ]
+        },
+        isActive: true
+      },
+
+      // ============================================
+      // QUICK QUIZ GAMES (8 games)
+      // ============================================
+      {
+        title: 'ISO Knowledge Sprint',
+        type: 'quick_quiz',
+        difficulty: 'easy',
+        relatedTopics: [
+          topics.find(t => t.title.includes('ISO 9001'))?._id,
+          topics.find(t => t.title.includes('ISO 27001'))?._id
+        ].filter(Boolean),
+        xpReward: 40,
+        timeLimit: 100,
+        gameData: {
+          questions: [
+            {
+              question: 'What does ISO stand for?',
+              options: ['International Organization for Standardization', 'International Security Organization', 'Internet Standards Office', 'Information System Operations'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'ISO 9001 focuses on:',
+              options: ['Quality Management', 'Information Security', 'Environmental Management', 'Health and Safety'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'PDCA stands for:',
+              options: ['Plan-Do-Check-Act', 'Prepare-Deploy-Control-Assess', 'Process-Document-Certify-Audit', 'Plan-Design-Create-Approve'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'ISO 27001 manages:',
+              options: ['Information Security', 'Quality Systems', 'Environmental Impact', 'Financial Controls'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Internal audits are conducted to:',
+              options: ['Verify compliance', 'Punish employees', 'Create paperwork', 'Satisfy auditors'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'CIA triad includes:',
+              options: ['Confidentiality, Integrity, Availability', 'Control, Inspection, Audit', 'Compliance, Investigation, Action', 'Certification, Implementation, Assessment'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Risk assessment identifies:',
+              options: ['Threats and vulnerabilities', 'Profit margins', 'Customer satisfaction', 'Employee performance'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Continual improvement means:',
+              options: ['Ongoing enhancement', 'One-time changes', 'Annual reviews', 'Fixed processes'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'An information asset is:',
+              options: ['Anything of value requiring protection', 'Only computers', 'Only documents', 'Only data'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'ISMS stands for:',
+              options: ['Information Security Management System', 'International Security Monitoring Service', 'Internet Safety Management Standard', 'Integrated System Management Solution'],
+              correctAnswer: 0,
+              timeLimit: 10
+            }
+          ]
+        },
+        isActive: true
+      },
+      {
+        title: 'Security Basics Blitz',
+        type: 'quick_quiz',
+        difficulty: 'easy',
+        relatedTopics: [
+          topics.find(t => t.title.includes('Access Control'))?._id,
+          topics.find(t => t.title.includes('Password'))?._id
+        ].filter(Boolean),
+        xpReward: 35,
+        timeLimit: 100,
+        gameData: {
+          questions: [
+            {
+              question: 'Minimum strong password length:',
+              options: ['12 characters', '6 characters', '8 characters', '4 characters'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Should you share passwords?',
+              options: ['Never', 'With colleagues', 'With managers', 'In emergencies'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'MFA means:',
+              options: ['Multi-Factor Authentication', 'Main File Access', 'Multiple Format Approval', 'Master File Archive'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Phishing is:',
+              options: ['Fraudulent email attack', 'Fishing for data', 'Phone scam', 'File sharing'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Public WiFi for work is:',
+              options: ['Unsafe without VPN', 'Always safe', 'Only safe if password-protected', 'Safe for emails only'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Malware is:',
+              options: ['Malicious software', 'Hardware failure', 'Network error', 'Email service'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Firewall purpose:',
+              options: ['Block unauthorized traffic', 'Speed up internet', 'Store files', 'Backup data'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'VPN provides:',
+              options: ['Encrypted connection', 'Faster internet', 'Free WiFi', 'Cloud storage'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Should you click suspicious links?',
+              options: ['No, verify first', 'Yes, always', 'Only if from known sender', 'Only on phone'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Backup purpose:',
+              options: ['Recover from data loss', 'Speed up system', 'Free up space', 'Install software'],
+              correctAnswer: 0,
+              timeLimit: 10
+            }
+          ]
+        },
+        isActive: true
+      },
+      {
+        title: 'Policy & Compliance Rush',
+        type: 'quick_quiz',
+        difficulty: 'medium',
+        relatedTopics: [
+          topics.find(t => t.title.includes('Internet'))?._id,
+          topics.find(t => t.title.includes('Confidential'))?._id
+        ].filter(Boolean),
+        xpReward: 45,
+        timeLimit: 100,
+        gameData: {
+          questions: [
+            {
+              question: 'Confidential data should be:',
+              options: ['Protected and restricted', 'Shared freely', 'Posted publicly', 'Emailed to all'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Can you use personal cloud for work files?',
+              options: ['No, use approved services', 'Yes, anytime', 'Only if free', 'Only Dropbox'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'NDA stands for:',
+              options: ['Non-Disclosure Agreement', 'New Data Access', 'Network Device Authorization', 'No Data Available'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Should you discuss confidential projects in public?',
+              options: ['No, only secure locations', 'Yes, if quiet', 'Yes, with colleagues', 'Only at lunch'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Document version control ensures:',
+              options: ['Correct versions used', 'More storage', 'Faster access', 'Better printing'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Personal devices on work network:',
+              options: ['Need approval', 'Always allowed', 'Never allowed', 'Only phones'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Data classification determines:',
+              options: ['Handling requirements', 'File size', 'Storage location', 'Creation date'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Acceptable internet use includes:',
+              options: ['Work-related research', 'Gambling sites', 'Pirated software', 'Personal shopping'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Email suitable for highly confidential info?',
+              options: ['No, use encrypted channels', 'Yes, always', 'Only internal', 'Only with password'],
+              correctAnswer: 0,
+              timeLimit: 10
+            },
+            {
+              question: 'Telework security requires:',
+              options: ['Same standards as office', 'Relaxed rules', 'No security', 'Only passwords'],
+              correctAnswer: 0,
+              timeLimit: 10
+            }
+          ]
+        },
+        isActive: true
+      },
+
+      // ============================================
+      // TRUE/FALSE BLITZ GAMES (8 games)
+      // ============================================
+      {
+        title: 'Security Fundamentals True/False',
+        type: 'true_false',
+        difficulty: 'easy',
+        relatedTopics: [
+          topics.find(t => t.title.includes('Access Control'))?._id,
+          topics.find(t => t.title.includes('Password'))?._id
+        ].filter(Boolean),
+        xpReward: 25,
+        timeLimit: 60,
+        gameData: {
+          statements: [
+            { text: 'You should never share your password', answer: true },
+            { text: 'Public WiFi is safe for online banking', answer: false },
+            { text: 'Backups should be tested regularly', answer: true },
+            { text: 'Phishing only comes through email', answer: false },
+            { text: 'Strong passwords use mixed characters', answer: true },
+            { text: 'Personal devices can always access work network', answer: false },
+            { text: 'VPN encrypts your internet traffic', answer: true },
+            { text: 'Clicking suspicious links is safe if you have antivirus', answer: false },
+            { text: 'Multi-factor authentication adds security', answer: true },
+            { text: 'Confidential files can be emailed to anyone', answer: false },
+            { text: 'Firewalls block unauthorized network access', answer: true },
+            { text: 'Passwords should be written on sticky notes', answer: false },
+            { text: 'Security incidents should be reported immediately', answer: true },
+            { text: 'All software can be installed without approval', answer: false },
+            { text: 'Data encryption protects information', answer: true },
+            { text: 'You can leave your computer unlocked briefly', answer: false },
+            { text: 'Regular software updates improve security', answer: true },
+            { text: 'Tailgating is holding doors for others', answer: true },
+            { text: 'USB drives found should be plugged in to check owner', answer: false },
+            { text: 'Security training is only for IT staff', answer: false },
+            { text: 'HTTPS is more secure than HTTP', answer: true },
+            { text: 'Ransomware encrypts your files', answer: true },
+            { text: 'Email attachments are always safe to open', answer: false },
+            { text: 'Access rights should be reviewed regularly', answer: true },
+            { text: 'Cloud storage is always secure', answer: false },
+            { text: 'Incident response plans are important', answer: true },
+            { text: 'All emails from known senders are safe', answer: false },
+            { text: 'Physical security is as important as digital', answer: true },
+            { text: 'Data can be disposed in regular trash', answer: false },
+            { text: 'Time synchronization helps security logging', answer: true }
+          ]
+        },
+        isActive: true
+      },
+      {
+        title: 'ISO Standards True/False',
+        type: 'true_false',
+        difficulty: 'easy',
+        relatedTopics: [
+          topics.find(t => t.title.includes('ISO 9001'))?._id,
+          topics.find(t => t.title.includes('ISO 27001'))?._id
+        ].filter(Boolean),
+        xpReward: 20,
+        timeLimit: 60,
+        gameData: {
+          statements: [
+            { text: 'ISO 9001 focuses on quality management', answer: true },
+            { text: 'ISO 27001 is about environmental management', answer: false },
+            { text: 'PDCA stands for Plan-Do-Check-Act', answer: true },
+            { text: 'Internal audits are only for punishment', answer: false },
+            { text: 'Continual improvement is ongoing', answer: true },
+            { text: 'CIA triad is Confidentiality, Integrity, Availability', answer: true },
+            { text: 'ISMS stands for Internet Safety Management System', answer: false },
+            { text: 'Risk assessments identify threats', answer: true },
+            { text: 'ISO standards never change', answer: false },
+            { text: 'Customer focus is an ISO 9001 principle', answer: true },
+            { text: 'Information assets only include computers', answer: false },
+            { text: 'Management reviews should be conducted regularly', answer: true },
+            { text: 'ISO certification is permanent', answer: false },
+            { text: 'Documentation is required for ISO compliance', answer: true },
+            { text: 'Quality and security can be integrated', answer: true },
+            { text: 'Vulnerability is a strength in systems', answer: false },
+            { text: 'Risk can be calculated as Likelihood × Impact', answer: true },
+            { text: 'Policies don\'t need to be reviewed', answer: false },
+            { text: 'Process approach is part of ISO 9001', answer: true },
+            { text: 'Security controls are unnecessary overhead', answer: false },
+            { text: 'Compliance means meeting requirements', answer: true },
+            { text: 'Standards help ensure consistency', answer: true },
+            { text: 'Only large companies need ISO certification', answer: false },
+            { text: 'Training is essential for ISO implementation', answer: true },
+            { text: 'ISO focuses only on technology', answer: false },
+            { text: 'Asset inventory helps track resources', answer: true },
+            { text: 'Procedures don\'t need to be documented', answer: false },
+            { text: 'ISO promotes continuous improvement', answer: true },
+            { text: 'Security incidents should be hidden', answer: false },
+            { text: 'Evidence-based decision making is key', answer: true }
+          ]
+        },
+        isActive: true
+      },
+      {
+        title: 'Policy & Compliance True/False',
+        type: 'true_false',
+        difficulty: 'medium',
+        relatedTopics: [
+          topics.find(t => t.title.includes('Internet'))?._id,
+          topics.find(t => t.title.includes('Data Protection'))?._id
+        ].filter(Boolean),
+        xpReward: 30,
+        timeLimit: 60,
+        gameData: {
+          statements: [
+            { text: 'GDPR is an EU privacy regulation', answer: true },
+            { text: 'Personal data can be shared freely', answer: false },
+            { text: 'Data minimization means collect only what\'s needed', answer: true },
+            { text: 'Encryption makes data unreadable', answer: true },
+            { text: 'All cloud services are approved for work use', answer: false },
+            { text: 'NTP synchronizes computer clocks', answer: true },
+            { text: 'Pirated software is acceptable if free', answer: false },
+            { text: 'Backups should be stored offsite', answer: true },
+            { text: 'Hard drives can be thrown in regular trash', answer: false },
+            { text: 'DLP prevents data leaks', answer: true },
+            { text: 'Confidential documents can be left on desk', answer: false },
+            { text: 'Visitors need to be escorted', answer: true },
+            { text: 'Access badges can be shared', answer: false },
+            { text: 'Software licenses apply to each user', answer: true },
+            { text: 'Email is secure enough for all confidential data', answer: false },
+            { text: 'Telework has same security requirements', answer: true },
+            { text: 'Screenshots of confidential data are always allowed', answer: false },
+            { text: 'Document retention follows legal requirements', answer: true },
+            { text: 'All documents need version control', answer: false },
+            { text: 'Internet use policy defines acceptable use', answer: true },
+            { text: 'Personal email is fine for work files', answer: false },
+            { text: 'Preventive maintenance improves security', answer: true },
+            { text: 'Patches can be delayed indefinitely', answer: false },
+            { text: 'Time synchronization helps forensics', answer: true },
+            { text: 'Secure disposal only applies to paper', answer: false },
+            { text: 'Cross-cut shredding is more secure', answer: true },
+            { text: 'Data classification is optional', answer: false },
+            { text: 'Incident response plans should exist', answer: true },
+            { text: 'Training is only needed at hire', answer: false },
+            { text: '3-2-1 backup rule provides redundancy', answer: true }
+          ]
+        },
+        isActive: true
+      }
+    ];
+
+    const createdGames = await Game.insertMany(allGames);
+    console.log(`✅ ${createdGames.length} games created\n`);
+
+    // Group by type
+    const byType = {
+      word_scramble: createdGames.filter(g => g.type === 'word_scramble'),
+      quick_quiz: createdGames.filter(g => g.type === 'quick_quiz'),
+      true_false: createdGames.filter(g => g.type === 'true_false')
+    };
+
+    console.log('🎮 GAMES SEEDED BY TYPE:');
+    console.log(`   📝 Word Scramble: ${byType.word_scramble.length} games`);
+    console.log(`   🎯 Quick Quiz: ${byType.quick_quiz.length} games`);
+    console.log(`   ✓✗ True/False: ${byType.true_false.length} games`);
+    
+    console.log('\n🎉 All games seeded successfully!');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ SEED ERROR:', error);
+    process.exit(1);
+  }
+};
+
+seedAllGames();
