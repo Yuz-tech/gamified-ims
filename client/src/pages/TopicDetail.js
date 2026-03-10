@@ -8,7 +8,7 @@ const TopicDetail = () => {
   const navigate = useNavigate();
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentStage, setCurrentStage] = useState(null); // null, 'mandatory', 'bonus', 'review'
+  const [currentStage, setCurrentStage] = useState(null); 
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [bonusAnswers, setBonusAnswers] = useState({});
   const [mandatoryResult, setMandatoryResult] = useState(null);
@@ -35,7 +35,7 @@ const TopicDetail = () => {
 
   const handleStartMandatory = () => {
     if (!materialsConfirmed && !topic.mandatoryCompleted) {
-      alert('⚠️ Please confirm that you have reviewed the training materials.');
+      alert('Please confirm that you have reviewed the training materials.');
       return;
     }
     setCurrentStage('mandatory');
@@ -55,7 +55,7 @@ const TopicDetail = () => {
 
   const handleSubmitMandatory = async () => {
     if (selectedAnswer === null) {
-      alert('⚠️ Please select an answer.');
+      alert('Please select an answer.');
       return;
     }
 
@@ -70,17 +70,17 @@ const TopicDetail = () => {
         // Passed - refresh topic data
         await fetchTopic();
         
-        // Show success for 2 seconds
+        // Show success for 5 seconds
         setTimeout(() => {
           setCurrentStage(null);
-        }, 2000);
+        }, 5000);
       } else {
         // Failed - show error for 3 seconds then reset
         setTimeout(() => {
           setCurrentStage(null);
           setSelectedAnswer(null);
           setMandatoryResult(null);
-        }, 3000);
+        }, 5000);
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting answer');
@@ -90,7 +90,7 @@ const TopicDetail = () => {
   const handleSubmitBonus = async () => {
     // Check all 4 bonus questions answered
     if (Object.keys(bonusAnswers).length < 4) {
-      alert('⚠️ Please answer all 4 bonus questions.');
+      alert('Please answer all 4 bonus questions.');
       return;
     }
 
@@ -104,10 +104,10 @@ const TopicDetail = () => {
       // Refresh topic
       await fetchTopic();
 
-      // Show results for 3 seconds then return home
+      // Show results for 5 seconds then return home
       setTimeout(() => {
         navigate('/');
-      }, 3000);
+      }, 5000);
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting bonus');
     }
@@ -126,7 +126,7 @@ const TopicDetail = () => {
       <div className="retro-container" style={{ paddingTop: '40px', textAlign: 'center' }}>
         <h2 style={{ color: 'var(--error-red)' }}>Topic not found</h2>
         <button onClick={() => navigate('/topics')} className="retro-btn" style={{ marginTop: '20px' }}>
-          ← BACK TO TOPICS
+          BACK TO TOPICS
         </button>
       </div>
     );
@@ -143,7 +143,7 @@ const TopicDetail = () => {
         style={{ marginBottom: '30px' }}
       >
         <button onClick={() => navigate('/topics')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-          ← BACK TO TOPICS
+          BACK TO TOPICS
         </button>
 
         <h1 className="neon-text" style={{ fontSize: '28px', marginBottom: '15px', color: 'var(--primary-navy)' }}>
@@ -172,7 +172,7 @@ const TopicDetail = () => {
             MANDATORY QUESTION COMPLETED
           </div>
           <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
-            You earned 100 XP and the badge! {!topic.bonusCompleted && 'You can still take bonus questions for extra XP.'}
+            You earned 100 XP and a badge! {!topic.bonusCompleted && 'You can still take bonus questions for extra XP.'}
           </div>
         </motion.div>
       )}
@@ -186,7 +186,7 @@ const TopicDetail = () => {
           style={{ marginBottom: '30px' }}
         >
           <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-            📋 TRAINING MATERIALS
+            TRAINING MATERIALS
           </h3>
 
           <div style={{ marginBottom: '20px' }}>
@@ -197,7 +197,7 @@ const TopicDetail = () => {
             {/* Document */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', fontWeight: 'bold' }}>
-                📄 TRAINING DOCUMENT
+                IMS Reference Manual
               </label>
               <a
                 href={topic.documentUrl}
@@ -206,14 +206,14 @@ const TopicDetail = () => {
                 className="retro-btn"
                 style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}
               >
-                📄 OPEN IN NEW TAB
+                Open Reference
               </a>
             </div>
 
             {/* Video */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', fontWeight: 'bold' }}>
-                📺 TRAINING VIDEO
+                IMS Policy Video
               </label>
               <div style={{
                 position: 'relative',
@@ -284,13 +284,12 @@ const TopicDetail = () => {
               style={{ background: 'rgba(249, 115, 22, 0.05)', borderColor: 'var(--orange-accent)' }}
             >
               <h3 style={{ fontSize: '14px', color: 'var(--orange-accent)', marginBottom: '20px' }}>
-                ⭐ MANDATORY QUESTION
+                MANDATORY QUESTION
               </h3>
 
               <div style={{ textAlign: 'center', padding: '20px' }}>
-                <div style={{ fontSize: '48px', marginBottom: '15px' }}>🎯</div>
                 <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
-                  Answer 1 question correctly to earn <strong>100 XP</strong> and unlock the badge!
+                  Answer the question correctly to earn <strong>100 XP</strong> and unlock a badge!
                 </div>
 
                 <button
@@ -303,7 +302,7 @@ const TopicDetail = () => {
                   }}
                   disabled={!materialsConfirmed}
                 >
-                  {materialsConfirmed ? '🎮 START QUIZ' : '🔒 CONFIRM MATERIALS FIRST'}
+                  {materialsConfirmed ? 'START QUIZ' : 'CONFIRM MATERIALS FIRST'}
                 </button>
               </div>
             </motion.div>
@@ -322,13 +321,12 @@ const TopicDetail = () => {
                   </h3>
 
                   <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <div style={{ fontSize: '48px', marginBottom: '15px' }}>📚</div>
                     <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
                       Answer 4 bonus questions. Each correct answer earns <strong>50 XP</strong> (up to 200 XP total).
                     </div>
 
                     <button onClick={handleStartBonus} className="retro-btn" style={{ width: '100%' }}>
-                      💎 START BONUS
+                      START BONUS
                     </button>
                   </div>
                 </motion.div>
@@ -342,17 +340,16 @@ const TopicDetail = () => {
                 style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'var(--success-green)' }}
               >
                 <h3 style={{ fontSize: '14px', color: 'var(--success-green)', marginBottom: '20px' }}>
-                  📖 REVIEW ANSWERS
+                  REVIEW ANSWERS
                 </h3>
 
                 <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '15px' }}>✅</div>
                   <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
                     Review the {topic.bonusCompleted ? 'mandatory and bonus' : 'mandatory'} questions with explanations.
                   </div>
 
                   <button onClick={handleStartReview} className="retro-btn" style={{ width: '100%' }}>
-                    📖 REVIEW
+                    REVIEW
                   </button>
                 </div>
               </motion.div>
@@ -367,17 +364,16 @@ const TopicDetail = () => {
               className="retro-card"
             >
               <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-                ➡️ NEXT TOPIC
+                NEXT TOPIC
               </h3>
 
               <div style={{ textAlign: 'center', padding: '20px' }}>
-                <div style={{ fontSize: '48px', marginBottom: '15px' }}>🚀</div>
                 <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
-                  Continue your learning journey with the next training topic.
+                  Continue with the next training topic.
                 </div>
 
                 <button onClick={() => navigate('/topics')} className="retro-btn" style={{ width: '100%' }}>
-                  📚 VIEW TOPICS
+                  VIEW TOPICS
                 </button>
               </div>
             </motion.div>
@@ -393,7 +389,7 @@ const TopicDetail = () => {
           className="retro-card"
         >
           <h3 style={{ fontSize: '14px', color: 'var(--orange-accent)', marginBottom: '20px' }}>
-            ⭐ MANDATORY QUESTION (100 XP)
+            MANDATORY QUESTION (100 XP)
           </h3>
 
           <div style={{
@@ -444,10 +440,10 @@ const TopicDetail = () => {
 
           <div style={{ display: 'flex', gap: '10px' }}>
             <button onClick={handleSubmitMandatory} className="retro-btn" style={{ flex: 1 }} disabled={selectedAnswer === null}>
-              ✓ SUBMIT
+              SUBMIT
             </button>
             <button onClick={() => setCurrentStage(null)} className="retro-btn secondary" style={{ flex: 1 }}>
-              ✖ CANCEL
+              CANCEL
             </button>
           </div>
         </motion.div>
@@ -480,7 +476,7 @@ const TopicDetail = () => {
                 border: '2px solid var(--success-green)'
               }}>
                 <div style={{ fontSize: '12px', marginBottom: '10px' }}>
-                  ✅ You earned <strong>100 XP</strong> and unlocked the badge!
+                  You earned <strong>100 XP</strong> and unlocked a badge!
                 </div>
                 {mandatoryResult.badgeImage && (
                   <img
@@ -626,7 +622,7 @@ const TopicDetail = () => {
           className="retro-card"
         >
           <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-            📖 REVIEW: CORRECT ANSWERS & EXPLANATIONS
+            REVIEW: CORRECT ANSWERS & EXPLANATIONS
           </h3>
 
           {topic.questions.slice(0, topic.bonusCompleted ? 5 : 1).map((question, qIndex) => (
@@ -640,7 +636,7 @@ const TopicDetail = () => {
               }}
             >
               <div style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '15px', fontWeight: 'bold' }}>
-                {qIndex === 0 ? '⭐ Mandatory Question (100 XP)' : `💎 Bonus Question ${qIndex} (50 XP)`}
+                {qIndex === 0 ? 'Mandatory Question (100 XP)' : `Bonus Question ${qIndex} (50 XP)`}
               </div>
 
               <div style={{ fontSize: '13px', marginBottom: '20px', fontWeight: 'bold' }}>
@@ -694,7 +690,7 @@ const TopicDetail = () => {
                   borderLeft: '5px solid var(--bright-blue)'
                 }}>
                   <div style={{ fontSize: '9px', color: 'var(--bright-blue)', marginBottom: '8px', fontWeight: 'bold' }}>
-                    💡 EXPLANATION
+                    EXPLANATION
                   </div>
                   <div style={{ fontSize: '10px', lineHeight: '1.6' }}>
                     {question.explanation}
@@ -705,7 +701,7 @@ const TopicDetail = () => {
           ))}
 
           <button onClick={() => setCurrentStage(null)} className="retro-btn" style={{ width: '100%' }}>
-            ← BACK
+            BACK
           </button>
         </motion.div>
       )}

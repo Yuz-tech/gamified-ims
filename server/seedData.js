@@ -413,12 +413,6 @@ const seedData = async () => {
       employeeExists.isApproved = true;
       await employeeExists.save();
     }
-
-    console.log('✅ Seed data created successfully!');
-    console.log(`📚 ${topics.length} topics created`);
-    console.log('🔐 Admin: username=admin, password=admin123');
-    console.log('👤 Employee: username=employee, password=employee123');
-    console.log('💡 Remember to update Google Drive URLs in topics!');
     
     process.exit(0);
   } catch (error) {

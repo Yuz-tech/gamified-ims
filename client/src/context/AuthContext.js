@@ -15,24 +15,24 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
 
-    console.log('🔍 Checking auth...', { hasToken: !!token, hasUser: !!storedUser });
+    console.log({ hasToken: !!token, hasUser: !!storedUser });
 
     if (token && storedUser) {
       try {
         // Set user from localStorage immediately (optimistic)
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        console.log('✅ User loaded from localStorage:', parsedUser.username);
+        console.log('User loaded from localStorage:', parsedUser.username);
 
         // Verify with server
         const response = await api.get('/auth/me');
-        console.log('✅ Server verified user:', response.data.username);
+        console.log('Server verified user:', response.data.username);
         
         // Update with fresh data from server
         setUser(response.data);
         localStorage.setItem('user', JSON.stringify(response.data));
       } catch (error) {
-        console.error('❌ Auth check failed:', error.response?.data || error.message);
+        console.error('Auth check failed:', error.response?.data || error.message);
         
         // Only clear if it's actually an auth error
         if (error.response?.status === 401) {
@@ -46,18 +46,18 @@ export const AuthProvider = ({ children }) => {
         }
       }
     } else {
-      console.log('ℹ️ No auth credentials found');
+      console.log('No auth credentials found');
     }
     setLoading(false);
   };
 
   const login = async (username, password) => {
     try {
-      console.log('🔐 Attempting login for:', username);
+      console.log('Attempting login for:', username);
       const response = await api.post('/auth/login', { username, password });
       const { token, user } = response.data;
 
-      console.log('✅ Login successful:', user.username);
+      console.log('Login successful:', user.username);
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (error) {
-      console.error('❌ Login failed:', error.response?.data || error.message);
+      console.error('Login failed:', error.response?.data || error.message);
       return {
         success: false,
         message: error.response?.data?.message || 'Login failed'

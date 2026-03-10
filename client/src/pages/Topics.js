@@ -72,7 +72,7 @@ const Topics = () => {
         className="neon-text"
         style={{ fontSize: '28px', marginBottom: '30px', textAlign: 'center', color: 'var(--primary-navy)' }}
       >
-        TRAINING TOPICS
+        IMS Awareness Training Topics
       </motion.h1>
 
       {/* XP Information Card */}
@@ -83,7 +83,7 @@ const Topics = () => {
         style={{ marginBottom: '30px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, var(--bg-light) 100%)' }}
       >
         <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          ⭐ XP REWARD SYSTEM
+          XP Reward System
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
           <div style={{ padding: '15px', border: '2px solid var(--orange-accent)', background: 'rgba(249, 115, 22, 0.05)' }}>
@@ -114,7 +114,7 @@ const Topics = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginBottom: '15px' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
-              SEARCH
+              Search
             </label>
             <input
               type="text"
@@ -127,7 +127,7 @@ const Topics = () => {
           </div>
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
-              FILTER
+              Filter
             </label>
             <select
               className="retro-input"
@@ -142,7 +142,7 @@ const Topics = () => {
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--text-medium)' }}>
-          <div>SHOWING {filteredTopics.length} OF {topics.length} TOPICS</div>
+          <div>Showing {filteredTopics.length} of {topics.length} topics</div>
           {(searchTerm || filterStatus !== 'all') && (
             <button onClick={handleClearFilters} className="retro-btn secondary" style={{ fontSize: '9px', padding: '5px 10px' }}>
               CLEAR
@@ -154,8 +154,7 @@ const Topics = () => {
       {/* Topics Grid */}
       {filteredTopics.length === 0 ? (
         <div className="retro-card" style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.5 }}>📚</div>
-          <h3 style={{ fontSize: '14px', color: 'var(--text-medium)' }}>NO TOPICS FOUND</h3>
+          <h3 style={{ fontSize: '14px', color: 'var(--text-medium)' }}>No Topics Found</h3>
         </div>
       ) : (
         <div style={{
@@ -208,7 +207,7 @@ const Topics = () => {
                   marginBottom: '15px',
                   border: `2px solid var(--success-green)`
                 }}>
-                  {topic.bonusCompleted ? '✓ FULLY COMPLETE' : '✓ PASSED'}
+                  {topic.bonusCompleted ? 'COMPLETED' : 'PASSED'}
                 </div>
               ) : (
                 <div style={{
@@ -220,7 +219,7 @@ const Topics = () => {
                   marginBottom: '15px',
                   border: '2px solid var(--bright-blue)'
                 }}>
-                  NOT STARTED
+                  Not Started
                 </div>
               )}
 
@@ -241,8 +240,8 @@ const Topics = () => {
                 }}
               >
                 {topic.mandatoryCompleted 
-                  ? (topic.bonusCompleted ? 'VIEW TOPIC' : 'CONTINUE')
-                  : 'START TOPIC'}
+                  ? (topic.bonusCompleted ? 'View Topic' : 'Continue')
+                  : 'Start Topic'}
               </button>
             </motion.div>
           ))}
