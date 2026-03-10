@@ -12,7 +12,7 @@ Security Issues not just /admin
 Graph level up scaling -> project 3-5 years level up scale
 
 Admin reset settings -> user progress for topics only (retain XP and levels)
-Navbar font style not p2p
+Navbar font style not styled
 Request an account not working -> An error occurred
 Actual IP login not working -> 
 Access to XMLHttpRequest at 'http://localhost:5000/api/auth/login' from origin 'http://192.168.232.247:3000' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header has a value 'http://localhost:3000' that is not equal to the supplied origin.Understand this error
