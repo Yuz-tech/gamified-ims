@@ -592,9 +592,9 @@ const TopicDetail = () => {
           className="retro-card"
         >
           <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div style={{ fontSize: '72px', marginBottom: '20px' }}>🎉</div>
+            <div style={{ fontSize: '72px', marginBottom: '20px' }}>Bonus Questions Done!</div>
             <div style={{ fontSize: '24px', color: 'var(--success-green)', marginBottom: '20px', fontWeight: 'bold' }}>
-              BONUS COMPLETE!
+              Your Score:
             </div>
 
             <div style={{ fontSize: '48px', color: 'var(--bright-blue)', marginBottom: '20px' }}>

@@ -1,232 +1,324 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  useEffect(() => {
+    setShowDropdown(false);
     setMobileMenuOpen(false);
+  }, [location]);
+
+  const handleLogout = async() => {
+    await logout();
+    navigate('/login');
   };
 
-  const navItems = [
-    { path: '/', label: 'HOME' },
-    { path: '/topics', label: 'TOPICS' },
-    { path: '/achievements', label: 'ACHIEVEMENTS' }
-  ];
-
-  if (user?.role === 'admin') {
-    navItems.push({ path: '/admin', label: 'ADMIN' });
-  }
+  if (!user) return null;
 
   return (
-    <>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000,
-          background: 'var(--bg-lightest)',
-          borderBottom: '3px solid var(--primary-navy)',
-          boxShadow: '0 4px 12px rgba(27, 58, 107, 0.15)',
-          padding: '15px 20px'
-        }}
+    <nav style = {{
+      background: 'var(--bg-light)',
+      borderBottom: '3px solid var(--primary-navy)',
+      padding: '15px 30px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000,
+      boxShadow: '0 2px 0 var(--primary-navy)'
+    }}>
+      {/* Logo & Title */}
+      <div style = {{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px',
+        cursor: 'pointer'
+      }}
+      onClick={() => navigate('/')}
       >
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '15px'
+        <img src = "/uploads/logo.png" alt="AWSYS" style={{
+          height: '40px',
+          width: 'auto',
+          objectFit: 'contain',
+          imageRendering: 'crisp-edges'
+        }}
+        onError={(e) => {
+          e.target.style.display = 'none';
+        }}
+        />
+        <h1 style={{
+          fontSize: '16px',
+          color: 'var(--primary-navy)',
+          margin: 0,
+          fontWeight: 'bold',
+          letterSpacing: '1px'
         }}>
-          {/* Logo */}
-          <div style={{ 
-            fontSize: '14px', 
-            color: 'var(--primary-navy)',
-            textShadow: '2px 2px 0 var(--light-blue)',
-            flex: '0 0 auto'
-          }}>
-            Advanced World <br />
-            Solutions, Inc.
-          </div>
+          IMS Awareness Training
+        </h1>
+      </div>
 
-          {/* Desktop Navigation */}
-          <div 
-            style={{ 
-              display: 'flex', 
-              gap: '15px',
-              alignItems: 'center',
-              flex: '1 1 auto',
-              justifyContent: 'center'
-            }}
-            className="desktop-nav"
-          >
-            {navItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/' || item.path === '/admin'}
-                style={({ isActive }) => ({
-                  color: isActive ? 'white' : 'var(--primary-navy)',
-                  textDecoration: 'none',
-                  fontSize: '10px',
-                  padding: '8px 12px',
-                  border: `2px solid ${isActive ? 'var(--bright-blue)' : 'var(--primary-navy)'}`,
-                  background: isActive ? 'var(--bright-blue)' : 'transparent',
-                  transition: 'all 0.3s',
-                  boxShadow: isActive ? '3px 3px 0 var(--primary-navy)' : 'none',
-                  whiteSpace: 'nowrap'
-                })}
-              >
-                {item.label}
-              </NavLink>
-            ))}
+      {/* Desktop Navigation */}
+      <div style={{
+        display: 'flex',
+        gap: '20px',
+        alignItems: 'center',
+        fontSize: '11px'
+      }}
+      className="desktop-nav">
+        <button onClick={() => navigate('/')} style={{
+          background: location.pathname === '/' ? 'var(--bright-blue)' : 'transparent',
+          border: location.pathname === '/' ? '2px solid var(--primary-navy)' : 'none',
+          color: location.pathname === '/' ? 'white' : 'var(--text-dark)',
+          padding: '8px 15px',
+          cursor: 'pointer',
+          fontWeight: location.pathname === '/' ? 'bold' : 'normal'
+        }}>
+          Home
+        </button>
 
-            <button
-              onClick={handleLogout}
-              className="retro-btn danger"
-              style={{ fontSize: '10px', padding: '8px 12px' }}
-            >
-              LOGOUT
-            </button>
-          </div>
+        <button onClick={() => navigate('/topics')} style={{
+          background: location.pathname.startsWith('/topics') ? 'var(--bright-blue)' : 'transparent',
+          border: location.pathname.startsWith('/topics') ? '2px solid var(--primary-navy)' : 'none',
+          color: location.pathname.startsWith('/topics') ? 'white' : 'var(--text-dark)',
+          padding: '8px 15px',
+          cursor: 'pointer',
+          fontWeight: location.pathname.startsWith('/topics') ? 'bold' : 'normal'
+        }}
+        >
+          Topics
+        </button>
 
-          {/* User Stats - Desktop */}
-          <div 
-            style={{ 
-              fontSize: '10px',
-              color: 'var(--bright-blue)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              flex: '0 0 auto'
-            }}
-            className="desktop-stats"
-          >
-            <span>LVL {user?.level || 1}</span>
-            <span>|</span>
-            <span>{user?.xp || 0} XP</span>
-          </div>
+        <button onClick={() => navigate('/achievements')} style={{
+          background: location.pathname === '/achievements' ? 'var(--bright-blue)' : 'transparent',
+          border: location.pathname === '/achievements' ? '2px solid var(--primary-navy)' : 'none',
+          color: location.pathname === '/achievements' ? 'white' : 'var(--text-dark)',
+          padding: '8px 15px',
+          cursor: 'pointer',
+          fontWeight: location.pathname === '/achievments' ? 'bold' : 'normal'
+        }}>
+          Achievements
+        </button>
 
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="retro-btn secondary mobile-menu-toggle"
-            style={{ 
-              fontSize: '14px', 
-              padding: '8px 12px',
-              display: 'none'
-            }}
-          >
-            {mobileMenuOpen ? '✖' : '☰'}
-          </button>
+        {/* User stats */}
+        <div style={{
+          fontSize: '10px',
+          color: 'var(--bright-blue)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          flex: '0 0 auto'
+        }}
+        className="desktop-stats"
+        >
+          <span>LVL {user?.level || 1}</span>
+          <span>|</span>
+          <span>{user?.xp || 0} XP</span>
         </div>
-      </motion.nav>
 
-      {/* Mobile Menu Dropdown */}
+        {/* User Menu */}
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setShowDropdown(!showDropdown)} style={{
+            background: 'var(--primary-navy)',
+            color: 'white',
+            border: '2px solid var(--primary-navy)',
+            padding: '8px 15px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontWeight: 'bold'
+          }}
+          >
+            {user?.username}
+            <span style = {{ fontSize: '8px' }}>▼</span>
+          </button>
+
+          {/* Dropdown Menu */}
+          {showDropdown && (
+            <div style={{
+              position: 'absolute',
+              top: '50px',
+              right: '0',
+              background: 'var(--bg-light)',
+              border: '3px solid var(--primary-navy)',
+              boxShadow: '5px 5px 0 var(--primary-navy)',
+              minWidth: '200px',
+              zIndex: 1000
+            }}>
+              <button onClick={() => {
+                navigate('/profile');
+                setShowDropdown(false);
+              }}
+              style={{
+                width: '100%',
+                padding: '15px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '2px solid var(--border-color)',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '11px',
+                color: 'var(--text-dark)'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'var(--bg-medium)'}
+              onMouseOut={(e) => e.target.style.background = 'transparent'}
+              >
+                Profile
+              </button>
+
+              {user?.role === 'admin' && (
+                <button onClick={() => {
+                  navigate('/admin/dashboard');
+                  setShowDropdown(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '2px solid var(--border-color)',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  color: 'var(--text-dark)'
+                }}
+                onMouseOver={(e) => e.target.style.background = 'var(--bg-medium)'}
+                onMouseOut={(e) => e.target.style.background = 'transparent'}
+                >
+                  Admin Panel
+                </button>
+              )}
+
+              <button onClick={handleLogout} style={{
+                width: '100%',
+                padding: '15px',
+                background: 'transparent',
+                border: 'none',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '11px',
+                color: 'var(--error-red)'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'rgba(239,68,68,0.1)'}
+              onMouseOut={(e) => e.target.style.background = 'transparent'}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Menu Button */}
+      <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-menu-btn" style={{
+        display: 'none',
+        background: 'var(--primary-navy)',
+        color: 'white',
+        border: 'none',
+        padding: '10px 15px',
+        cursor: 'pointer',
+        fontSize: '14px'
+      }}
+      >
+        ☰
+      </button>
+
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            style={{
-              position: 'sticky',
-              top: '70px',
-              zIndex: 999,
-              background: 'var(--bg-lightest)',
-              borderBottom: '3px solid var(--primary-navy)',
-              boxShadow: '0 4px 12px rgba(27, 58, 107, 0.15)',
-              overflow: 'hidden'
-            }}
+          <motion.div 
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
             className="mobile-menu"
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: '80%',
+              maxWidth: '300px',
+              background: 'var(--bg-light)',
+              borderLeft: '3px solid var(--primary-navy)',
+              boxShadow: '-5px 0 10px rgba(0,0,0,0.2)',
+              zIndex: 2000,
+              padding: '20px',
+              overflowY: 'auto'
+            }}
           >
-            <div style={{ 
-              padding: '15px',
-              display: 'flex', 
-              flexDirection: 'column',
-              gap: '10px'
+            <button onClick={() => setMobileMenuOpen(false)} style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              background: 'transparent',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: 'var(--text-dark)'
+            }}
+            >
+              ✖
+            </button>
+            <div style = {{
+              padding: '10px',
+              background: 'var(--bg-medium)',
+              border: '2px solid var(--bright-blue)',
+              textAlign: 'center',
+              fontSize: '10px',
+              color: 'var(--bright-blue)',
+              marginBottom: '20px',
+              marginTop: '40px'
             }}>
-              {/* User Stats - Mobile */}
-              <div style={{
-                padding: '10px',
-                background: 'var(--bg-medium)',
-                border: '2px solid var(--bright-blue)',
-                textAlign: 'center',
-                fontSize: '10px',
-                color: 'var(--bright-blue)'
-              }}>
-                 {user?.username} | LVL {user?.level || 1} | {user?.xp || 0} XP
-              </div>
+              {user?.username} | LVL {user?.level || 1} | {user?.xp || 0} XP
+            </div>
 
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.path === '/' || item.path === '/admin'}
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={({ isActive }) => ({
-                    color: isActive ? 'white' : 'var(--primary-navy)',
-                    textDecoration: 'none',
-                    fontSize: '12px',
-                    padding: '12px',
-                    border: `2px solid ${isActive ? 'var(--bright-blue)' : 'var(--primary-navy)'}`,
-                    background: isActive ? 'var(--bright-blue)' : 'transparent',
-                    textAlign: 'center',
-                    display: 'block'
-                  })}
-                >
-                  {item.label}
-                </NavLink>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button onClick={() => navigate('/')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
+                Home
+              </button>
+              <button onClick={() => navigate('/topics')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
+                Topics
+              </button>
+              <button onClick={() => navigate('/achievements')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
+                Achievements
+              </button>
+              <button onClick={() => navigate('/profile')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
+                Profile
+              </button>
 
-              <button
-                onClick={handleLogout}
-                className="retro-btn danger"
-                style={{ fontSize: '12px', padding: '12px', width: '100%' }}
-              >
-                LOGOUT
+              {user?.role === 'admin' && (
+                <button onClick={() => navigate('/admin/dashboard')} className="retro-btn" style={{ width: '100%', textAlign: 'left', background: 'var(--orange-accent)' }}>
+                  Admin
+                </button>
+              )}
+
+              <button onClick={handleLogout} className="retro-btn secondary" style={{ width: '100%', textAlign: 'left', marginTop: '20px', color: 'var(--error-red)' }}>
+                Logout
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Mobile-specific styles */}
       <style>{`
         @media (max-width: 768px) {
-          .mobile-menu-toggle {
-            display: block !important;
-          }
           .desktop-nav {
             display: none !important;
           }
-          .desktop-stats {
-            display: none !important;
-          }
-          .mobile-menu {
+          .mobile-menu-btn {
             display: block !important;
           }
         }
-        
-        @media (min-width: 769px) {
-          .mobile-menu {
-            display: none !important;
-          }
-          .mobile-menu-toggle {
-            display: none !important;
-          }
-        }
       `}</style>
-    </>
+    </nav>
   );
 };
 

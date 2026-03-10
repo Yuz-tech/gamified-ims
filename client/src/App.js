@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
 import Achievements from './pages/Achievements';
+import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
 import AdminTopics from './pages/admin/Topics';
@@ -134,6 +135,14 @@ const AppRoutes = () => {
               <Achievements />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+                <Profile />
+            </ProtectedRoute>
+          }
         />
         
         {/* Admin Routes */}

@@ -4,6 +4,24 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
+const LEVEL_THRESHOLDS = [
+  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250, 3850, 4500, 5200, 5950, 6750, 7600
+];
+
+const getXPForNextLevel = (currentLevel) => {
+  if(currentLevel >= LEVEL_THRESHOLDS.length) {
+    const lastThreshold=LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1];
+    const increment = 1300 + (currentLevel - LEVEL_THRESHOLDS.length) * 150;
+    return lastThreshold + increment;
+  }
+  return LEVEL_THRESHOLDS[currentLevel];
+};
+
+const getXPForCurrentLevel = (currentLevel) => {
+  if(currentLevel <= 1) return 0;
+  return LEVEL_THRESHOLDS[currentLevel - 1] || 0;
+};
+
 const Home = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -78,8 +96,11 @@ const Home = () => {
     );
   }
 
-  const nextLevelXP = Math.pow(stats.level, 2) * 100;
-  const progressToNextLevel = ((stats.xp % nextLevelXP) / nextLevelXP) * 100;
+  const currentLevelXP = getXPForCurrentLevel(stats.level);
+  const nextLevelXP = getXPForNextLevel(stats.level);
+  const xpIntoLevel = stats.xp - currentLevelXP;
+  const xpNeededForLevel = nextLevelXP - currentLevelXP;
+  const progressToNextLevel = (xpIntoLevel / xpNeededForLevel) * 100;
 
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
@@ -263,8 +284,8 @@ const Home = () => {
           }}>
             {userBadges.slice(0, 6).map((badge, index) => {
               const imageUrl = badge.badgeImage?.startsWith('/uploads/')
-              ? `http://localhost:5000/${badge.badgeImage}`
-              : badge.badgeImage;
+              ? `http://localhost:5000${badge.badgeImage}`
+              : badge.badgeImage
 
               return (
                 <motion.div

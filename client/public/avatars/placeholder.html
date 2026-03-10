@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Avatar Generator</title>
+    </head>
+    <body>
+        <canvas id="canvas" width="200" height="200"></canvas>
+        <script>
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const colors = [ '#1b3a6b', '#3b82f6', '#f97316', '#10b981', '#8b5cf6', '#ec4899', '#14b8a6', '#f59e0b', '#ef4444' ];
+
+            for (let i=0; i<9; i++) {
+                ctx.fillStyle=colors[i];
+                ctx.fillRect(0,0,200,200);
+                ctx.fillStyle='white';
+                ctx.font='bold 100px Arial';
+                ctx.textAlign='center';
+                ctx.textBaseline='middle';
+                ctx.fillText((i+1).toString(), 100, 100);
+
+                const link = document.createElement('a');
+                link.download=`avatar-${i+1}.png`;
+                link.href=canvas.toDataUrl();
+                link.click();
+            }
+        </script>
+    </body>
+</html>
