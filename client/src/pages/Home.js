@@ -301,6 +301,7 @@ const Home = () => {
                     height: '80px',
                     margin: '0 auto 10px',
                     border: '3px solid var(--orange-accent)',
+                    borderRadius: '55px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

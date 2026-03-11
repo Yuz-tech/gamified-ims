@@ -81,7 +81,6 @@ const Dashboard = () => {
           className="retro-card"
           style={{ textAlign: 'center' }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>⏳</div>
           <div style={{ fontSize: '36px', color: 'var(--orange-accent)', marginBottom: '10px' }}>
             {stats?.pendingUsers || 0}
           </div>
@@ -97,7 +96,6 @@ const Dashboard = () => {
           className="retro-card"
           style={{ textAlign: 'center' }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>📚</div>
           <div style={{ fontSize: '36px', color: 'var(--sky-blue)', marginBottom: '10px' }}>
             {stats?.totalTopics || 0}
           </div>
@@ -113,7 +111,6 @@ const Dashboard = () => {
           className="retro-card"
           style={{ textAlign: 'center' }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>🏆</div>
           <div style={{ fontSize: '36px', color: 'var(--bright-blue)', marginBottom: '10px' }}>
             {stats?.totalBadges || 0}
           </div>

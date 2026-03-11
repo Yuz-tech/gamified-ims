@@ -4,9 +4,14 @@ March 11 Issues:
 1. Cannot register/request account (An error occurred after submitting/clicking button in login page)
 2. Settings.js code is gone
 3. No Games tab seen in Navbar
-4. Failed to change password for user (show error)
+4. Failed to change password for user
+Profile.js:114  PUT http://localhost:5000/api/auth/change-password net::ERR_CONNECTION_REFUSED
 5. Failed to change avatar for use (show error)
 6. Add new tab "Players" showing all participants from highest xp/level to lowest (add search and filter feature similar to topics)
+7. Failed to upload Badge in admin edit topic
+file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/upload.js:44
+  if (file.mimeType.startsWith('image/'))
+8. Error updating topics (disablin, endabling still works, but editing the topic questions and others don't work anymore)
 
 Add angry man meme emoji when failed mandatory
 

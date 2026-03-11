@@ -197,7 +197,7 @@ const Topics = () => {
                   padding: '10px',
                   background: topic.bonusCompleted 
                     ? 'var(--success-green)' 
-                    : 'rgba(16, 185, 129, 0.2)',
+                    : 'rgba(241, 249, 0, 0.81)',
                   color: topic.bonusCompleted ? 'white' : 'var(--success-green)',
                   fontSize: '10px',
                   fontWeight: 'bold',
