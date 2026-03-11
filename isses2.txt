@@ -1,12 +1,28 @@
 Start with models -> authentication -> components
 
+March 11 Issues:
+1. Cannot register/request account (An error occurred after submitting/clicking button in login page)
+2. Settings.js code is gone
+3. No Games tab seen in Navbar
+4. Failed to change password for user (show error)
+5. Failed to change avatar for use (show error)
+6. Add new tab "Players" showing all participants from highest xp/level to lowest (add search and filter feature similar to topics)
+
+Add angry man meme emoji when failed mandatory
+
 Migrate to latest NodeJS
 -> server error duplicate
+
+docker perhaps??? use docker 
 
 I cannot register (request account) in the login page
 An error occurred after submitting/clicking button
 
 Settings.js code is gone
+
+no games tab in nav
+
+
 
 Failed to change password
 api.js:27 API Error: undefined undefined
