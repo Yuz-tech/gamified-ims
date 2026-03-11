@@ -1,5 +1,66 @@
 Start with models -> authentication -> components
 
+Migrate to latest NodeJS
+-> server error duplicate
+
+I cannot register (request account) in the login page
+An error occurred after submitting/clicking button
+
+Settings.js code is gone
+
+Failed to change password
+api.js:27 API Error: undefined undefined
+(anonymous) @ api.js:27
+Promise.then
+_request @ Axios.js:172
+request @ Axios.js:41
+httpMethod @ Axios.js:233
+wrap @ bind.js:12
+handlePasswordChange @ Profile.js:114
+executeDispatch @ react-dom-client.development.js:19116
+runWithFiberInDEV @ react-dom-client.development.js:870
+processDispatchQueue @ react-dom-client.development.js:19165
+(anonymous) @ react-dom-client.development.js:19767
+batchedUpdates$1 @ react-dom-client.development.js:3255
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19320
+dispatchEvent @ react-dom-client.development.js:23584
+dispatchDiscreteEvent @ react-dom-client.development.js:23552
+<form>
+(anonymous) @ react-jsx-dev-runtime.development.js:327
+Profile @ Profile.js:306
+react_stack_bottom_frame @ react-dom-client.development.js:25904
+renderWithHooksAgain @ react-dom-client.development.js:7762
+renderWithHooks @ react-dom-client.development.js:7674
+updateFunctionComponent @ react-dom-client.development.js:10166
+beginWork @ react-dom-client.development.js:11778
+runWithFiberInDEV @ react-dom-client.development.js:870
+performUnitOfWork @ react-dom-client.development.js:17639
+workLoopSync @ react-dom-client.development.js:17469
+renderRootSync @ react-dom-client.development.js:17450
+performWorkOnRoot @ react-dom-client.development.js:16498
+performSyncWorkOnRoot @ react-dom-client.development.js:18972
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:18803
+processRootScheduleInMicrotask @ react-dom-client.development.js:18851
+(anonymous) @ react-dom-client.development.js:18986Understand this error
+Profile.js:114  PUT http://localhost:5000/api/auth/change-password net::ERR_CONNECTION_REFUSED
+
+
+Failed to change avatar 
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+    at imageFilter (file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/upload.js:44:21)
+    at wrappedFileFilter (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\multer\index.js:44:7)
+    at Multipart.<anonymous> (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\multer\lib\make-middleware.js:132:7)
+    at Multipart.emit (node:events:519:28)
+    at HeaderParser.cb (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\streamsearch\lib\sbmh.js:219:14)
+    at SBMH.push (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\busboy\lib\types\multipart.js:567:19)
+
+
+Add angry man meme emoji when failed mandatory
+
 Level and XP => scaling w/ threshold
 Multiplayer options
 Deployment changes 127.0.0.1 => actual IP testing to prod 
@@ -12,7 +73,9 @@ Security Issues not just /admin
 Graph level up scaling -> project 3-5 years level up scale
 
 Admin reset settings -> user progress for topics only (retain XP and levels)
-Navbar font style not styled
+
+Navbar font style not p2p
+
 Request an account not working -> An error occurred
 Actual IP login not working -> 
 Access to XMLHttpRequest at 'http://localhost:5000/api/auth/login' from origin 'http://192.168.232.247:3000' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header has a value 'http://localhost:3000' that is not equal to the supplied origin.Understand this error
@@ -21,6 +84,7 @@ api.js:27 API Error: undefined undefined
 AuthContext.js:68 Login failed: Network Error
 login @ AuthContext.js:68Understand this error
 localhost:5000/api/auth/login:1  Failed to load resource: net::ERR_FAILED
+
 
 Submit Mandatory Error:
  ERROR submitting mandatory: ReferenceError: savedUser is not defined

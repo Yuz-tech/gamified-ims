@@ -12,7 +12,7 @@ const createEmployee = async () => {
     // Check if employee exists
     const existing = await User.findOne({ username: 'employee' });
     if (existing) {
-      console.log('ℹ️  Employee user already exists');
+      console.log('Employee user already exists');
       console.log(`   Username: ${existing.username}`);
       console.log(`   Email: ${existing.email}`);
       console.log(`   Approved: ${existing.isApproved}`);

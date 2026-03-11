@@ -5,6 +5,7 @@ import Badge from '../models/Badge.js';
 import ActivityLog from '../models/ActivityLog.js';
 import { authenticateToken, isAdmin } from '../middleware/auth.js';
 import { sendPasswordEmail } from '../utils/email.js';
+import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -346,62 +347,35 @@ router.get('/training-year', async (req, res) => {
 });
 
 // Archive current year and reset for new year
-router.post('/reset-training-year', async (req, res) => {
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req,res) => {
   try {
-    const currentYear = new Date().getFullYear();
-    const { newYear } = req.body;
-    
-    if (!newYear || newYear <= currentYear) {
-      return res.status(400).json({ 
-        message: 'New year must be greater than current year' 
-      });
+    const { confirmCode } = req.body;
+
+    if (confirmCode !== 'RESET_ALL_DATA') {
+      return res.status(400).json({ message: 'Invalid confirmation code' });
     }
-    
-    // Get all users
-    const users = await User.find({ isApproved: true });
-    let archivedCount = 0;
-    
-    for (const user of users) {
-      const yearProgress = user.getCurrentYearProgress();
-      
-      // Archive current year data
-      user.yearlyArchive.push({
-        year: currentYear,
-        completedTopics: yearProgress.completedTopics.length,
-        badgesEarned: yearProgress.badges.length,
-        xpEarned: yearProgress.completedTopics.reduce((sum, ct) => {
-          return sum + (ct.score || 0);
-        }, 0),
-        archivedAt: new Date()
-      });
-      
-      // Clear current year progress (but keep XP and level!)
-      user.completedTopics = user.completedTopics.filter(ct => ct.year !== currentYear);
-      user.badges = user.badges.filter(b => b.year !== currentYear);
-      user.watchedVideos = user.watchedVideos.filter(wv => wv.year !== currentYear);
-      
-      await user.save();
-      archivedCount++;
-    }
-    
-    // Mark old badges as inactive
-    await Badge.updateMany(
-      { year: currentYear },
-      { isActive: false }
+
+    // Note to dev: The reset only affects completed topics and badges. XP and Levels are kept or retained.
+    const result = await User.updateMany(
+      { role: 'employee' },
+      {
+        $set: {
+          completedTopics: [],
+          badges: []
+        }
+      }
     );
-    
-    await logActivity(req.user._id, 'training_year_reset', {
-      oldYear: currentYear,
-      newYear: newYear,
-      usersArchived: archivedCount
+
+    await ActivityLog.deleteMany({});
+
+    await logActivity(req.user._id, 'yearly_reset', {
+      usersReset: result.modifiedCount,
+      type: 'topics_only'
     }, req);
-    
-    res.json({
-      message: 'Training year reset successfully',
-      archivedUsers: archivedCount,
-      oldYear: currentYear,
-      newYear: newYear
-    });
+
+    console.log('Yearly reset complete: ', result.modifiedCount, 'users reset (topics only)');
+
+    res.json({ message: 'Yearly reset completed successfully (XP and Levels retained)', userReset: result.modifiedCount });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

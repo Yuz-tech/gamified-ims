@@ -89,7 +89,6 @@ router.post('/:topicId/submit-mandatory', async (req, res) => {
 
     const topic = await Topic.findById(topicId);
     if (!topic) {
-      console.log('Topic not found');
       return res.status(404).json({ message: 'Topic not found' });
     }
 
@@ -98,7 +97,6 @@ router.post('/:topicId/submit-mandatory', async (req, res) => {
     const isCorrect = answer === mandatoryQuestion.correctAnswer;
 
     if (!isCorrect) {
-      console.log('Answer incorrect, sending failure response');
       return res.json({
         passed: false,
         correctAnswer: false,
@@ -135,6 +133,7 @@ router.post('/:topicId/submit-mandatory', async (req, res) => {
           });
         }
       } 
+
       await user.save();
 
       await logActivity(user._id, 'quiz_completed', { 
@@ -149,8 +148,8 @@ router.post('/:topicId/submit-mandatory', async (req, res) => {
         correctAnswer: true,
         firstTime: true,
         xpEarned: 100,
-        newLevel: savedUser.level,
-        newXP: savedUser.xp,
+        newLevel: user.level,
+        newXP: user.xp,
         badgeEarned: topic.badgeName || topic.title,
         badgeImage: topic.badgeImage
       });

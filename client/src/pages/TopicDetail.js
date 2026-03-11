@@ -73,14 +73,14 @@ const TopicDetail = () => {
         // Show success for 5 seconds
         setTimeout(() => {
           setCurrentStage(null);
-        }, 5000);
+        }, 15000);
       } else {
         // Failed - show error then reset
         setTimeout(() => {
           setCurrentStage(null);
           setSelectedAnswer(null);
           setMandatoryResult(null);
-        }, 5000);
+        }, 15000);
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting answer');
@@ -492,16 +492,19 @@ const TopicDetail = () => {
                 padding: '20px',
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '2px solid var(--error-red)',
-                fontSize: '11px'
+                fontSize: '14px'
               }}>
                 <div style={{ marginBottom: '10px' }}>
-                  The correct answer was: <strong>{String.fromCharCode(65 + mandatoryResult.correctAnswerIndex)}</strong>
+                  That's the wrong answer. <strong>It looks like you didn't review the training materials.</strong>
                 </div>
-                {mandatoryResult.explanation && (
+                {/* {mandatoryResult.explanation && (
                   <div style={{ marginTop: '10px', fontSize: '10px', lineHeight: '1.6' }}>
                     {mandatoryResult.explanation}
                   </div>
-                )}
+                )} */}
+                  <div style={{ marginTop: '15px', fontSize: '12px', lineHeight: '2.0'}}>
+                    Redirecting you back to the topic...
+                  </div>
               </div>
             )}
           </div>

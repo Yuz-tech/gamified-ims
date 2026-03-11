@@ -44,7 +44,7 @@ const Navbar = () => {
       }}
       onClick={() => navigate('/')}
       >
-        <img src = "/uploads/logo.png" alt="AWSYS" style={{
+        <img src = "/company.png" alt="AWSOL" style={{
           height: '40px',
           width: 'auto',
           objectFit: 'contain',

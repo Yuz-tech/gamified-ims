@@ -32,9 +32,13 @@ const parseUserAgent = (userAgent) => {
 };
 
 // Request new account
-router.post('/request-account', async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email} = req.body;
+
+    if (!username || !email) {
+      return res.status(400).json({ message: 'All fields are required'});
+    }
 
     const existingUser = await User.findOne({ username });
     if(existingUser) {
@@ -47,12 +51,13 @@ router.post('/request-account', async (req, res) => {
       username,
       password,
       role: 'employee',
-      isApproved: false
+      isApproved: false,
+      requestedAt: new Date()
     });
 
-    await user.save();
+    // await user.save();
 
-    await logActivity(user._id, 'user_registered', { username }, req);
+    // await logActivity(user._id, 'user_registered', { username }, req);
 
     res.status(201).json({
       message: 'Registration successful. Please wait for admin approval.',
@@ -238,23 +243,6 @@ router.post('/logout', authenticateToken, async (req, res) => {
     await logActivity(req.user._id, 'logout', {}, req);
 
     res.json({ message: 'Logged out successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Logout all devices
-router.post('/logout-all', authenticateToken, async (req, res) => {
-  try {
-    // Invalidate ALL sessions for this user
-    await Session.updateMany(
-      { userId: req.user._id, isActive: true },
-      { isActive: false }
-    );
-
-    await logActivity(req.user._id, 'logout_all_devices', {}, req);
-
-    res.json({ message: 'Logged out from all devices' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

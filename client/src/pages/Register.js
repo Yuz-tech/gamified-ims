@@ -6,8 +6,7 @@ import api from '../utils/api';
 const Register = () => {
     const [formData, setFormData] = useState({
         username: '',
-        password: '',
-        confirmPassword: ''
+        email: ''
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -17,20 +16,10 @@ const Register = () => {
         e.preventDefault();
         setError('');
 
-        if(formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
-
-        if(formData.password.length < 6) {
-            setError('Password must be at least 3 characters');
-            return;
-        }
-
         try {
             await api.post('/auth/register', {
                 username: formData.username,
-                password: formData.password
+                email: formData.email
             });
 
             setSuccess(true);
