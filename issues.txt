@@ -1,445 +1,1149 @@
-1. Topic sort
-2. XP and Level system
-3. Quiz
-
-Notes:
-Training video confirmation
-
-100xp
-75 xp to Level
-
-Level up module:
-Level 10 and above == 25% more
-
-Current System:
-javascriptlevel = Math.floor(Math.sqrt(xp / 100)) + 1
-How it works:
-
-Level 1: 0 XP
-Level 2: 100 XP (√100 = 10, floor(10/10) = 1, +1 = 2)
-Level 3: 400 XP (√400 = 20, floor(20/10) = 2, +1 = 3)
-Level 4: 900 XP
-Level 5: 1,600 XP
-
-Problem: Progression is too fast early on, then becomes unreasonably slow.
-
-// Level XP Requirements (Pokemon-inspired)
-const LEVEL_THRESHOLDS = [
-  0,      // Level 1
-  100,    // Level 2 (1 topic)
-  250,    // Level 3 (1-2 topics)
-  450,    // Level 4 (2 topics)
-  700,    // Level 5 (3 topics)
-  1000,   // Level 6 (4 topics)
-  1350,   // Level 7 (5 topics)
-  1750,   // Level 8 (6 topics)
-  2200,   // Level 9 (7 topics)
-  2700,   // Level 10 (9 topics)
-  3250,   // Level 11
-  3850,   // Level 12
-  4500,   // Level 13
-  5200,   // Level 14
-  5950,   // Level 15
-  // Continues scaling...
-];
-
-
-server/utils/levelSystem.js
-
-// Pokemon-inspired level thresholds
-const LEVEL_THRESHOLDS = [
-  0,      // Level 1
-  100,    // Level 2
-  250,    // Level 3
-  450,    // Level 4
-  700,    // Level 5
-  1000,   // Level 6
-  1350,   // Level 7
-  1750,   // Level 8
-  2200,   // Level 9
-  2700,   // Level 10
-  3250,   // Level 11
-  3850,   // Level 12
-  4500,   // Level 13
-  5200,   // Level 14
-  5950,   // Level 15
-  6750,   // Level 16
-  7600,   // Level 17
-  8500,   // Level 18
-  9450,   // Level 19
-  10450,  // Level 20
-  11500,  // Level 21
-  12600,  // Level 22
-  13750,  // Level 23
-  14950,  // Level 24
-  16200,  // Level 25
-  17500,  // Level 26
-  18850,  // Level 27
-  20250,  // Level 28
-  21700,  // Level 29
-  23200,  // Level 30
-];
-
-// Calculate level from XP
-export const calculateLevel = (xp) => {
-  let level = 1;
-  
-  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-    if (xp >= LEVEL_THRESHOLDS[i]) {
-      level = i + 1;
-      break;
-    }
-  }
-  
-  return level;
-};
-
-// Get XP required for next level
-export const getXPForNextLevel = (currentLevel) => {
-  if (currentLevel >= LEVEL_THRESHOLDS.length) {
-    // If beyond defined thresholds, use formula
-    const lastThreshold = LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1];
-    const increment = 1300 + (currentLevel - LEVEL_THRESHOLDS.length) * 150;
-    return lastThreshold + increment;
-  }
-  return LEVEL_THRESHOLDS[currentLevel];
-};
-
-// Get XP required for current level
-export const getXPForCurrentLevel = (currentLevel) => {
-  if (currentLevel <= 1) return 0;
-  return LEVEL_THRESHOLDS[currentLevel - 1] || 0;
-};
-
-// Get progress percentage to next level
-export const getLevelProgress = (xp, currentLevel) => {
-  const currentLevelXP = getXPForCurrentLevel(currentLevel);
-  const nextLevelXP = getXPForNextLevel(currentLevel);
-  const xpIntoLevel = xp - currentLevelXP;
-  const xpNeededForLevel = nextLevelXP - currentLevelXP;
-  
-  return Math.min(100, Math.max(0, (xpIntoLevel / xpNeededForLevel) * 100));
-};
-
-export default {
-  calculateLevel,
-  getXPForNextLevel,
-  getXPForCurrentLevel,
-  getLevelProgress,
-  LEVEL_THRESHOLDS
-};
-
-server/routes/topics.js
-import express from 'express';
-import Topic from '../models/Topic.js';
-import User from '../models/User.js';
-import { authenticateToken } from '../middleware/auth.js';
-import { logActivity } from '../utils/logger.js';
-import { calculateLevel } from '../utils/levelSystem.js';
-
-const router = express.Router();
-
-router.use(authenticateToken);
-
-// ... (keep all existing routes until submit-mandatory)
-
-// Submit mandatory question
-router.post('/:topicId/submit-mandatory', async (req, res) => {
+routes/auth.js
+// Register (Request Account)
+router.post('/register', async (req, res) => {
   try {
-    const { answer } = req.body;
-    const topicId = req.params.topicId;
+    const { username, email, password } = req.body;
 
-    const topic = await Topic.findById(topicId);
-    if (!topic) {
-      return res.status(404).json({ message: 'Topic not found' });
+    console.log('Registration attempt:', { username, email });
+
+    // Validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const user = await User.findById(req.user._id);
-    const mandatoryQuestion = topic.questions[0];
-    const isCorrect = answer === mandatoryQuestion.correctAnswer;
-
-    if (!isCorrect) {
-      return res.json({
-        passed: false,
-        correctAnswer: false,
-        correctAnswerIndex: mandatoryQuestion.correctAnswer,
-        explanation: mandatoryQuestion.explanation
-      });
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
-    let completion = user.completedTopics.find(
-      ct => ct.topicId && ct.topicId.toString() === topicId
-    );
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
 
-    if (!completion) {
-      user.completedTopics.push({
-        topicId,
-        mandatoryCompleted: true,
-        bonusCompleted: false,
-        bonusCorrect: 0
-      });
+    // Check existing user
+    const existingUser = await User.findOne({ 
+      $or: [{ username }, { email }] 
+    });
 
-      user.xp += 100;
-      user.level = calculateLevel(user.xp); // NEW LEVEL SYSTEM
-
-      if (topic.badgeImage) {
-        const hasBadge = user.badges.some(
-          b => b.topicId && b.topicId.toString() === topicId
-        );
-        if (!hasBadge) {
-          user.badges.push({
-            topicId,
-            badgeName: topic.badgeName || topic.title,
-            badgeImage: topic.badgeImage
-          });
-        }
+    if (existingUser) {
+      if (existingUser.username === username) {
+        return res.status(400).json({ message: 'Username already exists' });
       }
-
-      await user.save();
-
-      await logActivity(user._id, 'quiz_completed', { 
-        topicId, 
-        stage: 'mandatory',
-        passed: true,
-        xpEarned: 100
-      }, req);
-
-      res.json({
-        passed: true,
-        correctAnswer: true,
-        firstTime: true,
-        xpEarned: 100,
-        newLevel: user.level,
-        newXP: user.xp,
-        badgeEarned: topic.badgeName || topic.title,
-        badgeImage: topic.badgeImage
-      });
-    } else {
-      res.json({
-        passed: true,
-        correctAnswer: true,
-        firstTime: false,
-        message: 'Already completed'
-      });
-    }
-  } catch (error) {
-    console.error('Error submitting mandatory:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Submit bonus questions
-router.post('/:topicId/submit-bonus', async (req, res) => {
-  try {
-    const { answers } = req.body;
-    const topicId = req.params.topicId;
-
-    const topic = await Topic.findById(topicId);
-    if (!topic) {
-      return res.status(404).json({ message: 'Topic not found' });
-    }
-
-    const user = await User.findById(req.user._id);
-    let completion = user.completedTopics.find(
-      ct => ct.topicId && ct.topicId.toString() === topicId
-    );
-
-    if (!completion || !completion.mandatoryCompleted) {
-      return res.status(400).json({ message: 'Must complete mandatory question first' });
-    }
-
-    let correctCount = 0;
-    for (let i = 1; i <= 4; i++) {
-      if (answers[i] === topic.questions[i].correctAnswer) {
-        correctCount++;
+      if (existingUser.email === email) {
+        return res.status(400).json({ message: 'Email already registered' });
       }
     }
 
-    const bonusXP = correctCount * 50;
-    completion.bonusCompleted = true;
-    completion.bonusCorrect = correctCount;
-
-    user.xp += bonusXP;
-    user.level = calculateLevel(user.xp); // NEW LEVEL SYSTEM
+    // Create user
+    const user = new User({
+      username,
+      email,
+      password, // Will be hashed by pre-save hook
+      role: 'employee',
+      isApproved: false,
+      requestedAt: new Date()
+    });
 
     await user.save();
 
-    await logActivity(user._id, 'quiz_completed', { 
-      topicId, 
-      stage: 'bonus',
-      correctCount,
-      xpEarned: bonusXP
-    }, req);
+    console.log('✅ User registered successfully:', username);
 
-    res.json({
-      passed: true,
-      correctCount,
-      totalBonus: 4,
-      xpEarned: bonusXP,
-      newLevel: user.level,
-      newXP: user.xp
+    res.status(201).json({
+      message: 'Registration successful! Please wait for admin approval.',
+      username: user.username
     });
   } catch (error) {
-    console.error('Error submitting bonus:', error);
+    console.error('❌ Registration error:', error);
+    res.status(500).json({ 
+      message: 'Registration failed. Please try again.', 
+      error: error.message 
+    });
+  }
+});
+
+
+pages/admin/Settings.js
+
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+
+const Settings = () => {
+  const [confirmCode, setConfirmCode] = useState('');
+  const [resetting, setResetting] = useState(false);
+
+  const handleYearlyReset = async (e) => {
+    e.preventDefault();
+
+    if (!window.confirm('⚠️ THIS WILL RESET ALL EMPLOYEE TOPIC PROGRESS! Are you absolutely sure?')) {
+      return;
+    }
+
+    if (!window.confirm('⚠️ FINAL WARNING: This will clear all topic completions and badges, but preserve XP and levels. Continue?')) {
+      return;
+    }
+
+    setResetting(true);
+
+    try {
+      const response = await api.post('/admin/yearly-reset', { confirmCode });
+      alert(`✅ Reset complete! ${response.data.usersReset} users reset (topics only - XP/levels retained).`);
+      setConfirmCode('');
+    } catch (error) {
+      alert(error.response?.data?.message || 'Reset failed');
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: '40px' }}>
+      <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '30px' }}>
+        ⚙️ SYSTEM SETTINGS
+      </h1>
+
+      {/* Yearly Reset Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="retro-card"
+        style={{ maxWidth: '600px', border: '3px solid var(--error-red)' }}
+      >
+        <div style={{
+          padding: '15px',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '2px solid var(--error-red)',
+          marginBottom: '20px'
+        }}>
+          <h3 style={{ fontSize: '14px', color: 'var(--error-red)', marginBottom: '10px', fontWeight: 'bold' }}>
+            ⚠️ DANGER ZONE
+          </h3>
+          <p style={{ fontSize: '10px', color: 'var(--text-dark)', lineHeight: '1.6' }}>
+            This action will reset ALL employee topic progress including completed topics and badges. 
+            Employee XP and levels will be preserved. Admin accounts are not affected.
+          </p>
+        </div>
+
+        <h3 style={{ fontSize: '14px', color: 'var(--error-red)', marginBottom: '20px' }}>
+          🔥 YEARLY RESET (TOPICS ONLY)
+        </h3>
+
+        <form onSubmit={handleYearlyReset}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              CONFIRMATION CODE *
+            </label>
+            <input
+              type="text"
+              className="retro-input"
+              value={confirmCode}
+              onChange={(e) => setConfirmCode(e.target.value)}
+              placeholder="Type: RESET_ALL_DATA"
+              required
+            />
+            <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>
+              Type <strong>RESET_ALL_DATA</strong> exactly to confirm
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="retro-btn"
+            style={{
+              width: '100%',
+              background: 'var(--error-red)',
+              opacity: confirmCode === 'RESET_ALL_DATA' ? 1 : 0.5
+            }}
+            disabled={confirmCode !== 'RESET_ALL_DATA' || resetting}
+          >
+            {resetting ? '🔄 RESETTING...' : '🔥 EXECUTE YEARLY RESET'}
+          </button>
+        </form>
+
+        <div style={{
+          marginTop: '20px',
+          padding: '15px',
+          background: 'rgba(59, 130, 246, 0.05)',
+          border: '2px solid var(--bright-blue)',
+          fontSize: '9px',
+          lineHeight: '1.6'
+        }}>
+          <strong>What gets reset:</strong><br />
+          • All employee topic progress cleared<br />
+          • All badges removed<br />
+          • All activity logs deleted<br />
+          <br />
+          <strong>What's preserved:</strong><br />
+          • User accounts (username/password)<br />
+          • Employee XP and levels<br />
+          • Admin accounts and data<br />
+          • Topics and configurations<br />
+          • Avatars<br />
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default Settings;
+
+
+src/components/Navbar.js
+{/* Desktop Navigation */}
+<div style={{ 
+  display: 'flex', 
+  gap: '20px', 
+  alignItems: 'center',
+  fontSize: '11px',
+  fontFamily: 'monospace, sans-serif',
+  fontWeight: 'bold'
+}}
+className="desktop-nav">
+  <button
+    onClick={() => navigate('/')}
+    style={{
+      background: location.pathname === '/' ? 'var(--bright-blue)' : 'transparent',
+      border: location.pathname === '/' ? '2px solid var(--primary-navy)' : 'none',
+      color: location.pathname === '/' ? 'white' : 'var(--text-dark)',
+      padding: '8px 15px',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+      fontFamily: 'inherit',
+      fontSize: 'inherit'
+    }}
+  >
+    🏠 HOME
+  </button>
+
+  <button
+    onClick={() => navigate('/topics')}
+    style={{
+      background: location.pathname.startsWith('/topics') ? 'var(--bright-blue)' : 'transparent',
+      border: location.pathname.startsWith('/topics') ? '2px solid var(--primary-navy)' : 'none',
+      color: location.pathname.startsWith('/topics') ? 'white' : 'var(--text-dark)',
+      padding: '8px 15px',
+      cursor: 'pointer',
+      fontWeight: location.pathname.startsWith('/topics') ? 'bold' : 'normal',
+      fontFamily: 'inherit',
+      fontSize: 'inherit'
+    }}
+  >
+    📚 TOPICS
+  </button>
+
+  {/* ADD THIS GAMES BUTTON */}
+  <button
+    onClick={() => navigate('/games')}
+    style={{
+      background: location.pathname.startsWith('/games') ? 'var(--bright-blue)' : 'transparent',
+      border: location.pathname.startsWith('/games') ? '2px solid var(--primary-navy)' : 'none',
+      color: location.pathname.startsWith('/games') ? 'white' : 'var(--text-dark)',
+      padding: '8px 15px',
+      cursor: 'pointer',
+      fontWeight: location.pathname.startsWith('/games') ? 'bold' : 'normal',
+      fontFamily: 'inherit',
+      fontSize: 'inherit'
+    }}
+  >
+    🎮 GAMES
+  </button>
+
+  <button
+    onClick={() => navigate('/achievements')}
+    style={{
+      background: location.pathname === '/achievements' ? 'var(--bright-blue)' : 'transparent',
+      border: location.pathname === '/achievements' ? '2px solid var(--primary-navy)' : 'none',
+      color: location.pathname === '/achievements' ? 'white' : 'var(--text-dark)',
+      padding: '8px 15px',
+      cursor: 'pointer',
+      fontWeight: location.pathname === '/achievements' ? 'bold' : 'normal',
+      fontFamily: 'inherit',
+      fontSize: 'inherit'
+    }}
+  >
+    🏆 ACHIEVEMENTS
+  </button>
+
+  {/* ... rest of navbar */}
+</div>
+
+{/* Also add to mobile menu */}
+<button
+  onClick={() => navigate('/games')}
+  className="retro-btn"
+  style={{ width: '100%', textAlign: 'left' }}
+>
+  🎮 GAMES
+</button>
+
+
+routes/auth.js
+
+// Change password
+router.put('/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    console.log('Password change attempt for user:', req.user.username);
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify current password
+    const isPasswordValid = await user.comparePassword(currentPassword);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+
+    // Update password (will be hashed by pre-save hook)
+    user.password = newPassword;
+    await user.save();
+
+    console.log('✅ Password changed successfully for:', user.username);
+
+    await logActivity(user._id, 'password_changed', {}, req);
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('❌ Change password error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-export default router;
 
-pages/Home.js
-// Add this helper function at the top
-const LEVEL_THRESHOLDS = [
-  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700,
-  3250, 3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10450,
-  11500, 12600, 13750, 14950, 16200, 17500, 18850, 20250, 21700, 23200
-];
+routes/auth.js
 
-const getXPForNextLevel = (currentLevel) => {
-  if (currentLevel >= LEVEL_THRESHOLDS.length) {
-    const lastThreshold = LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1];
-    const increment = 1300 + (currentLevel - LEVEL_THRESHOLDS.length) * 150;
-    return lastThreshold + increment;
+// Update profile (avatar)
+router.put('/update-profile', authenticateToken, async (req, res) => {
+  try {
+    const { avatar } = req.body;
+
+    console.log('Profile update attempt for user:', req.user.username);
+    
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (avatar !== undefined) {
+      user.avatar = avatar;
+    }
+
+    await user.save();
+
+    console.log('✅ Profile updated successfully for:', user.username);
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        level: user.level,
+        xp: user.xp,
+        badges: user.badges,
+        completedTopics: user.completedTopics
+      }
+    });
+  } catch (error) {
+    console.error('❌ Update profile error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
-  return LEVEL_THRESHOLDS[currentLevel];
-};
-
-const getXPForCurrentLevel = (currentLevel) => {
-  if (currentLevel <= 1) return 0;
-  return LEVEL_THRESHOLDS[currentLevel - 1] || 0;
-};
-
-// Then in your component, update the progress calculation:
-const currentLevelXP = getXPForCurrentLevel(stats.level);
-const nextLevelXP = getXPForNextLevel(stats.level);
-const xpIntoLevel = stats.xp - currentLevelXP;
-const xpNeededForLevel = nextLevelXP - currentLevelXP;
-const progressToNextLevel = (xpIntoLevel / xpNeededForLevel) * 100;
+});
 
 
-pages/Home.js
-{userBadges.length > 0 ? (
-  <div style={{
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-    gap: '20px'
-  }}>
-    {userBadges.slice(0, 6).map((badge, index) => {
-      // FIX: Access badge image correctly
-      const imageUrl = badge.badgeImage 
-        ? (badge.badgeImage.startsWith('/uploads/') 
-            ? `http://localhost:5000${badge.badgeImage}` 
-            : badge.badgeImage)
-        : null;
+pages/Players.js
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import api from '../utils/api';
 
-      return (
-        <motion.div
-          key={index}
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ delay: 0.6 + index * 0.1, type: 'spring' }}
-          style={{ textAlign: 'center' }}
-          title={badge.badgeName}
-        >
-          <div style={{
-            width: '80px',
-            height: '80px',
-            margin: '0 auto 10px',
-            border: '3px solid var(--orange-accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'var(--bg-lightest)',
-            boxShadow: '3px 3px 0 var(--primary-navy)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {imageUrl ? (
-              <>
-                <img 
-                  src={imageUrl}
-                  alt={badge.badgeName}
-                  style={{
-                    maxWidth: '90%',
-                    maxHeight: '90%',
-                    objectFit: 'contain'
-                  }}
-                  onError={(e) => {
-                    console.error('Badge image failed to load:', imageUrl);
-                    e.target.style.display = 'none';
-                    e.target.parentElement.innerHTML += '<div style="font-size: 40px;">🏆</div>';
-                  }}
-                />
-                <div style={{
-                  position: 'absolute',
-                  top: '-50%',
-                  left: '-50%',
-                  width: '200%',
-                  height: '200%',
-                  background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
-                  animation: 'shine 3s infinite',
-                  pointerEvents: 'none'
-                }} />
-              </>
-            ) : (
-              <div style={{ fontSize: '40px' }}>🏆</div>
-            )}
-          </div>
-          <div style={{ fontSize: '8px', color: 'var(--text-dark)', fontWeight: 'bold' }}>
-            {badge.badgeName}
-          </div>
-        </motion.div>
+const Players = () => {
+  const [players, setPlayers] = useState([]);
+  const [filteredPlayers, setFilteredPlayers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('xp'); // xp, level, badges
+
+  useEffect(() => {
+    fetchPlayers();
+  }, []);
+
+  useEffect(() => {
+    filterAndSortPlayers();
+  }, [players, searchTerm, sortBy]);
+
+  const fetchPlayers = async () => {
+    try {
+      const response = await api.get('/leaderboard?limit=1000');
+      setPlayers(response.data);
+    } catch (error) {
+      console.error('Error fetching players:', error);
+      alert('Failed to load players');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterAndSortPlayers = () => {
+    let filtered = [...players];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(player =>
+        player.username.toLowerCase().includes(searchTerm.toLowerCase())
       );
-    })}
-  </div>
-) : (
-  // ... rest of no badges message
-)}
+    }
 
-src/pages/Achievements.js
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'xp':
+          return b.xp - a.xp;
+        case 'level':
+          return b.level - a.level || b.xp - a.xp; // If same level, sort by XP
+        case 'badges':
+          return (b.badges?.length || 0) - (a.badges?.length || 0);
+        default:
+          return b.xp - a.xp;
+      }
+    });
 
-{topic.earned ? (
-  imageUrl ? (
-    <>
-      <img 
-        src={imageUrl}
-        alt={topic.badgeName}
-        style={{
-          maxWidth: '90%',
-          maxHeight: '90%',
-          objectFit: 'contain'
-        }}
-        onError={(e) => {
-          console.error('Badge image failed:', imageUrl);
-          e.target.style.display = 'none';
-          e.target.parentElement.innerHTML += '<div style="font-size: 48px;">🏆</div>';
-        }}
-      />
-      {/* shine animation div */}
-    </>
-  ) : (
-    <div style={{ fontSize: '48px' }}>🏆</div>
-  )
-) : (
-  <div style={{ fontSize: '48px', color: 'var(--text-lighter)' }}>🔒</div>
-)}
+    setFilteredPlayers(filtered);
+  };
 
-src/App.js
-import Profile from './pages/Profile';
+  const getRankColor = (rank) => {
+    if (rank === 1) return 'var(--orange-accent)'; // Gold
+    if (rank === 2) return '#C0C0C0'; // Silver
+    if (rank === 3) return '#CD7F32'; // Bronze
+    return 'var(--text-medium)';
+  };
 
-// In your routes section:
+  const getRankIcon = (rank) => {
+    if (rank === 1) return '🥇';
+    if (rank === 2) return '🥈';
+    if (rank === 3) return '🥉';
+    return `#${rank}`;
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING PLAYERS...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div className="scanlines"></div>
+
+      <motion.h1
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="neon-text"
+        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
+      >
+        👥 PLAYERS LEADERBOARD
+      </motion.h1>
+
+      {/* Search & Sort */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginBottom: '15px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              SEARCH PLAYERS
+            </label>
+            <input
+              type="text"
+              className="retro-input"
+              placeholder="Search by username..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              SORT BY
+            </label>
+            <select
+              className="retro-input"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="xp">Total XP (High to Low)</option>
+              <option value="level">Level (High to Low)</option>
+              <option value="badges">Badges (Most to Least)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
+          SHOWING {filteredPlayers.length} OF {players.length} PLAYERS
+        </div>
+      </motion.div>
+
+      {/* Top 3 Podium */}
+      {filteredPlayers.length >= 3 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+          {/* 2nd Place */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="retro-card"
+            style={{ 
+              textAlign: 'center', 
+              border: '3px solid #C0C0C0',
+              background: 'linear-gradient(135deg, rgba(192, 192, 192, 0.1) 0%, var(--bg-light) 100%)',
+              marginTop: '20px'
+            }}
+          >
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>🥈</div>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
+              {filteredPlayers[1].username}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+              Level {filteredPlayers[1].level}
+            </div>
+            <div style={{ fontSize: '14px', color: '#C0C0C0', fontWeight: 'bold' }}>
+              {filteredPlayers[1].xp} XP
+            </div>
+          </motion.div>
+
+          {/* 1st Place */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="retro-card"
+            style={{ 
+              textAlign: 'center', 
+              border: '3px solid var(--orange-accent)',
+              background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, var(--bg-light) 100%)'
+            }}
+          >
+            <div style={{ fontSize: '64px', marginBottom: '10px' }}>🥇</div>
+            <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
+              {filteredPlayers[0].username}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+              Level {filteredPlayers[0].level}
+            </div>
+            <div style={{ fontSize: '18px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>
+              {filteredPlayers[0].xp} XP
+            </div>
+          </motion.div>
+
+          {/* 3rd Place */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="retro-card"
+            style={{ 
+              textAlign: 'center', 
+              border: '3px solid #CD7F32',
+              background: 'linear-gradient(135deg, rgba(205, 127, 50, 0.1) 0%, var(--bg-light) 100%)',
+              marginTop: '40px'
+            }}
+          >
+            <div style={{ fontSize: '40px', marginBottom: '10px' }}>🥉</div>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
+              {filteredPlayers[2].username}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+              Level {filteredPlayers[2].level}
+            </div>
+            <div style={{ fontSize: '14px', color: '#CD7F32', fontWeight: 'bold' }}>
+              {filteredPlayers[2].xp} XP
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Full Leaderboard Table */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="retro-card"
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          📊 FULL RANKINGS
+        </h3>
+
+        {filteredPlayers.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-medium)' }}>
+            No players found
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--primary-navy)' }}>
+                  <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-medium)' }}>RANK</th>
+                  <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-medium)' }}>PLAYER</th>
+                  <th style={{ padding: '15px 10px', textAlign: 'center', fontSize: '10px', color: 'var(--text-medium)' }}>LEVEL</th>
+                  <th style={{ padding: '15px 10px', textAlign: 'center', fontSize: '10px', color: 'var(--text-medium)' }}>XP</th>
+                  <th style={{ padding: '15px 10px', textAlign: 'center', fontSize: '10px', color: 'var(--text-medium)' }}>BADGES</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredPlayers.map((player, index) => (
+                  <motion.tr
+                    key={player._id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                    style={{ 
+                      borderBottom: '1px solid var(--border-color)',
+                      background: index % 2 === 0 ? 'transparent' : 'rgba(0, 0, 0, 0.02)'
+                    }}
+                  >
+                    <td style={{ padding: '15px 10px', fontSize: '14px', fontWeight: 'bold', color: getRankColor(index + 1) }}>
+                      {getRankIcon(index + 1)}
+                    </td>
+                    <td style={{ padding: '15px 10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          border: '2px solid var(--bright-blue)',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'var(--bg-medium)'
+                        }}>
+                          {player.avatar ? (
+                            <img 
+                              src={player.avatar.startsWith('/uploads/') 
+                                ? `http://localhost:5000${player.avatar}` 
+                                : player.avatar}
+                              alt={player.username}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.parentElement.innerHTML = '<div style="font-size: 20px;">👤</div>';
+                              }}
+                            />
+                          ) : (
+                            <div style={{ fontSize: '20px' }}>👤</div>
+                          )}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)' }}>
+                            {player.username}
+                          </div>
+                          <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>
+                            {player.email}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '15px 10px', textAlign: 'center' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '5px 12px',
+                        background: 'var(--bright-blue)',
+                        color: 'white',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: 'bold'
+                      }}>
+                        {player.level}
+                      </span>
+                    </td>
+                    <td style={{ padding: '15px 10px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: 'var(--orange-accent)' }}>
+                      {player.xp.toLocaleString()}
+                    </td>
+                    <td style={{ padding: '15px 10px', textAlign: 'center', fontSize: '12px' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '5px 12px',
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        border: '2px solid var(--success-green)',
+                        color: 'var(--success-green)',
+                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: 'bold'
+                      }}>
+                        {player.badges?.length || 0}
+                      </span>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
+export default Players;
+
+App.js
+import Players from './pages/Players';
+
+// Add this route:
 <Route
-  path="/profile"
+  path="/players"
   element={
     <ProtectedRoute>
       <Layout>
-        <Profile />
+        <Players />
       </Layout>
     </ProtectedRoute>
   }
 />
 
+Navbar
+<button
+  onClick={() => navigate('/players')}
+  style={{
+    background: location.pathname === '/players' ? 'var(--bright-blue)' : 'transparent',
+    border: location.pathname === '/players' ? '2px solid var(--primary-navy)' : 'none',
+    color: location.pathname === '/players' ? 'white' : 'var(--text-dark)',
+    padding: '8px 15px',
+    cursor: 'pointer',
+    fontWeight: location.pathname === '/players' ? 'bold' : 'normal',
+    fontFamily: 'inherit',
+    fontSize: 'inherit'
+  }}
+>
+  👥 PLAYERS
+</button>
+
+
+routes/upload.js
+
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import { authenticateToken, isAdmin } from '../middleware/auth.js';
+
+const router = express.Router();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ensure upload directories exist
+const badgeDir = path.join(__dirname, '../uploads/badges');
+const avatarDir = path.join(__dirname, '../uploads/avatars');
+
+if (!fs.existsSync(badgeDir)) {
+  fs.mkdirSync(badgeDir, { recursive: true });
+}
+if (!fs.existsSync(avatarDir)) {
+  fs.mkdirSync(avatarDir, { recursive: true });
+}
+
+// Badge storage
+const badgeStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, badgeDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'badge-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// Avatar storage
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, avatarDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// File filter
+const fileFilter = (req, file, cb) => {
+  // FIX: Use file.mimetype (not mimeType)
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+const uploadBadge = multer({
+  storage: badgeStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
+});
+
+// Upload badge (admin only)
+router.post('/badge', authenticateToken, isAdmin, uploadBadge.single('badge'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/badges/${req.file.filename}`;
+    
+    console.log('✅ Badge uploaded:', fileUrl);
+
+    res.json({
+      message: 'Badge uploaded successfully',
+      url: fileUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error('Badge upload error:', error);
+    res.status(500).json({ message: 'Upload failed', error: error.message });
+  }
+});
+
+// Upload avatar (any authenticated user)
+router.post('/avatar', authenticateToken, uploadAvatar.single('avatar'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/avatars/${req.file.filename}`;
+    
+    console.log('✅ Avatar uploaded:', fileUrl);
+
+    res.json({
+      message: 'Avatar uploaded successfully',
+      url: fileUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({ message: 'Upload failed', error: error.message });
+  }
+});
+
+// Delete badge (admin only)
+router.delete('/badge/:filename', authenticateToken, isAdmin, (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filepath = path.join(badgeDir, filename);
+
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+      console.log('✅ Badge deleted:', filename);
+      res.json({ message: 'Badge deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'File not found' });
+    }
+  } catch (error) {
+    console.error('Badge delete error:', error);
+    res.status(500).json({ message: 'Delete failed', error: error.message });
+  }
+});
+
+export default router;
+
+
+routes/admin.js
+// Update topic
+router.put('/topics/:id', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    console.log('Updating topic:', id);
+    console.log('Update data:', updateData);
+
+    // Ensure questions array has exactly 5 questions
+    if (updateData.questions) {
+      if (updateData.questions.length !== 5) {
+        return res.status(400).json({ message: 'Topic must have exactly 5 questions' });
+      }
+
+      // Ensure first question is mandatory
+      updateData.questions[0].isMandatory = true;
+      
+      // Ensure other questions are not mandatory
+      for (let i = 1; i < updateData.questions.length; i++) {
+        updateData.questions[i].isMandatory = false;
+      }
+    }
+
+    const topic = await Topic.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    console.log('✅ Topic updated successfully:', topic.title);
+
+    await logActivity(req.user._id, 'topic_updated', {
+      topicId: topic._id,
+      topicTitle: topic.title
+    }, req);
+
+    res.json(topic);
+  } catch (error) {
+    console.error('❌ Error updating topic:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+
+save emoji to /public/assets/angry-emoji.png
+or uploads folder
+TopicDetail.js
+
+{/* MANDATORY RESULT */}
+{currentStage === 'mandatory' && mandatoryResult && (
+  <motion.div
+    initial={{ scale: 0.8, opacity: 0 }}
+    animate={{ scale: 1, opacity: 1 }}
+    className="retro-card"
+  >
+    <div style={{ textAlign: 'center', padding: '40px' }}>
+      {/* SUCCESS - Keep original */}
+      {mandatoryResult.correctAnswer ? (
+        <>
+          <div style={{ fontSize: '72px', marginBottom: '20px' }}>🎉</div>
+          <div style={{
+            fontSize: '24px',
+            color: 'var(--success-green)',
+            marginBottom: '20px',
+            fontWeight: 'bold'
+          }}>
+            CORRECT!
+          </div>
+
+          <div style={{
+            padding: '20px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '2px solid var(--success-green)'
+          }}>
+            <div style={{ fontSize: '12px', marginBottom: '10px' }}>
+              ✅ You earned <strong>100 XP</strong> and unlocked the badge!
+            </div>
+            {mandatoryResult.badgeImage && (
+              <img
+                src={mandatoryResult.badgeImage.startsWith('/uploads/') 
+                  ? `http://localhost:5000${mandatoryResult.badgeImage}` 
+                  : mandatoryResult.badgeImage}
+                alt="Badge"
+                style={{ width: '80px', height: '80px', margin: '10px auto' }}
+              />
+            )}
+          </div>
+        </>
+      ) : (
+        /* FAILURE - ADD ANGRY EMOJI */
+        <>
+          {/* Angry Emoji Animation */}
+          <motion.img
+            src="/assets/angry-emoji.png"
+            alt="Angry"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ 
+              scale: [0, 1.2, 1],
+              rotate: [-180, 10, -10, 0]
+            }}
+            transition={{ 
+              duration: 0.6,
+              times: [0, 0.5, 1]
+            }}
+            style={{ 
+              width: '120px', 
+              height: '120px', 
+              margin: '0 auto 20px',
+              display: 'block',
+              filter: 'drop-shadow(0 0 20px rgba(239, 68, 68, 0.5))'
+            }}
+            onError={(e) => {
+              // Fallback to emoji if image fails to load
+              e.target.style.display = 'none';
+              e.target.parentElement.innerHTML += '<div style="font-size: 72px; margin-bottom: 20px;">😡</div>';
+            }}
+          />
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            style={{
+              fontSize: '24px',
+              color: 'var(--error-red)',
+              marginBottom: '20px',
+              fontWeight: 'bold',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+            }}
+          >
+            INCORRECT!
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            style={{
+              padding: '20px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '2px solid var(--error-red)',
+              fontSize: '11px'
+            }}
+          >
+            <div style={{ marginBottom: '10px', fontSize: '12px', fontWeight: 'bold' }}>
+              The correct answer was: <strong style={{ color: 'var(--error-red)' }}>
+                {String.fromCharCode(65 + mandatoryResult.correctAnswerIndex)}
+              </strong>
+            </div>
+            {mandatoryResult.explanation && (
+              <div style={{ 
+                marginTop: '15px', 
+                fontSize: '10px', 
+                lineHeight: '1.6',
+                padding: '15px',
+                background: 'white',
+                border: '2px solid var(--bright-blue)',
+                borderLeft: '5px solid var(--bright-blue)'
+              }}>
+                <div style={{ 
+                  fontSize: '9px', 
+                  color: 'var(--bright-blue)', 
+                  marginBottom: '8px', 
+                  fontWeight: 'bold' 
+                }}>
+                  💡 EXPLANATION
+                </div>
+                {mandatoryResult.explanation}
+              </div>
+            )}
+            
+            <div style={{ 
+              marginTop: '20px', 
+              padding: '15px',
+              background: 'rgba(249, 115, 22, 0.1)',
+              border: '2px solid var(--orange-accent)',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              color: 'var(--orange-accent)'
+            }}>
+              🔄 Try again! You can retry the mandatory question.
+            </div>
+          </motion.div>
+        </>
+      )}
+    </div>
+  </motion.div>
+)}
+
+
+pages/TopicDetail.js (Style tag at bottom)
+
+<style>{`
+  .quiz-option:hover {
+    transform: translateX(5px);
+  }
+  
+  /* Angry emoji shake animation */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px) rotate(-5deg); }
+    20%, 40%, 60%, 80% { transform: translateX(10px) rotate(5deg); }
+  }
+  
+  .angry-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+`}</style>
+
+client/public/logo.png
+
+Navbar.js
+{/* Logo & Title */}
+<div 
+  style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '15px',
+    cursor: 'pointer'
+  }}
+  onClick={() => navigate('/')}
+>
+  <img 
+    src="/logo.png"  // Simple path - no /uploads/ needed
+    alt="IMS Arcade"
+    style={{
+      height: '40px',
+      width: 'auto',
+      objectFit: 'contain',
+      imageRendering: 'crisp-edges'
+    }}
+    onError={(e) => {
+      console.error('Logo failed to load from /logo.png');
+      e.target.style.display = 'none';
+    }}
+  />
+  <h1 style={{ 
+    fontSize: '16px', 
+    color: 'var(--primary-navy)', 
+    margin: 0,
+    fontWeight: 'bold',
+    letterSpacing: '1px',
+    fontFamily: 'monospace, sans-serif',
+    textTransform: 'uppercase'
+  }}>
+    IMS TRAINING ARCADE
+  </h1>
+</div>
+
+server/uploads/logo.png
+<img 
+  src="/assets/logo.png"
+  alt="IMS Arcade"
+  style={{
+    height: '40px',
+    width: 'auto',
+    objectFit: 'contain'
+  }}
+  onError={(e) => {
+    console.error('Logo failed to load from /assets');
+    e.target.style.display = 'none';
+  }}
+/>
+
 components/Navbar.js
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -451,6 +1155,7 @@ const Navbar = () => {
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
     setShowDropdown(false);
@@ -463,6 +1168,20 @@ const Navbar = () => {
   };
 
   if (!user) return null;
+
+  // Try multiple logo paths in order of preference
+  const getLogoSrc = () => {
+    if (logoError) return null;
+    
+    // Try these paths in order:
+    const paths = [
+      '/logo.png',                              // client/public/logo.png
+      '/assets/logo.png',                       // client/public/assets/logo.png
+      'http://localhost:5000/uploads/logo.png', // server/uploads/logo.png
+    ];
+    
+    return paths[0]; // Start with first path
+  };
 
   return (
     <nav style={{
@@ -487,329 +1206,42 @@ const Navbar = () => {
         }}
         onClick={() => navigate('/')}
       >
-        <img 
-          src="/uploads/logo.png"
-          alt="IMS Arcade"
-          style={{
-            height: '40px',
-            width: 'auto',
-            objectFit: 'contain',
-            imageRendering: 'crisp-edges'
-          }}
-          onError={(e) => {
-            console.error('Logo failed to load');
-            e.target.style.display = 'none';
-          }}
-        />
+        {!logoError && (
+          <img 
+            src={getLogoSrc()}
+            alt="IMS Arcade Logo"
+            style={{
+              height: '40px',
+              width: 'auto',
+              objectFit: 'contain',
+              imageRendering: 'crisp-edges'
+            }}
+            onError={(e) => {
+              console.error('Logo failed to load from:', e.target.src);
+              console.log('Make sure logo is saved in one of these locations:');
+              console.log('- client/public/logo.png');
+              console.log('- client/public/assets/logo.png');
+              console.log('- server/uploads/logo.png');
+              setLogoError(true);
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        
         <h1 style={{ 
           fontSize: '16px', 
           color: 'var(--primary-navy)', 
           margin: 0,
           fontWeight: 'bold',
-          letterSpacing: '1px'
+          letterSpacing: '1px',
+          fontFamily: 'monospace, sans-serif',
+          textTransform: 'uppercase'
         }}>
           IMS TRAINING ARCADE
         </h1>
       </div>
 
-      {/* Desktop Navigation */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '20px', 
-        alignItems: 'center',
-        fontSize: '11px'
-      }}
-      className="desktop-nav">
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            background: location.pathname === '/' ? 'var(--bright-blue)' : 'transparent',
-            border: location.pathname === '/' ? '2px solid var(--primary-navy)' : 'none',
-            color: location.pathname === '/' ? 'white' : 'var(--text-dark)',
-            padding: '8px 15px',
-            cursor: 'pointer',
-            fontWeight: location.pathname === '/' ? 'bold' : 'normal'
-          }}
-        >
-          🏠 HOME
-        </button>
-
-        <button
-          onClick={() => navigate('/topics')}
-          style={{
-            background: location.pathname.startsWith('/topics') ? 'var(--bright-blue)' : 'transparent',
-            border: location.pathname.startsWith('/topics') ? '2px solid var(--primary-navy)' : 'none',
-            color: location.pathname.startsWith('/topics') ? 'white' : 'var(--text-dark)',
-            padding: '8px 15px',
-            cursor: 'pointer',
-            fontWeight: location.pathname.startsWith('/topics') ? 'bold' : 'normal'
-          }}
-        >
-          📚 TOPICS
-        </button>
-
-        <button
-          onClick={() => navigate('/achievements')}
-          style={{
-            background: location.pathname === '/achievements' ? 'var(--bright-blue)' : 'transparent',
-            border: location.pathname === '/achievements' ? '2px solid var(--primary-navy)' : 'none',
-            color: location.pathname === '/achievements' ? 'white' : 'var(--text-dark)',
-            padding: '8px 15px',
-            cursor: 'pointer',
-            fontWeight: location.pathname === '/achievements' ? 'bold' : 'normal'
-          }}
-        >
-          🏆 ACHIEVEMENTS
-        </button>
-
-        {/* User Stats */}
-        <div 
-          style={{ 
-            fontSize: '10px',
-            color: 'var(--bright-blue)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            flex: '0 0 auto'
-          }}
-          className="desktop-stats"
-        >
-          <span>LVL {user?.level || 1}</span>
-          <span>|</span>
-          <span>⭐ {user?.xp || 0} XP</span>
-        </div>
-
-        {/* User Menu */}
-        <div style={{ position: 'relative' }}>
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            style={{
-              background: 'var(--primary-navy)',
-              color: 'white',
-              border: '2px solid var(--primary-navy)',
-              padding: '8px 15px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontWeight: 'bold'
-            }}
-          >
-            👤 {user?.username}
-            <span style={{ fontSize: '8px' }}>▼</span>
-          </button>
-
-          {/* Dropdown Menu */}
-          {showDropdown && (
-            <div style={{
-              position: 'absolute',
-              top: '50px',
-              right: '0',
-              background: 'var(--bg-light)',
-              border: '3px solid var(--primary-navy)',
-              boxShadow: '5px 5px 0 var(--primary-navy)',
-              minWidth: '200px',
-              zIndex: 1000
-            }}>
-              <button
-                onClick={() => {
-                  navigate('/profile');
-                  setShowDropdown(false);
-                }}
-                style={{
-                  width: '100%',
-                  padding: '15px',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: '2px solid var(--border-color)',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  color: 'var(--text-dark)'
-                }}
-                onMouseOver={(e) => e.target.style.background = 'var(--bg-medium)'}
-                onMouseOut={(e) => e.target.style.background = 'transparent'}
-              >
-                👤 Profile
-              </button>
-              
-              {user?.role === 'admin' && (
-                <button
-                  onClick={() => {
-                    navigate('/admin/dashboard');
-                    setShowDropdown(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '15px',
-                    background: 'transparent',
-                    border: 'none',
-                    borderBottom: '2px solid var(--border-color)',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                    color: 'var(--text-dark)'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--bg-medium)'}
-                  onMouseOut={(e) => e.target.style.background = 'transparent'}
-                >
-                  ⚙️ Admin Panel
-                </button>
-              )}
-              
-              <button
-                onClick={handleLogout}
-                style={{
-                  width: '100%',
-                  padding: '15px',
-                  background: 'transparent',
-                  border: 'none',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  color: 'var(--error-red)'
-                }}
-                onMouseOver={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.1)'}
-                onMouseOut={(e) => e.target.style.background = 'transparent'}
-              >
-                🚪 Logout
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="mobile-menu-btn"
-        style={{
-          display: 'none',
-          background: 'var(--primary-navy)',
-          color: 'white',
-          border: 'none',
-          padding: '10px 15px',
-          cursor: 'pointer',
-          fontSize: '14px'
-        }}
-      >
-        ☰
-      </button>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            className="mobile-menu"
-            style={{
-              position: 'fixed',
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: '80%',
-              maxWidth: '300px',
-              background: 'var(--bg-light)',
-              borderLeft: '3px solid var(--primary-navy)',
-              boxShadow: '-5px 0 10px rgba(0,0,0,0.2)',
-              zIndex: 2000,
-              padding: '20px',
-              overflowY: 'auto'
-            }}
-          >
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'transparent',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: 'var(--text-dark)'
-              }}
-            >
-              ✖
-            </button>
-
-            <div style={{
-              padding: '10px',
-              background: 'var(--bg-medium)',
-              border: '2px solid var(--bright-blue)',
-              textAlign: 'center',
-              fontSize: '10px',
-              color: 'var(--bright-blue)',
-              marginBottom: '20px',
-              marginTop: '40px'
-            }}>
-              👤 {user?.username} | LVL {user?.level || 1} | ⭐ {user?.xp || 0} XP
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button
-                onClick={() => navigate('/')}
-                className="retro-btn"
-                style={{ width: '100%', textAlign: 'left' }}
-              >
-                🏠 HOME
-              </button>
-              <button
-                onClick={() => navigate('/topics')}
-                className="retro-btn"
-                style={{ width: '100%', textAlign: 'left' }}
-              >
-                📚 TOPICS
-              </button>
-              <button
-                onClick={() => navigate('/achievements')}
-                className="retro-btn"
-                style={{ width: '100%', textAlign: 'left' }}
-              >
-                🏆 ACHIEVEMENTS
-              </button>
-              <button
-                onClick={() => navigate('/profile')}
-                className="retro-btn"
-                style={{ width: '100%', textAlign: 'left' }}
-              >
-                👤 PROFILE
-              </button>
-
-              {user?.role === 'admin' && (
-                <button
-                  onClick={() => navigate('/admin/dashboard')}
-                  className="retro-btn"
-                  style={{ width: '100%', textAlign: 'left', background: 'var(--orange-accent)' }}
-                >
-                  ⚙️ ADMIN PANEL
-                </button>
-              )}
-
-              <button
-                onClick={handleLogout}
-                className="retro-btn secondary"
-                style={{ width: '100%', textAlign: 'left', marginTop: '20px', color: 'var(--error-red)' }}
-              >
-                🚪 LOGOUT
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .desktop-nav {
-            display: none !important;
-          }
-          .mobile-menu-btn {
-            display: block !important;
-          }
-        }
-      `}</style>
+      {/* Rest of navbar stays the same... */}
     </nav>
   );
 };
@@ -819,2335 +1251,454 @@ export default Navbar;
 
 ---
 
-## Part 3: Logo Setup Instructions
+## Quick Fix Checklist:
 
-Place your logo file in the public folder:
+1. **Where is your logo file saved?** (Check exact path)
+2. **What is the filename?** (logo.png, Logo.png, logo.PNG - case matters on Linux!)
+3. **Copy logo to:** `client/public/logo.png`
+4. **Update Navbar src to:** `src="/logo.png"`
+5. **Restart React dev server:** `Ctrl+C` then `npm start`
+6. **Hard refresh browser:** `Ctrl+Shift+R`
+7. **Check browser console** for errors
+
+---
+
+## Test if Logo Loads Directly
+
+Open in browser:
 ```
-client/public/uploads/logo.png
+http://localhost:3000/logo.png
+```
+
+If you see the logo, the path is correct!
+
+---
+
+## Common Issues:
+
+### **Issue 1: Case Sensitivity**
+```
+❌ logo.PNG (capital PNG)
+✅ logo.png (lowercase png)
+```
+
+### **Issue 2: Wrong Location**
+```
+❌ client/src/logo.png (won't work - not public)
+✅ client/public/logo.png (works!)
 
 
-components/LoadingScreen.js
-// client/src/components/LoadingScreen.js
-import React from 'react';
-import { motion } from 'framer-motion';
 
-const LoadingScreen = ({ message = 'LOADING...' }) => {
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.9)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 9999
-    }}>
-      <div style={{ textAlign: 'center' }}>
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          style={{
-            width: '80px',
-            height: '80px',
-            border: '5px solid var(--border-color)',
-            borderTop: '5px solid var(--bright-blue)',
-            borderRadius: '50%',
-            margin: '0 auto 20px'
-          }}
-        />
-        <div className="neon-text" style={{ fontSize: '18px' }}>
-          {message}
-        </div>
-      </div>
-    </div>
-  );
-};
+Part 1: Understanding the Level System
+Current Pokemon-Style Progressive System
+How It Works:
+Each level has a fixed XP threshold. The gap between levels increases progressively, making it harder to level up as you advance.
+javascript// From server/utils/levelSystem.js
+const LEVEL_THRESHOLDS = [
+  0,      // Level 1 - Starting point
+  100,    // Level 2 - Need 100 XP (1 mandatory topic)
+  250,    // Level 3 - Need 250 XP total (gap of 150 XP)
+  450,    // Level 4 - Need 450 XP total (gap of 200 XP)
+  700,    // Level 5 - Need 700 XP total (gap of 250 XP)
+  1000,   // Level 6 - Need 1000 XP total (gap of 300 XP)
+  1350,   // Level 7 - Need 1350 XP total (gap of 350 XP)
+  // ... continues with increasing gaps
+];
 
-export default LoadingScreen;
-
-src/components/Confetti.js
-// client/src/components/Confetti.js
-import React, { useEffect, useState } from 'react';
-
-const Confetti = ({ active }) => {
-  const [particles, setParticles] = useState([]);
-
-  useEffect(() => {
-    if (active) {
-      const newParticles = Array.from({ length: 50 }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        delay: Math.random() * 0.5,
-        duration: 2 + Math.random() * 2,
-        color: ['#3B82F6', '#F97316', '#10B981', '#EC4899'][Math.floor(Math.random() * 4)]
-      }));
-      setParticles(newParticles);
+// Calculate level from XP
+export const calculateLevel = (xp) => {
+  let level = 1;
+  
+  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (xp >= LEVEL_THRESHOLDS[i]) {
+      level = i + 1;
+      break;
     }
-  }, [active]);
-
-  if (!active) return null;
-
-  return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 9999 }}>
-      {particles.map(p => (
-        <div
-          key={p.id}
-          style={{
-            position: 'absolute',
-            left: `${p.left}%`,
-            top: '-10px',
-            width: '10px',
-            height: '10px',
-            background: p.color,
-            animation: `fall ${p.duration}s linear ${p.delay}s forwards`,
-            opacity: 0
-          }}
-        />
-      ))}
-      <style>{`
-        @keyframes fall {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-      `}</style>
-    </div>
-  );
-};
-
-export default Confetti;
-
-pages/admin/Analytics.js
-// client/src/pages/admin/Analytics.js
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-
-const Analytics = () => {
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    activeUsers: 0,
-    totalXP: 0,
-    averageLevel: 0,
-    completionRate: 0,
-    topicStats: []
-  });
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  const fetchAnalytics = async () => {
-    try {
-      const [usersRes, topicsRes] = await Promise.all([
-        api.get('/admin/users'),
-        api.get('/admin/topics')
-      ]);
-
-      const users = usersRes.data.filter(u => u.role === 'employee');
-      const totalXP = users.reduce((sum, u) => sum + (u.xp || 0), 0);
-      const avgLevel = users.length > 0 ? (users.reduce((sum, u) => sum + (u.level || 1), 0) / users.length).toFixed(1) : 1;
-
-      const topicStats = topicsRes.data.map(topic => {
-        const completedCount = users.filter(user => 
-          user.completedTopics?.some(ct => ct.topicId?.toString() === topic._id.toString() && ct.mandatoryCompleted)
-        ).length;
-        return {
-          title: topic.title,
-          completed: completedCount,
-          percentage: users.length > 0 ? ((completedCount / users.length) * 100).toFixed(1) : 0
-        };
-      });
-
-      setStats({
-        totalUsers: users.length,
-        activeUsers: users.filter(u => (u.xp || 0) > 0).length,
-        totalXP,
-        averageLevel: avgLevel,
-        completionRate: topicStats.length > 0 
-          ? (topicStats.reduce((sum, t) => sum + parseFloat(t.percentage), 0) / topicStats.length).toFixed(1)
-          : 0,
-        topicStats
-      });
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-    }
-  };
-
-  return (
-    <div style={{ padding: '40px' }}>
-      <h1 style={{ fontSize: '24px', marginBottom: '30px', color: 'var(--primary-navy)' }}>
-        📊 ANALYTICS DASHBOARD
-      </h1>
-
-      {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="retro-card" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>TOTAL USERS</div>
-          <div style={{ fontSize: '36px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>{stats.totalUsers}</div>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="retro-card" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>ACTIVE USERS</div>
-          <div style={{ fontSize: '36px', color: 'var(--success-green)', fontWeight: 'bold' }}>{stats.activeUsers}</div>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="retro-card" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>TOTAL XP</div>
-          <div style={{ fontSize: '36px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>{stats.totalXP}</div>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="retro-card" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>AVG LEVEL</div>
-          <div style={{ fontSize: '36px', color: 'var(--secondary-pink)', fontWeight: 'bold' }}>{stats.averageLevel}</div>
-        </motion.div>
-      </div>
-
-      {/* Topic Completion Stats */}
-      <div className="retro-card">
-        <h3 style={{ fontSize: '14px', marginBottom: '20px', color: 'var(--secondary-pink)' }}>
-          📚 TOPIC COMPLETION RATES
-        </h3>
-        {stats.topicStats.map((topic, index) => (
-          <div key={index} style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '11px' }}>
-              <span>{topic.title}</span>
-              <span style={{ fontWeight: 'bold', color: 'var(--bright-blue)' }}>
-                {topic.completed}/{stats.totalUsers} ({topic.percentage}%)
-              </span>
-            </div>
-            <div style={{ width: '100%', height: '20px', background: 'var(--bg-dark)', border: '2px solid var(--border-color)' }}>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${topic.percentage}%` }}
-                transition={{ duration: 1, delay: index * 0.1 }}
-                style={{ height: '100%', background: 'var(--bright-blue)' }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export default Analytics;
-
-add route in App.js
-<Route path="/admin/analytics" element={<ProtectedRoute adminOnly={true}><AdminLayout><Analytics /></AdminLayout></ProtectedRoute>} />
-
-
-pages/admin/User.js
-// Add to client/src/pages/admin/Users.js
-const exportToCSV = () => {
-  const headers = ['Username', 'Email', 'Level', 'XP', 'Badges', 'Completed Topics', 'Join Date'];
-  const rows = users.map(u => [
-    u.username,
-    u.email,
-    u.level || 1,
-    u.xp || 0,
-    u.badges?.length || 0,
-    u.completedTopics?.filter(ct => ct.mandatoryCompleted).length || 0,
-    new Date(u.createdAt).toLocaleDateString()
-  ]);
-
-  const csv = [
-    headers.join(','),
-    ...rows.map(row => row.join(','))
-  ].join('\n');
-
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ims-users-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-};
-
-// Add button in UI:
-<button onClick={exportToCSV} className="retro-btn" style={{ marginBottom: '20px' }}>
-  📥 EXPORT TO CSV
-</button>
-
-components/Toast.js
-// client/src/components/Toast.js
-import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, duration);
-    return () => clearTimeout(timer);
-  }, [duration, onClose]);
-
-  const colors = {
-    success: 'var(--success-green)',
-    error: 'var(--error-red)',
-    info: 'var(--bright-blue)',
-    warning: 'var(--orange-accent)'
-  };
-
-  const icons = {
-    success: '✓',
-    error: '✗',
-    info: 'ℹ',
-    warning: '⚠'
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -50, x: '-50%' }}
-      animate={{ opacity: 1, y: 20 }}
-      exit={{ opacity: 0, y: -50 }}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        background: 'var(--bg-light)',
-        border: `3px solid ${colors[type]}`,
-        padding: '15px 20px',
-        boxShadow: '5px 5px 0 var(--primary-navy)',
-        zIndex: 10000,
-        minWidth: '300px',
-        maxWidth: '500px'
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{ fontSize: '20px', color: colors[type] }}>{icons[type]}</span>
-        <span style={{ fontSize: '12px', color: 'var(--text-dark)' }}>{message}</span>
-        <button
-          onClick={onClose}
-          style={{
-            marginLeft: 'auto',
-            background: 'transparent',
-            border: 'none',
-            fontSize: '16px',
-            cursor: 'pointer',
-            color: 'var(--text-medium)'
-          }}
-        >
-          ✖
-        </button>
-      </div>
-    </motion.div>
-  );
-};
-
-// client/src/context/ToastContext.js
-import React, { createContext, useContext, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import Toast from '../components/Toast';
-
-const ToastContext = createContext();
-
-export const useToast = () => useContext(ToastContext);
-
-export const ToastProvider = ({ children }) => {
-  const [toasts, setToasts] = useState([]);
-
-  const showToast = (message, type = 'info') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  };
-
-  return (
-    <ToastContext.Provider value={{ showToast }}>
-      {children}
-      <AnimatePresence>
-        {toasts.map(toast => (
-          <Toast
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            onClose={() => removeToast(toast.id)}
-          />
-        ))}
-      </AnimatePresence>
-    </ToastContext.Provider>
-  );
-};
-
-src/index.js
-// client/src/index.js
-import { ToastProvider } from './context/ToastContext';
-
-<ToastProvider>
-  <App />
-</ToastProvider>
-
-FIND:
-const { showToast } = useToast();
-showToast('Quiz completed!', 'success');
-
-Home.js
-// Add to Home.js leaderboard section
-const [leaderboardFilter, setLeaderboardFilter] = useState('all'); // all, week, month
-
-<select
-  className="retro-input"
-  value={leaderboardFilter}
-  onChange={(e) => setLeaderboardFilter(e.target.value)}
-  style={{ marginBottom: '15px', fontSize: '10px' }}
->
-  <option value="all">All Time</option>
-  <option value="week">This Week</option>
-  <option value="month">This Month</option>
-</select>
-
-models/Game.js
-import mongoose from 'mongoose';
-
-const gameSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true
-  },
-  type: {
-    type: String,
-    enum: ['crossword', 'image_match', 'quick_quiz', 'word_scramble', 'memory_match', 'flashcards'],
-    required: true
-  },
-  difficulty: {
-    type: String,
-    enum: ['easy', 'medium', 'hard'],
-    default: 'medium'
-  },
-  relatedTopics: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Topic'
-  }],
-  xpReward: {
-    type: Number,
-    default: 50
-  },
-  timeLimit: {
-    type: Number, // in seconds, null = no limit
-    default: null
-  },
-  gameData: {
-    type: mongoose.Schema.Types.Mixed, // Flexible schema for different game types
-    required: true
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  playCount: {
-    type: Number,
-    default: 0
-  },
-  averageScore: {
-    type: Number,
-    default: 0
   }
-}, {
-  timestamps: true
-});
-
-const Game = mongoose.model('Game', gameSchema);
-export default Game;
-
-models/GameProgress.js
-import mongoose from 'mongoose';
-
-const gameProgressSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  gameId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Game',
-    required: true
-  },
-  completed: {
-    type: Boolean,
-    default: false
-  },
-  score: {
-    type: Number,
-    default: 0
-  },
-  timeSpent: {
-    type: Number, // in seconds
-    default: 0
-  },
-  attempts: {
-    type: Number,
-    default: 0
-  },
-  lastPlayedAt: {
-    type: Date,
-    default: Date.now
-  },
-  bestScore: {
-    type: Number,
-    default: 0
-  },
-  xpEarned: {
-    type: Number,
-    default: 0
-  }
-}, {
-  timestamps: true
-});
-
-// Compound index for efficient queries
-gameProgressSchema.index({ userId: 1, gameId: 1 }, { unique: true });
-
-const GameProgress = mongoose.model('GameProgress', gameProgressSchema);
-export default GameProgress;
-
-routes/games.js
-import express from 'express';
-import Game from '../models/Game.js';
-import GameProgress from '../models/GameProgress.js';
-import User from '../models/User.js';
-import { authenticateToken } from '../middleware/auth.js';
-import { logActivity } from '../utils/logger.js';
-import { calculateLevel } from '../utils/levelSystem.js';
-
-const router = express.Router();
-
-router.use(authenticateToken);
-
-// Get all active games
-router.get('/', async (req, res) => {
-  try {
-    const games = await Game.find({ isActive: true }).populate('relatedTopics', 'title');
-    
-    const userId = req.user._id;
-    const progressRecords = await GameProgress.find({ userId });
-
-    const gamesWithProgress = games.map(game => {
-      const progress = progressRecords.find(p => p.gameId.toString() === game._id.toString());
-      return {
-        ...game.toObject(),
-        userProgress: progress ? {
-          completed: progress.completed,
-          bestScore: progress.bestScore,
-          attempts: progress.attempts,
-          xpEarned: progress.xpEarned
-        } : null
-      };
-    });
-
-    res.json(gamesWithProgress);
-  } catch (error) {
-    console.error('Error fetching games:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Get single game
-router.get('/:gameId', async (req, res) => {
-  try {
-    const game = await Game.findById(req.params.gameId).populate('relatedTopics', 'title');
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-
-    const progress = await GameProgress.findOne({
-      userId: req.user._id,
-      gameId: game._id
-    });
-
-    res.json({
-      ...game.toObject(),
-      userProgress: progress || null
-    });
-  } catch (error) {
-    console.error('Error fetching game:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Submit game result
-router.post('/:gameId/submit', async (req, res) => {
-  try {
-    const { score, timeSpent, completed } = req.body;
-    const gameId = req.params.gameId;
-
-    const game = await Game.findById(gameId);
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-
-    const user = await User.findById(req.user._id);
-
-    // Find or create progress record
-    let progress = await GameProgress.findOne({
-      userId: user._id,
-      gameId: game._id
-    });
-
-    const isNewCompletion = !progress || !progress.completed;
-    const isNewBestScore = !progress || score > progress.bestScore;
-
-    if (!progress) {
-      progress = new GameProgress({
-        userId: user._id,
-        gameId: game._id,
-        score,
-        timeSpent,
-        completed,
-        attempts: 1,
-        bestScore: score
-      });
-    } else {
-      progress.score = score;
-      progress.timeSpent += timeSpent;
-      progress.attempts += 1;
-      progress.lastPlayedAt = new Date();
-      if (score > progress.bestScore) {
-        progress.bestScore = score;
-      }
-      if (completed && !progress.completed) {
-        progress.completed = true;
-      }
-    }
-
-    // XP Rewards
-    let xpEarned = 0;
-    if (isNewCompletion && completed) {
-      // First time completion: full XP
-      xpEarned = game.xpReward;
-    } else if (isNewBestScore && completed) {
-      // New best score: 25% of base XP
-      xpEarned = Math.floor(game.xpReward * 0.25);
-    } else if (completed) {
-      // Replay completion: 10% of base XP
-      xpEarned = Math.floor(game.xpReward * 0.1);
-    }
-
-    if (xpEarned > 0) {
-      user.xp += xpEarned;
-      user.level = calculateLevel(user.xp);
-      await user.save();
-      
-      progress.xpEarned += xpEarned;
-    }
-
-    await progress.save();
-
-    // Update game statistics
-    game.playCount += 1;
-    const allProgress = await GameProgress.find({ gameId: game._id, completed: true });
-    if (allProgress.length > 0) {
-      game.averageScore = allProgress.reduce((sum, p) => sum + p.bestScore, 0) / allProgress.length;
-    }
-    await game.save();
-
-    await logActivity(user._id, 'game_played', {
-      gameId: game._id,
-      gameTitle: game.title,
-      score,
-      xpEarned,
-      completed
-    }, req);
-
-    res.json({
-      success: true,
-      xpEarned,
-      newXP: user.xp,
-      newLevel: user.level,
-      bestScore: progress.bestScore,
-      isNewBest: isNewBestScore,
-      isFirstCompletion: isNewCompletion
-    });
-  } catch (error) {
-    console.error('Error submitting game:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Get leaderboard for a specific game
-router.get('/:gameId/leaderboard', async (req, res) => {
-  try {
-    const leaderboard = await GameProgress.find({
-      gameId: req.params.gameId,
-      completed: true
-    })
-      .populate('userId', 'username avatar level')
-      .sort({ bestScore: -1 })
-      .limit(10);
-
-    res.json(leaderboard);
-  } catch (error) {
-    console.error('Error fetching leaderboard:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-export default router;
-
-src/pages/Games.js
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../utils/api';
-
-const Games = () => {
-  const navigate = useNavigate();
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState('all');
-  const [filterDifficulty, setFilterDifficulty] = useState('all');
-
-  useEffect(() => {
-    fetchGames();
-  }, []);
-
-  const fetchGames = async () => {
-    try {
-      const response = await api.get('/games');
-      setGames(response.data);
-    } catch (error) {
-      console.error('Error fetching games:', error);
-      alert('Error loading games');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredGames = games.filter(game => {
-    if (filterType !== 'all' && game.type !== filterType) return false;
-    if (filterDifficulty !== 'all' && game.difficulty !== filterDifficulty) return false;
-    return true;
-  });
-
-  const gameTypeIcons = {
-    crossword: '📝',
-    image_match: '🖼️',
-    quick_quiz: '🎯',
-    word_scramble: '🔤',
-    memory_match: '🧩',
-    flashcards: '⚡'
-  };
-
-  const gameTypeNames = {
-    crossword: 'Crossword Puzzle',
-    image_match: 'Image Match',
-    quick_quiz: 'Quick Quiz',
-    word_scramble: 'Word Scramble',
-    memory_match: 'Memory Match',
-    flashcards: 'Flash Cards'
-  };
-
-  const difficultyColors = {
-    easy: 'var(--success-green)',
-    medium: 'var(--orange-accent)',
-    hard: 'var(--error-red)'
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAMES...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <div className="scanlines"></div>
-
-      <motion.h1
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="neon-text"
-        style={{ fontSize: '28px', marginBottom: '30px', textAlign: 'center', color: 'var(--primary-navy)' }}
-      >
-        🎮 TRAINING GAMES
-      </motion.h1>
-
-      {/* Info Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ marginBottom: '30px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, var(--bg-light) 100%)' }}
-      >
-        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
-          ⭐ EARN XP THROUGH GAMES
-        </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', fontSize: '10px' }}>
-          <div>
-            <div style={{ fontSize: '20px', color: 'var(--success-green)', marginBottom: '5px' }}>+50 XP</div>
-            <div style={{ color: 'var(--text-medium)' }}>First Completion</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '20px', color: 'var(--bright-blue)', marginBottom: '5px' }}>+12 XP</div>
-            <div style={{ color: 'var(--text-medium)' }}>New Best Score</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '20px', color: 'var(--orange-accent)', marginBottom: '5px' }}>+5 XP</div>
-            <div style={{ color: 'var(--text-medium)' }}>Replay Completion</div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ marginBottom: '30px' }}
-      >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
-              GAME TYPE
-            </label>
-            <select
-              className="retro-input"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              style={{ width: '100%' }}
-            >
-              <option value="all">All Types</option>
-              <option value="crossword">Crossword</option>
-              <option value="image_match">Image Match</option>
-              <option value="quick_quiz">Quick Quiz</option>
-              <option value="word_scramble">Word Scramble</option>
-              <option value="memory_match">Memory Match</option>
-              <option value="flashcards">Flash Cards</option>
-            </select>
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
-              DIFFICULTY
-            </label>
-            <select
-              className="retro-input"
-              value={filterDifficulty}
-              onChange={(e) => setFilterDifficulty(e.target.value)}
-              style={{ width: '100%' }}
-            >
-              <option value="all">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
-        </div>
-        <div style={{ marginTop: '15px', fontSize: '10px', color: 'var(--text-medium)' }}>
-          SHOWING {filteredGames.length} OF {games.length} GAMES
-        </div>
-      </motion.div>
-
-      {/* Games Grid */}
-      {filteredGames.length === 0 ? (
-        <div className="retro-card" style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.5 }}>🎮</div>
-          <h3 style={{ fontSize: '14px', color: 'var(--text-medium)' }}>NO GAMES FOUND</h3>
-        </div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '20px'
-        }}>
-          {filteredGames.map((game, index) => (
-            <motion.div
-              key={game._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="retro-card"
-              style={{
-                cursor: 'pointer',
-                background: game.userProgress?.completed 
-                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, var(--bg-light) 100%)' 
-                  : 'var(--bg-light)',
-                borderColor: game.userProgress?.completed ? 'var(--success-green)' : 'var(--border-color)'
-              }}
-              onClick={() => navigate(`/games/${game._id}`)}
-            >
-              {/* Icon & Title */}
-              <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-                <div style={{ fontSize: '48px', marginBottom: '10px' }}>
-                  {gameTypeIcons[game.type]}
-                </div>
-                <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', fontWeight: 'bold', marginBottom: '5px' }}>
-                  {game.title}
-                </h3>
-                <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>
-                  {gameTypeNames[game.type]}
-                </div>
-              </div>
-
-              {/* Difficulty & XP */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '10px' }}>
-                <div style={{
-                  padding: '5px 10px',
-                  background: `${difficultyColors[game.difficulty]}20`,
-                  color: difficultyColors[game.difficulty],
-                  border: `2px solid ${difficultyColors[game.difficulty]}`,
-                  fontWeight: 'bold',
-                  textTransform: 'uppercase'
-                }}>
-                  {game.difficulty}
-                </div>
-                <div style={{
-                  padding: '5px 10px',
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  color: 'var(--bright-blue)',
-                  border: '2px solid var(--bright-blue)',
-                  fontWeight: 'bold'
-                }}>
-                  ⭐ {game.xpReward} XP
-                </div>
-              </div>
-
-              {/* Progress */}
-              {game.userProgress && (
-                <div style={{
-                  padding: '10px',
-                  background: 'rgba(59, 130, 246, 0.05)',
-                  border: '2px solid var(--bright-blue)',
-                  marginBottom: '15px',
-                  fontSize: '9px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <span>Best Score:</span>
-                    <span style={{ fontWeight: 'bold', color: 'var(--bright-blue)' }}>{game.userProgress.bestScore}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <span>Attempts:</span>
-                    <span style={{ fontWeight: 'bold' }}>{game.userProgress.attempts}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span>XP Earned:</span>
-                    <span style={{ fontWeight: 'bold', color: 'var(--success-green)' }}>+{game.userProgress.xpEarned}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Button */}
-              <button
-                className="retro-btn"
-                style={{
-                  width: '100%',
-                  background: game.userProgress?.completed ? 'var(--success-green)' : 'var(--bright-blue)',
-                  fontSize: '11px',
-                  padding: '12px'
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/games/${game._id}`);
-                }}
-              >
-                {game.userProgress?.completed ? '✓ PLAY AGAIN' : '▶️ PLAY NOW'}
-              </button>
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      <style>{`
-        .retro-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 5px 5px 0 var(--primary-navy);
-        }
-      `}</style>
-    </div>
-  );
+  
+  return level;
 };
+```
 
-export default Games;
+#### **Why This System?**
 
-seedData.js
-import mongoose from 'mongoose';
-import Topic from './models/Topic.js';
-import User from './models/User.js';
-import Game from './models/Game.js';
-import dotenv from 'dotenv';
+1. **Early Game (Levels 1-5):** Fast progression to hook users
+2. **Mid Game (Levels 6-15):** Moderate difficulty to maintain engagement
+3. **Late Game (Levels 16+):** Challenging to give long-term goals
 
-dotenv.config();
+#### **Example Progression:**
+```
+XP Earned → Level Reached
+--------------------------
+0 XP    → Level 1  (Start)
+100 XP  → Level 2  (Complete 1 mandatory question)
+250 XP  → Level 3  (Complete 1 full topic OR 2-3 mandatory)
+450 XP  → Level 4  (Complete 2 topics)
+700 XP  → Level 5  (Complete 3 topics)
+1000 XP → Level 6  (Complete 4 topics)
+2700 XP → Level 10 (Complete 9-13 topics)
+5950 XP → Level 15 (Complete 20-30 topics)
+8400 XP → Level 17 (All 28 topics fully completed)
+```
 
-const seedData = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
+#### **XP Sources:**
+```
+Per Topic:
+- Mandatory Question (1): 100 XP
+- Bonus Questions (4):   200 XP (50 XP each)
+Total per topic:         100-300 XP
 
-    // Clear existing data
-    await Topic.deleteMany({});
-    await Game.deleteMany({});
+Per Game:
+- First Completion:      25-100 XP (varies by game)
+- Replay Completion:     10% of base XP
+- New Best Score:        25% of base XP
 
-    console.log('🗑️  Cleared existing topics and games\n');
+With 28 Topics:
+- Min XP (mandatory only): 2,800 XP → Level 11
+- Max XP (all content):    8,400 XP → Level 17
+```
 
-    // Create Topics (All 28 IMS Topics)
-    const topics = [
-      {
-        title: 'ISO 9001: Quality Management System',
-        description: 'Learn the fundamentals of ISO 9001 and quality management principles.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/iso9001.png',
-        badgeName: 'Quality Champion',
-        badgeDescription: 'Mastered ISO 9001 Quality Management',
-        questions: [
-          {
-            question: 'What is the primary focus of ISO 9001?',
-            options: ['Quality management and customer satisfaction', 'Environmental protection', 'Information security', 'Health and safety'],
-            correctAnswer: 0,
-            explanation: 'ISO 9001 focuses on quality management systems to ensure consistent customer satisfaction.',
-            isMandatory: true
-          },
-          {
-            question: 'What does PDCA stand for?',
-            options: ['Plan-Do-Check-Act', 'Prepare-Deploy-Control-Assess', 'Process-Document-Certify-Audit', 'Plan-Design-Create-Approve'],
-            correctAnswer: 0,
-            explanation: 'PDCA (Plan-Do-Check-Act) is the continuous improvement cycle in ISO 9001.',
-            isMandatory: false
-          },
-          {
-            question: 'Which is a key principle of ISO 9001?',
-            options: ['Customer focus', 'Profit maximization', 'Market dominance', 'Cost reduction only'],
-            correctAnswer: 0,
-            explanation: 'Customer focus is one of the seven quality management principles.',
-            isMandatory: false
-          },
-          {
-            question: 'What is the purpose of internal audits?',
-            options: ['Verify compliance and identify improvements', 'Punish employees', 'Satisfy auditors only', 'Create paperwork'],
-            correctAnswer: 0,
-            explanation: 'Internal audits verify QMS compliance and identify improvement opportunities.',
-            isMandatory: false
-          },
-          {
-            question: 'What does continual improvement mean?',
-            options: ['Ongoing efforts to enhance processes', 'One-time projects', 'Only fixing problems', 'Annual changes'],
-            correctAnswer: 0,
-            explanation: 'Continual improvement is recurring activity to enhance performance.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'ISO 27001: Information Security Management',
-        description: 'Understand ISO 27001 standards for protecting sensitive information.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/iso27001.png',
-        badgeName: 'Security Guardian',
-        badgeDescription: 'Completed ISO 27001 Training',
-        questions: [
-          {
-            question: 'What is the main purpose of ISO 27001?',
-            options: ['Establish and maintain an ISMS', 'Improve product quality', 'Manage environmental impacts', 'Ensure workplace safety'],
-            correctAnswer: 0,
-            explanation: 'ISO 27001 provides a framework for Information Security Management Systems.',
-            isMandatory: true
-          },
-          {
-            question: 'What are the three pillars of information security?',
-            options: ['Confidentiality, Integrity, Availability', 'Privacy, Security, Safety', 'Authentication, Authorization, Accounting', 'Prevention, Detection, Response'],
-            correctAnswer: 0,
-            explanation: 'The CIA triad is the foundation of information security.',
-            isMandatory: false
-          },
-          {
-            question: 'What is risk assessment in ISO 27001?',
-            options: ['Identifying and evaluating security risks', 'Financial audit', 'Customer survey', 'Performance review'],
-            correctAnswer: 0,
-            explanation: 'Risk assessment identifies threats, vulnerabilities, and determines appropriate controls.',
-            isMandatory: false
-          },
-          {
-            question: 'What is an information asset?',
-            options: ['Anything of value requiring protection', 'Only hardware', 'Only software', 'Only financial resources'],
-            correctAnswer: 0,
-            explanation: 'Information assets include data, hardware, software, people, and facilities.',
-            isMandatory: false
-          },
-          {
-            question: 'How often should ISMS be reviewed?',
-            options: ['At planned intervals', 'Only when incidents occur', 'Every five years', 'Never'],
-            correctAnswer: 0,
-            explanation: 'ISO 27001 requires management reviews at planned intervals.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Quality and Information Security Integration',
-        description: 'Learn how quality management and information security work together.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/integration.png',
-        badgeName: 'Integration Master',
-        badgeDescription: 'Mastered Integrated Management Systems',
-        questions: [
-          {
-            question: 'Why integrate ISO 9001 and ISO 27001?',
-            options: ['Streamline processes and reduce duplication', 'Make system complex', 'Satisfy regulations only', 'Create more documents'],
-            correctAnswer: 0,
-            explanation: 'Integration creates synergies and improves efficiency.',
-            isMandatory: true
-          },
-          {
-            question: 'What is common to both standards?',
-            options: ['Risk-based thinking and continual improvement', 'Product manufacturing', 'Environmental management', 'Health protocols'],
-            correctAnswer: 0,
-            explanation: 'Both standards share risk-based thinking and PDCA cycle.',
-            isMandatory: false
-          },
-          {
-            question: 'How are data quality and security related?',
-            options: ['Poor quality affects security and vice versa', 'Completely unrelated', 'Quality only matters for marketing', 'Security is only passwords'],
-            correctAnswer: 0,
-            explanation: 'Data quality and security are interconnected and interdependent.',
-            isMandatory: false
-          },
-          {
-            question: 'Who is responsible for quality and security?',
-            options: ['Everyone in the organization', 'Only IT department', 'Only quality managers', 'Only top management'],
-            correctAnswer: 0,
-            explanation: 'Quality and security are everyone\'s responsibility.',
-            isMandatory: false
-          },
-          {
-            question: 'What is a benefit of documented procedures?',
-            options: ['Consistency, traceability, reduced errors', 'More paperwork', 'Slower processes', 'Less flexibility'],
-            correctAnswer: 0,
-            explanation: 'Documented procedures ensure consistency and reduce errors.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Internet Acceptable Use Policy',
-        description: 'Understand acceptable use guidelines for internet access at work.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/internet-policy.png',
-        badgeName: 'Cyber Policy Expert',
-        badgeDescription: 'Mastered Internet Use Guidelines',
-        questions: [
-          {
-            question: 'What is the purpose of Internet Acceptable Use Policy?',
-            options: ['Define acceptable use and protect resources', 'Prevent all internet use', 'Monitor personal emails', 'Block social media'],
-            correctAnswer: 0,
-            explanation: 'The policy establishes guidelines for safe and appropriate internet use.',
-            isMandatory: true
-          },
-          {
-            question: 'Which is typically acceptable internet use?',
-            options: ['Work-related research', 'Downloading pirated software', 'Gambling websites', 'Sharing confidential info on social media'],
-            correctAnswer: 0,
-            explanation: 'Acceptable use includes legitimate business activities.',
-            isMandatory: false
-          },
-          {
-            question: 'Why avoid suspicious links?',
-            options: ['May contain malware or phishing', 'Wastes bandwidth', 'Slows computer', 'Company monitors clicks'],
-            correctAnswer: 0,
-            explanation: 'Suspicious links are common vectors for cyber attacks.',
-            isMandatory: false
-          },
-          {
-            question: 'What if you accidentally access restricted content?',
-            options: ['Close immediately and report to IT', 'Continue browsing', 'Share with colleagues', 'Hide browsing history'],
-            correctAnswer: 0,
-            explanation: 'Transparency protects you and the organization.',
-            isMandatory: false
-          },
-          {
-            question: 'Is brief personal internet use allowed?',
-            options: ['Only if permitted by policy', 'Yes, always', 'No, never', 'Only if nobody knows'],
-            correctAnswer: 0,
-            explanation: 'Personal use must align with company policy.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Anti-Malware Policy',
-        description: 'Learn about malware protection and prevention measures.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/antimalware.png',
-        badgeName: 'Malware Defender',
-        badgeDescription: 'Completed Anti-Malware Training',
-        questions: [
-          {
-            question: 'What is malware?',
-            options: ['Malicious software designed to harm systems', 'Broken hardware', 'Slow internet', 'Old software'],
-            correctAnswer: 0,
-            explanation: 'Malware is software intentionally designed to cause damage.',
-            isMandatory: true
-          },
-          {
-            question: 'Which is a type of malware?',
-            options: ['Ransomware', 'Firewall', 'Antivirus', 'Encryption'],
-            correctAnswer: 0,
-            explanation: 'Ransomware encrypts data and demands payment.',
-            isMandatory: false
-          },
-          {
-            question: 'How often should antivirus definitions update?',
-            options: ['Daily or automatically', 'Monthly', 'Yearly', 'Never'],
-            correctAnswer: 0,
-            explanation: 'Daily updates protect against new threats.',
-            isMandatory: false
-          },
-          {
-            question: 'What should you do if antivirus detects malware?',
-            options: ['Follow prompts and report to IT', 'Ignore it', 'Delete antivirus', 'Restart computer'],
-            correctAnswer: 0,
-            explanation: 'Follow antivirus prompts and notify IT immediately.',
-            isMandatory: false
-          },
-          {
-            question: 'Can malware spread through email?',
-            options: ['Yes, through attachments and links', 'No, email is safe', 'Only on mobile', 'Only on old computers'],
-            correctAnswer: 0,
-            explanation: 'Email is a common malware delivery method.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Access Control Policy',
-        description: 'Understand access control principles and user permissions.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/access-control.png',
-        badgeName: 'Access Control Pro',
-        badgeDescription: 'Mastered Access Control Principles',
-        questions: [
-          {
-            question: 'What is the principle of least privilege?',
-            options: ['Users get only access they need', 'Everyone gets full access', 'Managers get all access', 'No one gets access'],
-            correctAnswer: 0,
-            explanation: 'Least privilege minimizes security risks by limiting access.',
-            isMandatory: true
-          },
-          {
-            question: 'What is multi-factor authentication?',
-            options: ['Multiple verification methods', 'Strong password only', 'Biometric only', 'Security questions only'],
-            correctAnswer: 0,
-            explanation: 'MFA requires two or more verification factors.',
-            isMandatory: false
-          },
-          {
-            question: 'Should you share your credentials?',
-            options: ['Never, even with colleagues', 'Yes, with teammates', 'Yes, with managers', 'Yes, in emergencies'],
-            correctAnswer: 0,
-            explanation: 'Credentials are personal and must never be shared.',
-            isMandatory: false
-          },
-          {
-            question: 'When should access rights be reviewed?',
-            options: ['Regularly and when roles change', 'Only when hired', 'Only when fired', 'Never'],
-            correctAnswer: 0,
-            explanation: 'Regular reviews ensure appropriate access levels.',
-            isMandatory: false
-          },
-          {
-            question: 'What is role-based access control?',
-            options: ['Access based on job role', 'Everyone gets same access', 'Random access assignment', 'No access control'],
-            correctAnswer: 0,
-            explanation: 'RBAC grants access based on organizational roles.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Network Access Policy',
-        description: 'Learn about secure network access and connection guidelines.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/network-access.png',
-        badgeName: 'Network Security Expert',
-        badgeDescription: 'Completed Network Access Training',
-        questions: [
-          {
-            question: 'Why is network segmentation important?',
-            options: ['Limits damage from security breaches', 'Slows down network', 'Increases costs', 'Complicates management'],
-            correctAnswer: 0,
-            explanation: 'Segmentation contains breaches and limits lateral movement.',
-            isMandatory: true
-          },
-          {
-            question: 'Is public WiFi safe for work?',
-            options: ['No, use VPN if necessary', 'Yes, always safe', 'Yes, if password-protected', 'Only at airports'],
-            correctAnswer: 0,
-            explanation: 'Public WiFi is insecure; use VPN for protection.',
-            isMandatory: false
-          },
-          {
-            question: 'What is a VPN?',
-            options: ['Virtual Private Network for secure connection', 'Very Public Network', 'Virus Protection Network', 'Video Playback Network'],
-            correctAnswer: 0,
-            explanation: 'VPN encrypts traffic over untrusted networks.',
-            isMandatory: false
-          },
-          {
-            question: 'Should you connect personal devices to company network?',
-            options: ['Only if approved and compliant', 'Yes, anytime', 'No, never', 'Only phones'],
-            correctAnswer: 0,
-            explanation: 'Personal devices must meet security requirements.',
-            isMandatory: false
-          },
-          {
-            question: 'What is a firewall?',
-            options: ['Network security system controlling traffic', 'Physical barrier', 'Antivirus software', 'Password manager'],
-            correctAnswer: 0,
-            explanation: 'Firewalls monitor and control network traffic.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Data Protection & Privacy Policy',
-        description: 'Understand data protection principles and privacy regulations.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/data-privacy.png',
-        badgeName: 'Privacy Champion',
-        badgeDescription: 'Mastered Data Protection & Privacy',
-        questions: [
-          {
-            question: 'What is personal data?',
-            options: ['Information identifying an individual', 'Company financial data', 'Public information', 'Marketing data'],
-            correctAnswer: 0,
-            explanation: 'Personal data is any information relating to an identifiable person.',
-            isMandatory: true
-          },
-          {
-            question: 'What is GDPR?',
-            options: ['General Data Protection Regulation', 'Global Data Privacy Rules', 'Government Data Protection Rights', 'General Document Protection Rules'],
-            correctAnswer: 0,
-            explanation: 'GDPR is EU regulation protecting personal data.',
-            isMandatory: false
-          },
-          {
-            question: 'What is data minimization?',
-            options: ['Collect only necessary data', 'Collect maximum data', 'Delete all data', 'Share all data'],
-            correctAnswer: 0,
-            explanation: 'Data minimization limits collection to what is needed.',
-            isMandatory: false
-          },
-          {
-            question: 'Can you share customer data freely?',
-            options: ['No, only with authorization', 'Yes, within company', 'Yes, with partners', 'Yes, if encrypted'],
-            correctAnswer: 0,
-            explanation: 'Customer data requires proper authorization and controls.',
-            isMandatory: false
-          },
-          {
-            question: 'What is a data breach?',
-            options: ['Unauthorized access to data', 'Slow database', 'Lost password', 'Full storage'],
-            correctAnswer: 0,
-            explanation: 'Data breach is unauthorized access, disclosure, or loss.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Cryptographic Control Policy',
-        description: 'Learn about encryption and cryptographic controls.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/cryptography.png',
-        badgeName: 'Crypto Master',
-        badgeDescription: 'Completed Cryptography Training',
-        questions: [
-          {
-            question: 'What is encryption?',
-            options: ['Converting data to unreadable format', 'Deleting data', 'Compressing data', 'Copying data'],
-            correctAnswer: 0,
-            explanation: 'Encryption protects data by making it unreadable without the key.',
-            isMandatory: true
-          },
-          {
-            question: 'When should data be encrypted?',
-            options: ['In transit and at rest', 'Only in transit', 'Only at rest', 'Never'],
-            correctAnswer: 0,
-            explanation: 'Encryption protects data both during transmission and storage.',
-            isMandatory: false
-          },
-          {
-            question: 'What is a cryptographic key?',
-            options: ['Secret used to encrypt/decrypt data', 'Physical key', 'Password', 'Username'],
-            correctAnswer: 0,
-            explanation: 'Cryptographic keys are secrets used in encryption algorithms.',
-            isMandatory: false
-          },
-          {
-            question: 'Should encryption keys be shared?',
-            options: ['No, protect like passwords', 'Yes, with team', 'Yes, in email', 'Yes, in documents'],
-            correctAnswer: 0,
-            explanation: 'Keys must be protected and never shared insecurely.',
-            isMandatory: false
-          },
-          {
-            question: 'What is SSL/TLS?',
-            options: ['Protocols for secure web communication', 'Antivirus software', 'Firewall type', 'Password policy'],
-            correctAnswer: 0,
-            explanation: 'SSL/TLS encrypts web traffic (HTTPS).',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Cloud Service Policy',
-        description: 'Understand cloud service usage and security requirements.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/cloud.png',
-        badgeName: 'Cloud Security Pro',
-        badgeDescription: 'Mastered Cloud Service Policy',
-        questions: [
-          {
-            question: 'What is cloud computing?',
-            options: ['Computing services over the internet', 'Weather prediction', 'Local storage', 'Physical servers only'],
-            correctAnswer: 0,
-            explanation: 'Cloud computing delivers services via internet.',
-            isMandatory: true
-          },
-          {
-            question: 'Can you use any cloud service for work?',
-            options: ['No, only approved services', 'Yes, any service', 'Yes, free services', 'Only personal services'],
-            correctAnswer: 0,
-            explanation: 'Only approved cloud services meet security requirements.',
-            isMandatory: false
-          },
-          {
-            question: 'What is Shadow IT?',
-            options: ['Unauthorized IT systems or services', 'Dark web', 'Black hat hackers', 'Backup systems'],
-            correctAnswer: 0,
-            explanation: 'Shadow IT is unapproved technology use that creates risks.',
-            isMandatory: false
-          },
-          {
-            question: 'Who is responsible for cloud data security?',
-            options: ['Shared between provider and organization', 'Only provider', 'Only organization', 'No one'],
-            correctAnswer: 0,
-            explanation: 'Cloud security is a shared responsibility model.',
-            isMandatory: false
-          },
-          {
-            question: 'Should company data be stored in personal cloud accounts?',
-            options: ['No, use approved business accounts', 'Yes, if convenient', 'Yes, if encrypted', 'Yes, if free'],
-            correctAnswer: 0,
-            explanation: 'Company data requires approved business-grade cloud services.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Data Leak Prevention',
-        description: 'Learn how to prevent unauthorized data disclosure.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/dlp.png',
-        badgeName: 'DLP Specialist',
-        badgeDescription: 'Mastered Data Leak Prevention',
-        questions: [
-          {
-            question: 'What is Data Leak Prevention (DLP)?',
-            options: ['Preventing unauthorized data disclosure', 'Fixing water leaks', 'Deleting old data', 'Backing up data'],
-            correctAnswer: 0,
-            explanation: 'DLP prevents sensitive data from leaving the organization.',
-            isMandatory: true
-          },
-          {
-            question: 'Which is a data leak risk?',
-            options: ['Sending confidential files to personal email', 'Saving to approved cloud', 'Using encrypted USB', 'Following procedures'],
-            correctAnswer: 0,
-            explanation: 'Personal email is an unauthorized channel for company data.',
-            isMandatory: false
-          },
-          {
-            question: 'What should you do before emailing sensitive data?',
-            options: ['Verify recipient and encrypt if needed', 'Send immediately', 'CC everyone', 'Use BCC'],
-            correctAnswer: 0,
-            explanation: 'Always verify recipients and protect sensitive data.',
-            isMandatory: false
-          },
-          {
-            question: 'Are screenshots of confidential data allowed?',
-            options: ['Only if authorized and necessary', 'Yes, always', 'No, never', 'Only on phone'],
-            correctAnswer: 0,
-            explanation: 'Screenshots must follow same confidentiality rules.',
-            isMandatory: false
-          },
-          {
-            question: 'What is data classification?',
-            options: ['Labeling data by sensitivity', 'Organizing files', 'Deleting data', 'Encrypting data'],
-            correctAnswer: 0,
-            explanation: 'Classification determines appropriate handling controls.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Secure Coding Policy',
-        description: 'Understand secure software development practices.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/secure-coding.png',
-        badgeName: 'Secure Coder',
-        badgeDescription: 'Completed Secure Coding Training',
-        questions: [
-          {
-            question: 'What is secure coding?',
-            options: ['Writing software resistant to vulnerabilities', 'Fast coding', 'Code encryption', 'Code backup'],
-            correctAnswer: 0,
-            explanation: 'Secure coding prevents security vulnerabilities in software.',
-            isMandatory: true
-          },
-          {
-            question: 'What is SQL injection?',
-            options: ['Attack inserting malicious SQL code', 'Database optimization', 'Data query', 'Backup method'],
-            correctAnswer: 0,
-            explanation: 'SQL injection exploits poor input validation.',
-            isMandatory: false
-          },
-          {
-            question: 'Should passwords be hardcoded in source code?',
-            options: ['No, use secure configuration', 'Yes, for convenience', 'Yes, if commented', 'Only in test code'],
-            correctAnswer: 0,
-            explanation: 'Hardcoded credentials are a critical security flaw.',
-            isMandatory: false
-          },
-          {
-            question: 'What is input validation?',
-            options: ['Checking user input for malicious content', 'User authentication', 'Data backup', 'Code review'],
-            correctAnswer: 0,
-            explanation: 'Input validation prevents injection attacks.',
-            isMandatory: false
-          },
-          {
-            question: 'When should code be reviewed for security?',
-            options: ['During development and before release', 'Only after incidents', 'Only at release', 'Never'],
-            correctAnswer: 0,
-            explanation: 'Security reviews should be integrated throughout development.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Risk Assessment Procedure',
-        description: 'Learn how to identify and assess information security risks.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/risk-assessment.png',
-        badgeName: 'Risk Analyst',
-        badgeDescription: 'Mastered Risk Assessment',
-        questions: [
-          {
-            question: 'What is a risk assessment?',
-            options: ['Identifying and evaluating threats', 'Financial audit', 'Performance review', 'Customer survey'],
-            correctAnswer: 0,
-            explanation: 'Risk assessment identifies threats and vulnerabilities.',
-            isMandatory: true
-          },
-          {
-            question: 'What is a threat?',
-            options: ['Potential cause of unwanted incident', 'Security control', 'Data backup', 'Password policy'],
-            correctAnswer: 0,
-            explanation: 'Threats are potential sources of harm.',
-            isMandatory: false
-          },
-          {
-            question: 'What is a vulnerability?',
-            options: ['Weakness that can be exploited', 'Security control', 'Strong password', 'Firewall'],
-            correctAnswer: 0,
-            explanation: 'Vulnerabilities are weaknesses in systems or processes.',
-            isMandatory: false
-          },
-          {
-            question: 'How is risk calculated?',
-            options: ['Likelihood x Impact', 'Assets + Threats', 'Controls - Vulnerabilities', 'Budget / Time'],
-            correctAnswer: 0,
-            explanation: 'Risk = Likelihood of occurrence × Impact of consequences.',
-            isMandatory: false
-          },
-          {
-            question: 'What is risk treatment?',
-            options: ['Actions to modify risk', 'Risk acceptance', 'Risk avoidance only', 'Ignoring risk'],
-            correctAnswer: 0,
-            explanation: 'Risk treatment includes mitigation, transfer, acceptance, or avoidance.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Document Control Awareness',
-        description: 'Understand document management and version control.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/document-control.png',
-        badgeName: 'Document Master',
-        badgeDescription: 'Mastered Document Control',
-        questions: [
-          {
-            question: 'Why is document control important?',
-            options: ['Ensures use of correct versions', 'Creates paperwork', 'Slows processes', 'Increases storage'],
-            correctAnswer: 0,
-            explanation: 'Document control ensures accuracy and compliance.',
-            isMandatory: true
-          },
-          {
-            question: 'What is version control?',
-            options: ['Tracking document changes over time', 'Deleting old files', 'Printing documents', 'Email backup'],
-            correctAnswer: 0,
-            explanation: 'Version control tracks changes and maintains history.',
-            isMandatory: false
-          },
-          {
-            question: 'Should you work from local copies of controlled documents?',
-            options: ['No, use official repository', 'Yes, always', 'Yes, if convenient', 'Only offline'],
-            correctAnswer: 0,
-            explanation: 'Local copies may be outdated; use official versions.',
-            isMandatory: false
-          },
-          {
-            question: 'What is document retention?',
-            options: ['Keeping documents for required period', 'Never deleting', 'Immediate deletion', 'Random storage'],
-            correctAnswer: 0,
-            explanation: 'Retention ensures documents are kept as legally required.',
-            isMandatory: false
-          },
-          {
-            question: 'Who can approve controlled documents?',
-            options: ['Authorized personnel only', 'Anyone', 'Document creator', 'All employees'],
-            correctAnswer: 0,
-            explanation: 'Only authorized individuals can approve changes.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Exchange of Information Policy',
-        description: 'Learn secure methods for sharing information.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/info-exchange.png',
-        badgeName: 'Information Exchange Pro',
-        badgeDescription: 'Mastered Secure Information Sharing',
-        questions: [
-          {
-            question: 'What should you do before sharing sensitive information?',
-            options: ['Verify recipient authorization', 'Share immediately', 'Post publicly', 'Email to everyone'],
-            correctAnswer: 0,
-            explanation: 'Always verify recipients have authorization for sensitive data.',
-            isMandatory: true
-          },
-          {
-            question: 'Which method is secure for sharing confidential files?',
-            options: ['Encrypted file transfer or secure portal', 'Personal email', 'Public cloud link', 'Social media'],
-            correctAnswer: 0,
-            explanation: 'Use approved secure channels for confidential information.',
-            isMandatory: false
-          },
-          {
-            question: 'Should you discuss confidential matters in public?',
-            options: ['No, only in secure locations', 'Yes, if quiet', 'Yes, if necessary', 'Only with colleagues'],
-            correctAnswer: 0,
-            explanation: 'Public spaces pose eavesdropping and shoulder surfing risks.',
-            isMandatory: false
-          },
-          {
-            question: 'What is an NDA?',
-            options: ['Non-Disclosure Agreement', 'New Data Access', 'Network Device Authorization', 'No Data Available'],
-            correctAnswer: 0,
-            explanation: 'NDAs legally protect confidential information.',
-            isMandatory: false
-          },
-          {
-            question: 'Can you forward confidential emails?',
-            options: ['Only if authorized', 'Yes, within company', 'Yes, to anyone', 'Yes, if BCC'],
-            correctAnswer: 0,
-            explanation: 'Forwarding requires same authorization as original sharing.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Asset Inventory',
-        description: 'Understand the importance of tracking organizational assets.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/asset-inventory.png',
-        badgeName: 'Asset Manager',
-        badgeDescription: 'Completed Asset Inventory Training',
-        questions: [
-          {
-            question: 'Why maintain an asset inventory?',
-            options: ['Track and protect organizational assets', 'Create paperwork', 'Count equipment', 'Insurance only'],
-            correctAnswer: 0,
-            explanation: 'Asset inventory enables proper security and management.',
-            isMandatory: true
-          },
-          {
-            question: 'What is an information asset?',
-            options: ['Hardware, software, data, or services', 'Only computers', 'Only data', 'Only buildings'],
-            correctAnswer: 0,
-            explanation: 'Information assets include all resources supporting information processing.',
-            isMandatory: false
-          },
-          {
-            question: 'Should personal devices be in the inventory?',
-            options: ['Yes, if used for work', 'No, never', 'Only phones', 'Only laptops'],
-            correctAnswer: 0,
-            explanation: 'Work-used personal devices (BYOD) require tracking.',
-            isMandatory: false
-          },
-          {
-            question: 'What is asset classification?',
-            options: ['Categorizing by value and sensitivity', 'Organizing by color', 'Sorting by age', 'Grouping by size'],
-            correctAnswer: 0,
-            explanation: 'Classification determines appropriate protection levels.',
-            isMandatory: false
-          },
-          {
-            question: 'When should inventory be updated?',
-            options: ['When assets are added, changed, or removed', 'Yearly only', 'Never', 'When audited'],
-            correctAnswer: 0,
-            explanation: 'Inventory must reflect current state of assets.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Email Rules',
-        description: 'Learn proper email usage and security practices.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/email-rules.png',
-        badgeName: 'Email Expert',
-        badgeDescription: 'Mastered Email Security',
-        questions: [
-          {
-            question: 'What is phishing?',
-            options: ['Fraudulent emails attempting to steal information', 'Spam filter', 'Email backup', 'Newsletter'],
-            correctAnswer: 0,
-            explanation: 'Phishing uses deceptive emails to trick victims.',
-            isMandatory: true
-          },
-          {
-            question: 'How to identify phishing emails?',
-            options: ['Suspicious sender, urgency, unexpected attachments', 'All emails are phishing', 'Only spam is phishing', 'Check email length'],
-            correctAnswer: 0,
-            explanation: 'Phishing shows red flags like urgency and suspicious links.',
-            isMandatory: false
-          },
-          {
-            question: 'Should you click links in unexpected emails?',
-            options: ['No, verify sender first', 'Yes, always', 'Yes, if from known company', 'Only on phone'],
-            correctAnswer: 0,
-            explanation: 'Always verify unexpected emails before clicking.',
-            isMandatory: false
-          },
-          {
-            question: 'Is email suitable for highly confidential information?',
-            options: ['No, use encrypted channels', 'Yes, always', 'Yes, if internal', 'Yes, if password protected'],
-            correctAnswer: 0,
-            explanation: 'Standard email is not secure enough for highly confidential data.',
-            isMandatory: false
-          },
-          {
-            question: 'What should you do with suspicious emails?',
-            options: ['Report to IT and delete', 'Reply asking questions', 'Forward to colleagues', 'Ignore them'],
-            correctAnswer: 0,
-            explanation: 'Report phishing attempts to help protect others.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Confidential Information Handling Policy',
-        description: 'Learn how to properly handle confidential information.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/confidential.png',
-        badgeName: 'Confidentiality Guardian',
-        badgeDescription: 'Mastered Confidential Information Handling',
-        questions: [
-          {
-            question: 'What is confidential information?',
-            options: ['Sensitive data requiring protection', 'Public information', 'Personal opinions', 'Marketing materials'],
-            correctAnswer: 0,
-            explanation: 'Confidential information requires special protection due to sensitivity.',
-            isMandatory: true
-          },
-          {
-            question: 'Can you discuss confidential projects in public?',
-            options: ['No, only in secure locations', 'Yes, if careful', 'Yes, with colleagues', 'Yes, if necessary'],
-            correctAnswer: 0,
-            explanation: 'Public discussions risk unauthorized disclosure.',
-            isMandatory: false
-          },
-          {
-            question: 'How should confidential documents be stored?',
-            options: ['Locked or encrypted storage', 'On desk', 'In trash', 'In email'],
-            correctAnswer: 0,
-            explanation: 'Confidential documents require physical or electronic protection.',
-            isMandatory: false
-          },
-          {
-            question: 'Should confidential info be taken outside work?',
-            options: ['Only if authorized and protected', 'Yes, anytime', 'No, never', 'Only in briefcase'],
-            correctAnswer: 0,
-            explanation: 'Removing confidential information requires approval and safeguards.',
-            isMandatory: false
-          },
-          {
-            question: 'What if you accidentally disclose confidential info?',
-            options: ['Report immediately to supervisor', 'Keep quiet', 'Delete evidence', 'Blame others'],
-            correctAnswer: 0,
-            explanation: 'Immediate reporting enables damage control.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Telework Policy',
-        description: 'Understand secure remote work practices.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/telework.png',
-        badgeName: 'Remote Work Pro',
-        badgeDescription: 'Completed Telework Security Training',
-        questions: [
-          {
-            question: 'What is most important when working remotely?',
-            options: ['Maintain same security standards', 'Work faster', 'Skip security', 'Use personal devices'],
-            correctAnswer: 0,
-            explanation: 'Remote work requires same security as office work.',
-            isMandatory: true
-          },
-          {
-            question: 'Should you use public WiFi for work?',
-            options: ['No, or use VPN if necessary', 'Yes, always', 'Yes, if password-protected', 'Only for email'],
-            correctAnswer: 0,
-            explanation: 'Public WiFi is insecure without VPN protection.',
-            isMandatory: false
-          },
-          {
-            question: 'How to secure your home workspace?',
-            options: ['Lock devices, use privacy screens, secure network', 'Leave devices unlocked', 'Work in public areas', 'Share network openly'],
-            correctAnswer: 0,
-            explanation: 'Home workspace requires physical and digital security.',
-            isMandatory: false
-          },
-          {
-            question: 'Can family members use your work computer?',
-            options: ['No, work devices are for authorized use only', 'Yes, anytime', 'Yes, if supervised', 'Only for browsing'],
-            correctAnswer: 0,
-            explanation: 'Work devices must be used only for authorized purposes.',
-            isMandatory: false
-          },
-          {
-            question: 'What if your work device is lost or stolen?',
-            options: ['Report immediately to IT', 'Wait and see', 'Buy replacement', 'Search quietly'],
-            correctAnswer: 0,
-            explanation: 'Immediate reporting enables remote wipe and damage control.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Information Security Incident Policy',
-        description: 'Learn how to identify and report security incidents.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/incident.png',
-        badgeName: 'Incident Response Pro',
-        badgeDescription: 'Mastered Incident Response',
-        questions: [
-          {
-            question: 'What is a security incident?',
-            options: ['Event compromising security', 'System update', 'Password change', 'Software installation'],
-            correctAnswer: 0,
-            explanation: 'Security incidents are events that breach or threaten security.',
-            isMandatory: true
-          },
-          {
-            question: 'When should you report a suspected incident?',
-            options: ['Immediately', 'After confirming', 'Next day', 'Never if minor'],
-            correctAnswer: 0,
-            explanation: 'Quick reporting enables faster response and limits damage.',
-            isMandatory: false
-          },
-          {
-            question: 'What is NOT a security incident?',
-            options: ['Scheduled maintenance', 'Malware infection', 'Data breach', 'Unauthorized access'],
-            correctAnswer: 0,
-            explanation: 'Scheduled maintenance is planned, not an incident.',
-            isMandatory: false
-          },
-          {
-            question: 'Who should handle security incidents?',
-            options: ['IT security team', 'Any employee', 'Ignore them', 'Fix yourself'],
-            correctAnswer: 0,
-            explanation: 'Security incidents require specialized response team.',
-            isMandatory: false
-          },
-          {
-            question: 'What should you do if you suspect compromise?',
-            options: ['Disconnect, report, preserve evidence', 'Continue working', 'Restart computer', 'Delete files'],
-            correctAnswer: 0,
-            explanation: 'Proper incident response includes containment and preservation.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Training Policy',
-        description: 'Understand the importance of security awareness training.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/training.png',
-        badgeName: 'Training Champion',
-        badgeDescription: 'Completed Training Policy',
-        questions: [
-          {
-            question: 'Why is security training important?',
-            options: ['Builds awareness and reduces risk', 'Waste of time', 'Only for IT', 'Compliance checkbox'],
-            correctAnswer: 0,
-            explanation: 'Training empowers employees to protect information.',
-            isMandatory: true
-          },
-          {
-            question: 'How often should security training occur?',
-            options: ['Regularly and when roles change', 'Once at hire', 'Never', 'Only after incidents'],
-            correctAnswer: 0,
-            explanation: 'Ongoing training maintains awareness of evolving threats.',
-            isMandatory: false
-          },
-          {
-            question: 'Who needs security training?',
-            options: ['All employees', 'Only IT staff', 'Only managers', 'Only new hires'],
-            correctAnswer: 0,
-            explanation: 'Everyone plays a role in information security.',
-            isMandatory: false
-          },
-          {
-            question: 'What topics should training cover?',
-            options: ['Policies, threats, best practices', 'Only passwords', 'Only phishing', 'Only compliance'],
-            correctAnswer: 0,
-            explanation: 'Comprehensive training covers all relevant security topics.',
-            isMandatory: false
-          },
-          {
-            question: 'Is completing training enough?',
-            options: ['No, must apply knowledge daily', 'Yes, training is all', 'Yes, if passed test', 'Only need certificate'],
-            correctAnswer: 0,
-            explanation: 'Training effectiveness requires practical application.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Secured Area Policy',
-        description: 'Learn about physical security and access controls.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/secured-area.png',
-        badgeName: 'Physical Security Expert',
-        badgeDescription: 'Mastered Secured Area Policy',
-        questions: [
-          {
-            question: 'What is a secured area?',
-            options: ['Restricted area requiring authorization', 'Any office', 'Parking lot', 'Break room'],
-            correctAnswer: 0,
-            explanation: 'Secured areas contain sensitive assets or information.',
-            isMandatory: true
-          },
-          {
-            question: 'Should you hold doors open for others?',
-            options: ['No, everyone must use own access', 'Yes, to be polite', 'Yes, if you know them', 'Only for visitors'],
-            correctAnswer: 0,
-            explanation: 'Tailgating allows unauthorized access; everyone must authenticate.',
-            isMandatory: false
-          },
-          {
-            question: 'What should you do with your access badge?',
-            options: ['Keep secure and never share', 'Share with colleagues', 'Lend to visitors', 'Leave at desk'],
-            correctAnswer: 0,
-            explanation: 'Access badges are personal and must not be shared.',
-            isMandatory: false
-          },
-          {
-            question: 'How should visitors be handled?',
-            options: ['Escorted and monitored', 'Free access', 'Given employee badges', 'Ignored'],
-            correctAnswer: 0,
-            explanation: 'Visitors require escorting to prevent unauthorized access.',
-            isMandatory: false
-          },
-          {
-            question: 'What if you find an unlocked secured area?',
-            options: ['Report to security immediately', 'Lock it yourself', 'Ignore it', 'Use the opportunity'],
-            correctAnswer: 0,
-            explanation: 'Security breaches must be reported for investigation.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Disposal Policy',
-        description: 'Learn proper methods for disposing of sensitive information.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/disposal.png',
-        badgeName: 'Disposal Specialist',
-        badgeDescription: 'Completed Secure Disposal Training',
-        questions: [
-          {
-            question: 'Why is secure disposal important?',
-            options: ['Prevents data recovery by unauthorized parties', 'Recycles paper', 'Saves space', 'Reduces clutter'],
-            correctAnswer: 0,
-            explanation: 'Improper disposal can lead to data breaches.',
-            isMandatory: true
-          },
-          {
-            question: 'How should confidential paper be disposed?',
-            options: ['Shredded with cross-cut shredder', 'Regular trash', 'Recycling bin', 'Torn by hand'],
-            correctAnswer: 0,
-            explanation: 'Cross-cut shredding makes document reconstruction impossible.',
-            isMandatory: false
-          },
-          {
-            question: 'How to dispose of old hard drives?',
-            options: ['Degaussing, physical destruction, or certified wiping', 'Regular trash', 'Format and donate', 'Sell online'],
-            correctAnswer: 0,
-            explanation: 'Hard drives require certified data destruction methods.',
-            isMandatory: false
-          },
-          {
-            question: 'Can USB drives be reused after deleting files?',
-            options: ['No, must be securely wiped or destroyed', 'Yes, always safe', 'Yes, if formatted', 'Yes, if files deleted'],
-            correctAnswer: 0,
-            explanation: 'Deleted files can be recovered without secure wiping.',
-            isMandatory: false
-          },
-          {
-            question: 'What about expired ID badges?',
-            options: ['Return to security for destruction', 'Keep as souvenir', 'Regular trash', 'Give to others'],
-            correctAnswer: 0,
-            explanation: 'Old badges could be misused for unauthorized access.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Preventive Maintenance',
-        description: 'Understand the importance of system maintenance for security.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/maintenance.png',
-        badgeName: 'Maintenance Pro',
-        badgeDescription: 'Completed Preventive Maintenance Training',
-        questions: [
-          {
-            question: 'Why is preventive maintenance important for security?',
-            options: ['Prevents failures that cause vulnerabilities', 'Keeps equipment clean', 'Saves money', 'Follows schedule'],
-            correctAnswer: 0,
-            explanation: 'Well-maintained systems are more secure and reliable.',
-            isMandatory: true
-          },
-          {
-            question: 'What is patch management?',
-            options: ['Installing security updates', 'Fixing hardware', 'Cleaning computers', 'Replacing parts'],
-            correctAnswer: 0,
-            explanation: 'Patches fix security vulnerabilities in software.',
-            isMandatory: false
-          },
-          {
-            question: 'How often should systems be updated?',
-            options: ['Regularly per policy', 'Never', 'Only when broken', 'Only annually'],
-            correctAnswer: 0,
-            explanation: 'Regular updates protect against known vulnerabilities.',
-            isMandatory: false
-          },
-          {
-            question: 'Should you delay security patches?',
-            options: ['No, install promptly after testing', 'Yes, indefinitely', 'Yes, if inconvenient', 'Only for old systems'],
-            correctAnswer: 0,
-            explanation: 'Delays leave systems vulnerable to known exploits.',
-            isMandatory: false
-          },
-          {
-            question: 'What is vulnerability scanning?',
-            options: ['Identifying security weaknesses', 'Antivirus scan', 'Disk cleanup', 'Speed test'],
-            correctAnswer: 0,
-            explanation: 'Scanning proactively identifies security issues.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Backup Policy',
-        description: 'Learn about data backup and recovery procedures.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/backup.png',
-        badgeName: 'Backup Master',
-        badgeDescription: 'Mastered Backup Policy',
-        questions: [
-          {
-            question: 'Why are backups critical?',
-            options: ['Enable recovery from data loss', 'Use extra space', 'Slow systems', 'Create copies'],
-            correctAnswer: 0,
-            explanation: 'Backups protect against data loss from various causes.',
-            isMandatory: true
-          },
-          {
-            question: 'What is the 3-2-1 backup rule?',
-            options: ['3 copies, 2 media types, 1 offsite', '3 backups daily, 2 weekly, 1 monthly', '3 servers, 2 locations, 1 admin', '3 files, 2 folders, 1 drive'],
-            correctAnswer: 0,
-            explanation: '3-2-1 rule ensures backup redundancy and availability.',
-            isMandatory: false
-          },
-          {
-            question: 'How often should critical data be backed up?',
-            options: ['Daily or more frequently', 'Monthly', 'Yearly', 'Never'],
-            correctAnswer: 0,
-            explanation: 'Critical data requires frequent backups to minimize loss.',
-            isMandatory: false
-          },
-          {
-            question: 'Should backups be tested?',
-            options: ['Yes, regularly verify restoration', 'No, assume they work', 'Only once at setup', 'Only after disasters'],
-            correctAnswer: 0,
-            explanation: 'Untested backups may fail when needed.',
-            isMandatory: false
-          },
-          {
-            question: 'Where should backup media be stored?',
-            options: ['Secure offsite location', 'Next to computer', 'In same building', 'Public cloud only'],
-            correctAnswer: 0,
-            explanation: 'Offsite storage protects against site-wide disasters.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Software Regulation Policy',
-        description: 'Understand software licensing and authorized usage.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/software-regulation.png',
-        badgeName: 'Software Compliance Pro',
-        badgeDescription: 'Mastered Software Regulation',
-        questions: [
-          {
-            question: 'Why must software be approved before installation?',
-            options: ['Ensure security, licensing, and compatibility', 'Waste time', 'Limit productivity', 'Control employees'],
-            correctAnswer: 0,
-            explanation: 'Unapproved software poses security and legal risks.',
-            isMandatory: true
-          },
-          {
-            question: 'Is pirated software allowed?',
-            options: ['No, illegal and security risk', 'Yes, if free', 'Yes, if needed', 'Only at home'],
-            correctAnswer: 0,
-            explanation: 'Pirated software is illegal and often contains malware.',
-            isMandatory: false
-          },
-          {
-            question: 'What is software licensing?',
-            options: ['Legal agreement for software use', 'Software installation', 'User manual', 'Security feature'],
-            correctAnswer: 0,
-            explanation: 'Licenses define legal terms for software usage.',
-            isMandatory: false
-          },
-          {
-            question: 'Can you share licensed software with others?',
-            options: ['No, violates license terms', 'Yes, within company', 'Yes, if installed once', 'Only with friends'],
-            correctAnswer: 0,
-            explanation: 'Each user/device typically requires separate license.',
-            isMandatory: false
-          },
-          {
-            question: 'What is open source software?',
-            options: ['Software with publicly available code', 'Free trial software', 'Shareware', 'Unfinished software'],
-            correctAnswer: 0,
-            explanation: 'Open source allows code inspection and modification.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Time Synchronization',
-        description: 'Learn the importance of accurate time across systems.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/time-sync.png',
-        badgeName: 'Time Sync Specialist',
-        badgeDescription: 'Mastered Time Synchronization',
-        questions: [
-          {
-            question: 'Why is time synchronization critical?',
-            options: ['For logging, troubleshooting, and compliance', 'Show correct time', 'Aesthetic purposes', 'Schedule breaks'],
-            correctAnswer: 0,
-            explanation: 'Accurate time is essential for security event correlation.',
-            isMandatory: true
-          },
-          {
-            question: 'What does NTP stand for?',
-            options: ['Network Time Protocol', 'New Technology Process', 'Network Transfer Protocol', 'Node Timing Procedure'],
-            correctAnswer: 0,
-            explanation: 'NTP synchronizes computer clocks over networks.',
-            isMandatory: false
-          },
-          {
-            question: 'What happens with unsynchronized clocks?',
-            options: ['Difficult to correlate security events', 'Computers crash', 'Internet stops', 'Emails delete'],
-            correctAnswer: 0,
-            explanation: 'Time discrepancies hinder incident investigation.',
-            isMandatory: false
-          },
-          {
-            question: 'What is stratum in NTP?',
-            options: ['Level in time source hierarchy', 'Server type', 'Security protocol', 'Time zone'],
-            correctAnswer: 0,
-            explanation: 'Stratum indicates distance from reference clock.',
-            isMandatory: false
-          },
-          {
-            question: 'How does time sync support security?',
-            options: ['Enables accurate audit trails', 'Encrypts data', 'Blocks access', 'Scans viruses'],
-            correctAnswer: 0,
-            explanation: 'Accurate timestamps are crucial for forensics and compliance.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      },
-      {
-        title: 'Username & Password Management',
-        description: 'Learn best practices for credential management.',
-        documentUrl: 'https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view',
-        videoUrl: 'https://drive.google.com/file/d/YOUR_VIDEO_ID/preview',
-        badgeImage: '/uploads/badges/password.png',
-        badgeName: 'Password Security Expert',
-        badgeDescription: 'Mastered Password Management',
-        questions: [
-          {
-            question: 'What makes a strong password?',
-            options: ['Long, complex, unique', 'Short and simple', 'Name and birthdate', 'Same everywhere'],
-            correctAnswer: 0,
-            explanation: 'Strong passwords are at least 12 characters with mixed character types.',
-            isMandatory: true
-          },
-          {
-            question: 'Should you reuse passwords?',
-            options: ['No, use unique password for each system', 'Yes, easier to remember', 'Yes, if complex', 'Only for unimportant sites'],
-            correctAnswer: 0,
-            explanation: 'Password reuse allows compromise to spread across accounts.',
-            isMandatory: false
-          },
-          {
-            question: 'What is a password manager?',
-            options: ['Tool to securely store passwords', 'Password reset feature', 'IT helpdesk', 'Security policy'],
-            correctAnswer: 0,
-            explanation: 'Password managers encrypt and manage credentials securely.',
-            isMandatory: false
-          },
-          {
-            question: 'How often should passwords be changed?',
-            options: ['When compromised or per policy', 'Daily', 'Never', 'Only at year end'],
-            correctAnswer: 0,
-            explanation: 'Regular changes without cause may weaken security through predictable patterns.',
-            isMandatory: false
-          },
-          {
-            question: 'What is multi-factor authentication?',
-            options: ['Multiple verification methods', 'Complex password', 'Multiple passwords', 'Backup password'],
-            correctAnswer: 0,
-            explanation: 'MFA requires something you know, have, and/or are.',
-            isMandatory: false
-          }
-        ],
-        isActive: true
-      }
-    ];
+---
 
-    const createdTopics = await Topic.insertMany(topics);
-    console.log(`✅ ${createdTopics.length} topics created\n`);
+## Part 2: Excel Visualization - Step by Step
 
-    // Check/Create Users
-    const adminExists = await User.findOne({ username: 'admin' });
-    if (!adminExists) {
-      await User.create({
-        username: 'admin',
-        email: 'admin@imsarcade.com',
-        password: 'admin123',
-        role: 'admin',
-        isApproved: true
-      });
-      console.log('✅ Admin user created');
-    }
+### **Step 1: Create New Excel File**
 
-    const employeeExists = await User.findOne({ username: 'employee' });
-    if (!employeeExists) {
-      await User.create({
-        username: 'employee',
-        email: 'employee@imsarcade.com',
-        password: 'employee123',
-        role: 'employee',
-        isApproved: true
-      });
-      console.log('✅ Employee user created');
-    } else if (!employeeExists.isApproved) {
-      employeeExists.isApproved = true;
-      await employeeExists.save();
-      console.log('✅ Employee user approved');
-    }
+1. Open Excel
+2. Save as: `IMS_Training_Level_Analysis.xlsx`
 
-    console.log('\n🎉 SEED COMPLETE!');
-    console.log(`📚 ${topics.length} topics seeded`);
-    console.log('🔐 Login credentials:');
-    console.log('   Admin: admin / admin123');
-    console.log('   Employee: employee / employee123');
-    console.log('\n💡 Next: Update Google Drive URLs and create badge images!');
-    
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ SEED ERROR:', error);
-    process.exit(1);
-  }
-};
+---
 
-seedData();
+### **Step 2: Create "Level Thresholds" Sheet**
+
+#### **Sheet 1: Level Thresholds**
+
+**Column Headers (Row 1):**
+```
+A1: Level
+B1: Total XP Required
+C1: XP For This Level
+D1: Topics Completed (Approx)
+E1: Cumulative Topics
+```
+
+**Data (Rows 2-31):**
+
+Copy-paste this data:
+```
+Level	Total XP Required	XP For This Level	Topics Completed (Approx)	Cumulative Topics
+1	0	0	0	0
+2	100	100	0.5	0.5
+3	250	150	0.75	1.25
+4	450	200	1	2.25
+5	700	250	1.25	3.5
+6	1000	300	1.5	5
+7	1350	350	1.75	6.75
+8	1750	400	2	8.75
+9	2200	450	2.25	11
+10	2700	500	2.5	13.5
+11	3250	550	2.75	16.25
+12	3850	600	3	19.25
+13	4500	650	3.25	22.5
+14	5200	700	3.5	26
+15	5950	750	3.75	29.75
+16	6750	800	4	33.75
+17	7600	850	4.25	38
+18	8500	900	4.5	42.5
+19	9450	950	4.75	47.25
+20	10450	1000	5	52.25
+21	11500	1050	5.25	57.5
+22	12600	1100	5.5	63
+23	13750	1150	5.75	68.75
+24	14950	1200	6	74.75
+25	16200	1250	6.25	81
+26	17500	1300	6.5	87.5
+27	18850	1350	6.75	94.25
+28	20250	1400	7	101.25
+29	21700	1450	7.25	108.5
+30	23200	1500	7.5	116
+```
+
+**Formulas:**
+
+**C3** (XP For This Level): `=B3-B2`  
+Copy down to C31
+
+**D3** (Topics Completed): `=C3/200` (assuming 200 XP average per topic)  
+Copy down to D31
+
+**E3** (Cumulative Topics): `=B3/200`  
+Copy down to E31
+
+---
+
+### **Step 3: Create Charts**
+
+#### **Chart 1: Total XP Progression Curve**
+
+1. Select columns **A2:B31** (Level and Total XP Required)
+2. Insert → **Line Chart** with Markers
+3. Chart Title: **"Level Progression - Total XP Required"**
+4. X-Axis: **"Level"**
+5. Y-Axis: **"Total XP Required"**
+6. **Format:**
+   - Line color: Blue (#3B82F6)
+   - Marker size: 6
+   - Line width: 3
+   - Add data labels at levels 5, 10, 15, 20, 25, 30
+
+#### **Chart 2: XP Required Per Level (Difficulty Curve)**
+
+1. Select columns **A2:A31** and **C2:C31** (Level and XP For This Level)
+2. Insert → **Column Chart**
+3. Chart Title: **"XP Required Per Level - Difficulty Curve"**
+4. X-Axis: **"Level"**
+5. Y-Axis: **"XP Needed to Level Up"**
+6. **Format:**
+   - Gradient fill: Green → Yellow → Orange → Red
+   - This shows how difficulty increases
+
+---
+
+### **Step 4: Create "5-Year Projection" Sheet**
+
+#### **Sheet 2: 5 Year Projection**
+
+**Column Headers:**
+```
+A1: Year
+B1: Scenario
+C1: Topics Completed
+D1: Games Played
+E1: XP Earned This Year
+F1: Cumulative XP
+G1: Level Reached
+H1: Badges Earned
+```
+
+**Data:**
+```
+Year	Scenario	Topics Completed	Games Played	XP Earned This Year	Cumulative XP	Level Reached	Badges Earned
+1	Minimal	28	0	2800	2800	11	28
+1	Active	28	20	7500	7500	17	28
+1	Completionist	28	50	9400	9400	19	28
+2	Minimal	5	0	500	3300	12	33
+2	Active	5	10	2000	9500	19	33
+2	Completionist	5	20	3000	12400	22	33
+3	Minimal	5	0	500	3800	12	38
+3	Active	5	10	2000	11500	21	38
+3	Completionist	5	20	3000	15400	24	38
+4	Minimal	5	0	500	4300	13	43
+4	Active	5	10	2000	13500	22	43
+4	Completionist	5	20	3000	18400	26	43
+5	Minimal	5	0	500	4800	13	48
+5	Active	5	10	2000	15500	24	48
+5	Completionist	5	20	3000	21400	28	48
+Formulas:
+F2 (Cumulative XP Year 1): =E2
+F3 (Cumulative XP Year 2+): =F2+E3 if same scenario, else use previous year's value
+Copy down pattern
+G2 (Level Reached): Use VLOOKUP or this formula:
+excel=MATCH(F2,$B$2:$B$31,1)+1
+```
+
+---
+
+#### **Chart 3: 5-Year Progression by Scenario**
+
+1. Create a **Line Chart** with 3 series:
+   - Minimal (Years 1-5)
+   - Active (Years 1-5)
+   - Completionist (Years 1-5)
+2. X-Axis: Year (1-5)
+3. Y-Axis: Level Reached
+4. **Format:**
+   - Minimal: Orange line
+   - Active: Blue line
+   - Completionist: Green line
+   - Add trendlines
+
+---
+
+### **Step 5: Create "Employee Distribution" Sheet**
+
+#### **Sheet 3: Employee Distribution (Projected)**
+
+**After Year 1:**
+```
+Level Range	Count	Percentage	Description
+1-5	10	5%	Inactive/Minimal
+6-10	30	15%	Casual Learners
+11-15	80	40%	Regular Participants
+16-20	60	30%	Active Learners
+21-25	15	7.5%	High Achievers
+26-30	5	2.5%	Completionists
+```
+
+**Create Pie Chart:**
+- Title: **"Expected Employee Distribution (Year 1)"**
+- Show percentages
+- Color code by engagement level
+
+---
+
+### **Step 6: Dashboard Summary Sheet**
+
+#### **Sheet 4: Dashboard**
+
+Create a summary dashboard with:
+
+**A. Key Metrics Box:**
+```
+Total Topics Available:        28
+Total XP Available (Min):      2,800 XP
+Total XP Available (Max):      8,400 XP
+Average Topic Completion Time: 20 minutes
+Max Achievable Level (Year 1): 17-19
+```
+
+**B. Engagement Milestones:**
+```
+Level 5  (700 XP):    Bronze Learner     → 3 topics
+Level 10 (2,700 XP):  Silver Learner     → 13 topics
+Level 15 (5,950 XP):  Gold Learner       → 30 topics
+Level 20 (10,450 XP): Platinum Learner   → 52 topics
+Level 25 (16,200 XP): Diamond Master     → 81 topics
+```
+
+**C. Time Investment:**
+```
+Mandatory Only (28 topics):   7-14 hours
+Full Completion (28 topics):  14-28 hours
+With Games (50 games):        +10-15 hours
+Annual Maintenance:           3-5 hours/year
+```
+
+---
+
+### **Step 7: Create Comparison Chart**
+
+#### **Chart 4: Linear vs Pokemon System**
+
+Create a comparison showing:
+
+**Linear System (Old - if you had one):**
+```
+Level = floor(XP / 100) + 1
+Every 100 XP = 1 level (constant)
+```
+
+**Pokemon System (Current):**
+```
+Levels 1-5:   100-300 XP per level
+Levels 6-10:  300-500 XP per level
+Levels 11+:   500+ XP per level
+```
+
+Show both as line charts to visualize the difference.
+
+---
+
+### **Step 8: Advanced Formulas**
+
+#### **Calculate Level from Any XP Value:**
+
+Create a calculator section:
+```
+Cell A1: Enter XP
+Cell B1: [User inputs XP]
+Cell C1: Level Achieved
+Cell D1: =MATCH(B1,$B$2:$B$31,1)+1
+```
+
+#### **XP Progress to Next Level:**
+```
+Cell E1: XP to Next Level
+Cell F1: =VLOOKUP(D1+1,$A$2:$B$31,2,FALSE)-B1
+```
+
+#### **Percentage to Next Level:**
+```
+Cell G1: Progress %
+Cell H1: =(B1-VLOOKUP(D1,$A$2:$B$31,2,FALSE))/(VLOOKUP(D1+1,$A$2:$B$31,2,FALSE)-VLOOKUP(D1,$A$2:$B$31,2,FALSE))*100
+```
+
+---
+
+## Part 3: Understanding the Math
+
+### **Why Progressive Scaling?**
+```
+Level 2: 100 XP needed  (gap: 100)
+Level 3: 250 XP needed  (gap: 150) +50 increase
+Level 4: 450 XP needed  (gap: 200) +50 increase
+Level 5: 700 XP needed  (gap: 250) +50 increase
+```
+
+**Pattern:** Each level gap increases by 50 XP
+
+**Formula:** 
+```
+XP_for_level_N = XP_for_level_(N-1) + (50 × (N-1))
+```
+
+### **Example Calculation:**
+
+**To reach Level 10 from Level 9:**
+```
+Level 9 requires:  2,200 XP total
+Level 10 requires: 2,700 XP total
+Gap:               500 XP needed to level up
+```
+
+**At 200 XP per topic average:**
+```
+500 XP ÷ 200 XP/topic = 2.5 topics needed
+```
+
+---
+
+## Part 4: Color Coding Guide
+
+**Use these colors in Excel for consistency:**
+```
+Primary Navy:    RGB(27, 58, 107)   → Headers
+Bright Blue:     RGB(59, 130, 246)  → Charts
+Orange:          RGB(249, 115, 22)  → Warnings
+Green:           RGB(16, 185, 129)  → Success
+Pink:            RGB(236, 72, 153)  → Highlights
+Red:             RGB(239, 68, 68)   → Critical
+```
+
+---
+
+## Part 5: Export & Share
+
+### **Create PDF Report:**
+
+1. Select Dashboard sheet
+2. File → Save As → PDF
+3. Include: Dashboard + Key Charts
+
+### **Share with Management:**
+
+Include:
+- Executive Summary (1 page)
+- Level Progression Chart
+- 5-Year Projections
+- Expected ROI on training
+
+---
+
+## Quick Reference: Level-to-XP Lookup
+```
+Level 1:  0 XP       | Level 11: 3,250 XP   | Level 21: 11,500 XP
+Level 2:  100 XP     | Level 12: 3,850 XP   | Level 22: 12,600 XP
+Level 3:  250 XP     | Level 13: 4,500 XP   | Level 23: 13,750 XP
+Level 4:  450 XP     | Level 14: 5,200 XP   | Level 24: 14,950 XP
+Level 5:  700 XP     | Level 15: 5,950 XP   | Level 25: 16,200 XP
+Level 6:  1,000 XP   | Level 16: 6,750 XP   | Level 26: 17,500 XP
+Level 7:  1,350 XP   | Level 17: 7,600 XP   | Level 27: 18,850 XP
+Level 8:  1,750 XP   | Level 18: 8,500 XP   | Level 28: 20,250 XP
+Level 9:  2,200 XP   | Level 19: 9,450 XP   | Level 29: 21,700 XP
+Level 10: 2,700 XP   | Level 20: 10,450 XP  | Level 30: 23,200 XP
