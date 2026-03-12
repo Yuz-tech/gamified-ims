@@ -10,33 +10,36 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
+// Ensure directories exist
+const badgeDir = path.join(__dirname, '../uploads/badges');
+const avatarDir = path.join(__dirname, '../uploads/avatars');
+
+if (!fs.existsSync(badgeDir)) {
+  fs.mkdirSync(badgeDir, { recursive: true });
+}
+if (!fs.existsSync(avatarDir)) {
+  fs.mkdirSync(avatarDir, { recursive: true });
+}
+
 // Badge Storage 
 const badgeStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '../uploads/badges');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
+    cb(null, badgeDir);
   },
   filename: (req, file, cb) => {
-    const uniqueName = `badge-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'badge-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
 // Avatar storage
 const avatarStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '../uploads/avatars');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
+    cb(null, avatarDir);
   },
   filename: (req, file, cb) => {
-    const uniqueName = `avatar-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 

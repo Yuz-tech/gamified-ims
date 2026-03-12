@@ -172,24 +172,41 @@ router.put('/topics/:topicId/toggle', async (req, res) => {
 });
 
 // Update topic
-router.put('/topics/:topicId', async (req, res) => {
+router.put('/topics/:id', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const { title, description, videoUrl, videoDuration, order, questions, isActive } = req.body;
-    
+    const { id } = req.params;
+    const updateData = req.body;
+
+    if (updateData.questions) {
+      if (updateData.questions.length !== 5) {
+        return res.status(400).json({ message: 'Topic must have exactly 5 questions'});
+      }
+
+      updateData.questions[0].isMandatory = true;
+
+      for (let i=1; i<updateData.questions.length; i++) {
+        updateData.questions[i].isMandatory = false;
+      }
+    }
+
     const topic = await Topic.findByIdAndUpdate(
-      req.params.topicId,
-      { title, description, videoUrl, videoDuration, order, questions, isActive },
-      { new: true, runValidators: true }
+      id, { $set: updateData }, { new: true, runValidators: true }
     );
-    
+
     if (!topic) {
       return res.status(404).json({ message: 'Topic not found' });
     }
+
+    await logActivity(req.user._id, 'topic_updated', {
+      topicId: topic._id,
+      topicTitle: topic.title
+    }, req);
+
     res.json(topic);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message})
   }
-});
+})
 
 // ===== BADGE MANAGEMENT =====
 
