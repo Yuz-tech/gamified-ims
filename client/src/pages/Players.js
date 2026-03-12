@@ -18,7 +18,7 @@ const Players = () => {
 
     const fetchPlayers = async () => {
         try {
-            const response = await api.get('/leaderboard?limit=1000');
+            const response = await api.get('/leaderboard?limit=100');
             setPlayers(response.data);
         } catch (error) {
             console.error('Error fetching players: ', error);
@@ -173,7 +173,7 @@ const Players = () => {
                   className="retro-card"
                 >
                     <h3 style={{ fontSize: '14px', color: 'var(--secondry-pink)', marginBottom: '20px' }}>
-                        Full Rankings
+                        Player Rankings
                     </h3>
 
                     {filteredPlayers.length === 0 ? (

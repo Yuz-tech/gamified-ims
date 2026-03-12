@@ -5,7 +5,7 @@ resetting revamp
 -retain badges
 *to distnguish a badge from one year to another, we just change the badge name. Hence, when resetting the badge dont get reset, not wasting the user's achievements.  
 -retain XP and Level
--reset all topics progress
+-reset all users' topics progress
 -change current code in YearlyReset.js (I can provide previous)
 
 3. const Layout is not in App.js
@@ -17,12 +17,10 @@ src\App.js
 
 5. change topic badge not working unless i remove imageFilter or FileFilter
 
-6. disable custom avatar uploads, just choose from pre-made or given  
+6. Under players tab, show players' avatars. Also, show user avatar in navbar
 
-7. Under players tab, show players' avatars. Also, show avatars in navbar
+7. Make badges bigger in home and achievements tab
 
-8. Make badges bigger in home and achievements tab
+8. Admin, add an option to change the completion form link
 
-9. for materials, allow any kind of links? except video
-
-10. Admin, add an option to change the completion form link
+9. Players tab rankings, pagination -> 50 per page
