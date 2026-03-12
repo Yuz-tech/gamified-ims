@@ -44,7 +44,7 @@ const Navbar = () => {
       }}
       onClick={() => navigate('/')}
       >
-        <img src = "/company.png" alt="AWSOL" style={{
+        <img src = "/logo.png" alt="AWS" style={{
           height: '40px',
           width: 'auto',
           objectFit: 'contain',
@@ -80,9 +80,9 @@ const Navbar = () => {
           color: location.pathname === '/' ? 'white' : 'var(--text-dark)',
           padding: '8px 15px',
           cursor: 'pointer',
-          fontWeight: 'bold',
+          fontWeight: location.pathname.startsWith('/') ? 'bold' : 'normal'
         }}>
-          Home
+          HOME
         </button>
 
         <button onClick={() => navigate('/topics')} style={{
@@ -94,7 +94,7 @@ const Navbar = () => {
           fontWeight: location.pathname.startsWith('/topics') ? 'bold' : 'normal'
         }}
         >
-          Topics
+          TOPICS
         </button>
 
         <button onClick={() =>('/games')} style={{
@@ -104,11 +104,9 @@ const Navbar = () => {
           padding: '8px 15px',
           cursor: 'pointer',
           fontWeight: location.pathname.startsWith('/games') ? 'bold' : 'normal',
-          fontFamily: 'inherit',
-          fontSize: 'inherit'
         }}
         >
-          Games
+          GAMES
         </button>
 
         <button onClick={() => navigate('/achievements')} style={{
@@ -119,7 +117,7 @@ const Navbar = () => {
           cursor: 'pointer',
           fontWeight: location.pathname === '/achievments' ? 'bold' : 'normal'
         }}>
-          Achievements
+          BADGES
         </button>
 
         <button onClick={() => navigate('/players')} style={{
@@ -129,10 +127,8 @@ const Navbar = () => {
             padding: '8px 15px',
             cursor: 'pointer',
             fontWeight: location.pathname === '/players' ? 'bold' : 'normal',
-            fontFamily: 'inherit',
-            fontSize: 'inherit'
           }}>
-          Players
+          PLAYERS
         </button>
 
         {/* User stats */}

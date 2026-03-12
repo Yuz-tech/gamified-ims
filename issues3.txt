@@ -1,14 +1,15 @@
 Register or request an account still not working (An error occurred) 
 
-Yearly Reset not working
-
-change navbar and routing
+(Yearly) Reset button is not working
 
 const Layout is not in App.js
 
 Games tab not working
 
-navbar no longer consistent
+change topic badge not working anymore
+
+disable custom avatar uploads, just choose from pre-made or given  
+show avatar in navbar
 
 resetting revamp 
 -retain badges for as long as the badges have a yearly label 
