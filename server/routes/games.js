@@ -1,6 +1,6 @@
 import express from 'express';
 import Game from '../models/Game.js';
-import GameProgress from '../models/GameProgress';
+import GameProgress from '../models/GameProgress.js';
 import User from '../models/User.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { logActivity } from '../utils/logger.js';

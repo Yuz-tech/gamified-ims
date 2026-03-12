@@ -1,10 +1,12 @@
-Register or request an account still not working 
+Register or request an account still not working (An error occurred) 
 
 Yearly Reset not working
 
 change navbar and routing
 
 const Layout is not in App.js
+
+Games tab not working
 
 navbar no longer consistent
 

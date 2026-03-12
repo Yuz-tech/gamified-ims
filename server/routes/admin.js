@@ -351,7 +351,7 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req,res) => {
   try {
     const { confirmCode } = req.body;
 
-    if (confirmCode !== 'RESET_ALL_DATA') {
+    if (confirmCode !== 'RESET_DATA') {
       return res.status(400).json({ message: 'Invalid confirmation code' });
     }
 

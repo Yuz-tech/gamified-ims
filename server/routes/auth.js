@@ -64,6 +64,7 @@ router.post('/register', async(req,res) => {
     const user = new User({
       username,
       email,
+      password: '143',
       role: 'employee',
       isApproved: false,
       requestedAt: new Date()
