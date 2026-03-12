@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
 import Achievements from './pages/Achievements';
+import Players from './pages/Players';
 import CrosswordGame from './pages/games/CrosswordGame';
 import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';
@@ -87,8 +88,13 @@ const AdminLayout = ({ children }) => {
             </button>
           )}
         </NavLink>
-        <NavLink to="/admin/yearly-reset" className="retro-btn secondary" style={{ fontSize: '10px', padding: '8px 15px' }}>
-          RESET
+        
+        <NavLink to="/admin/yearly-reset" style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              RESET
+            </button>
+          )}
         </NavLink>
       </div>
       {children}
@@ -143,6 +149,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
                 <CrosswordGame />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/players"
+          element={
+            <ProtectedRoute>
+                <Players />
             </ProtectedRoute>
           }
         />

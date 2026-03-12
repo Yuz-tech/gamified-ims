@@ -32,42 +32,49 @@ const parseUserAgent = (userAgent) => {
 };
 
 // Request new account
-router.post('/register', async (req, res) => {
+router.post('/register', async(req,res) => {
   try {
     const { username, email} = req.body;
-
+    
+    //Validation
     if (!username || !email) {
-      return res.status(400).json({ message: 'All fields are required'});
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const existingUser = await User.findOne({ username });
-    if(existingUser) {
-      return res.status(400).json({
-        message: 'Username already exists'
-      });
+    // Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    // Existing user
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }]
+    });
+
+    if (existingUser) {
+      if (existingUser.username === username) {
+        return res.status(400).json({ message: 'Username already exists' });
+      }
+      if (existingUser.email === email) {
+        return res.status(400).json({ message: 'Email already registered' });
+      }
     }
 
     const user = new User({
       username,
-      password,
+      email,
       role: 'employee',
       isApproved: false,
       requestedAt: new Date()
     });
 
-    // await user.save();
+    await user.save();
 
-    // await logActivity(user._id, 'user_registered', { username }, req);
-
-    res.status(201).json({
-      message: 'Registration successful. Please wait for admin approval.',
-      username: user.username
-    });
+    res.status(201).json({ message: 'Registration successful! Please wait for approval.', username: user.username });
   } catch (error) {
     console.error('Registration error: ', error);
-    res.status(500).json({
-      message: 'Server error', error: error.message
-    });
+    res.status(500).json({ message: 'Registration failed.', error: error.message});
   }
 });
 
@@ -176,9 +183,17 @@ router.get('/me', authenticateToken, async (req, res) => {
 });
 
 // Change password
-router.post('/change-password', authenticateToken, async (req, res) => {
+router.put('/change-password', authenticateToken, async (req,res) => {
   try {
     const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (newPassword.length < 3) {
+      return res.status(400).json({ message: 'Password must be at least 3 characters' });
+    }
 
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -193,11 +208,35 @@ router.post('/change-password', authenticateToken, async (req, res) => {
     user.password = newPassword;
     await user.save();
 
-    await logActivity(user._id, 'password_change', {}, req);
+    await logActivity(user._id, 'password_changed', {}, req);
 
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error occurred for some reason', error: error.message });
+    console.error('Change password error: ', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Update Profile
+router.put('/update-profile', authenticateToken, async (req, res) => {
+  try {
+    const { avatar } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (avatar !== undefined) {
+      user.avatar = avatar;
+    }
+
+    await user.save();
+
+    res.json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    console.error('Update profile error: ', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 

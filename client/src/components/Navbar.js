@@ -70,7 +70,8 @@ const Navbar = () => {
         display: 'flex',
         gap: '20px',
         alignItems: 'center',
-        fontSize: '11px'
+        fontSize: '11px',
+        fontWeight: 'bold'
       }}
       className="desktop-nav">
         <button onClick={() => navigate('/')} style={{
@@ -79,7 +80,7 @@ const Navbar = () => {
           color: location.pathname === '/' ? 'white' : 'var(--text-dark)',
           padding: '8px 15px',
           cursor: 'pointer',
-          fontWeight: location.pathname === '/' ? 'bold' : 'normal'
+          fontWeight: 'bold',
         }}>
           Home
         </button>
@@ -96,6 +97,20 @@ const Navbar = () => {
           Topics
         </button>
 
+        <button onClick={() =>('/games')} style={{
+          background: location.pathname.startsWith('/games') ? 'var(--bright-blue)' : 'transparent',
+          border: location.pathname.startsWith('/games') ? '2px solid var(--primary-navy)' : 'none',
+          color: location.pathname.startsWith('/games') ? 'white' : 'var(--text-dark)',
+          padding: '8px 15px',
+          cursor: 'pointer',
+          fontWeight: location.pathname.startsWith('/games') ? 'bold' : 'normal',
+          fontFamily: 'inherit',
+          fontSize: 'inherit'
+        }}
+        >
+          Games
+        </button>
+
         <button onClick={() => navigate('/achievements')} style={{
           background: location.pathname === '/achievements' ? 'var(--bright-blue)' : 'transparent',
           border: location.pathname === '/achievements' ? '2px solid var(--primary-navy)' : 'none',
@@ -105,6 +120,19 @@ const Navbar = () => {
           fontWeight: location.pathname === '/achievments' ? 'bold' : 'normal'
         }}>
           Achievements
+        </button>
+
+        <button onClick={() => navigate('/players')} style={{
+            background: location.pathname === '/players' ? 'var(--bright-blue)' : 'transparent',
+            border: location.pathname === '/players' ? '2px solid var(--primary-navy)' : 'none',
+            color: location.pathname === '/players' ? 'white' : 'var(--text-dark)',
+            padding: '8px 15px',
+            cursor: 'pointer',
+            fontWeight: location.pathname === '/players' ? 'bold' : 'normal',
+            fontFamily: 'inherit',
+            fontSize: 'inherit'
+          }}>
+          Players
         </button>
 
         {/* User stats */}
@@ -287,8 +315,14 @@ const Navbar = () => {
               <button onClick={() => navigate('/topics')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
                 Topics
               </button>
+              <button onClick={() => navigate('/games')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
+                Games
+              </button>
               <button onClick={() => navigate('/achievements')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
                 Achievements
+              </button>
+              <button onClick={() => navigate('/players')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
+                Players
               </button>
               <button onClick={() => navigate('/profile')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
                 Profile

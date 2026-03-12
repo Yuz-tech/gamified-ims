@@ -40,7 +40,7 @@ const Login = () => {
       } else {
         await requestAccount(formData.username, formData.email);
         setSuccess('Account request submitted! Wait for admin approval.');
-        setFormData({ username: '', email: '', password: '' });
+        setFormData({ username: '', email: ''});
       }
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred');
