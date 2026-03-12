@@ -24,3 +24,7 @@ src\App.js
 8. Admin, add an option to change the completion form link
 
 9. Players tab rankings, pagination -> 50 per page
+
+10. Admin, add a enable/disable all topics button
+
+11. Admin, when editing a topic -> redirect user to topmost or head of the page
