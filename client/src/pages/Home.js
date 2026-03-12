@@ -236,8 +236,8 @@ const Home = () => {
             <div style = {{ fontSize: '18px', color: 'white', marginBottom: '15px', fontWeight: 'bold' }}>
               Congratulations!
             </div>
-            <p style = {{ fontSize: '11px', color: 'white', marginBottom: '20px', opacity: 0.9 }}>
-              You've completed all training topics! Click below to submit your completion form.
+            <p style = {{ fontSize: '13px', color: 'white', marginBottom: '20px', opacity: 0.9 }}>
+              You completed all training topics! Click below to submit your completion form.
             </p>
             <button onClick={handleFinishTraining}
               className="retro-btn"
@@ -254,13 +254,13 @@ const Home = () => {
           initial = {{ scale: 0.9, opacity: 0 }}
           animate = {{ scale: 1, opacity: 1 }}
           className="retro-card"
-          style={{ marginBottom: '40px', textAlign: 'center', opacity: 0.6 }}
+          style={{ marginBottom: '40px', textAlign: 'center', opacity: 0.6, cursor: 'not-allowed' }}
         >
           <h3 style = {{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-            Finish All Training
+            COMPLETION FORM 
           </h3>
           <p style = {{ fontSize: '10px', color: 'var(--text-light)' }}>
-            Complete ALL topics to unlock the completion form
+            To Unlock this, you must finish all topics.
           </p>
         </motion.div>
       )}

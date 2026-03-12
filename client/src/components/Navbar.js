@@ -312,7 +312,7 @@ const Navbar = () => {
                 Topics
               </button>
               <button onClick={() => navigate('/games')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
-                Games
+                Games (coming soon...)
               </button>
               <button onClick={() => navigate('/achievements')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
                 Achievements
@@ -330,7 +330,7 @@ const Navbar = () => {
                 </button>
               )}
 
-              <button onClick={handleLogout} className="retro-btn secondary" style={{ width: '100%', textAlign: 'left', marginTop: '20px', color: 'var(--error-red)' }}>
+              <button onClick={handleLogout} className="retro-btn secondary" style={{ width: '100%', textAlign: 'left', marginTop: '20px', background: '#ff1414', color: '#FFFFFF' }}>
                 Logout
               </button>
             </div>

@@ -7,7 +7,6 @@ const Players = () => {
     const [filteredPlayers, setFilteredPlayers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortBy, setSortBy] = useState('xp');
 
     useEffect(() => {
         fetchPlayers();
@@ -15,7 +14,7 @@ const Players = () => {
 
     useEffect(() => {
         filterAndSortPlayers();
-    }, [players, searchTerm, sortBy]);
+    }, [players, searchTerm]);
 
     const fetchPlayers = async () => {
         try {
@@ -36,33 +35,20 @@ const Players = () => {
             filtered = filtered.filter(player => player.username.toLowerCase().includes(searchTerm.toLowerCase()));
         }
 
-        filtered.sort((a, b) => {
-            switch (sortBy) {
-                case 'xp':
-                    return b.xp - a.xp;
-                case 'level':
-                    return b.level - a.level || b.xp - a.xp;
-                case 'badges':
-                    return (b.badges?.length || 0) - (a.badges?.length || 0);
-                default:
-                    return b.xp - a.xp;
-            }
-        });
-
         setFilteredPlayers(filtered);
     };
 
     const getRankColor = (rank) => {
         if (rank === 1) return 'var(--orange-accent)';
-        if (rank === 2) return '#C0C0C0';
+        if (rank === 2) return 'var(--text-medium)';
         if (rank === 3) return '#CD7F32';
         return 'var(--text-medium)';
     };
 
     const getRankIcon = (rank) => {
-         if (rank === 1) return '🥇';
-        if (rank === 2) return '🥈';
-        if (rank === 3) return '🥉';
+        if (rank === 1) return 'Ancient';
+        if (rank === 2) return 'Vanquisher';
+        if (rank === 3) return 'Marauder';
         return `#${rank}`;
     };
 
@@ -101,21 +87,8 @@ const Players = () => {
                             <input type="text" className="retro-input" placeholder="Search by username..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%' }} />
                         </div>
 
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
-                                Sort by
-                            </label>
-                            <select className="retro-input" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ width: '100%' }}>
-                                <option value="xp">Total XP</option>
-                                <option value="level">Level</option>
-                                <option value="badges">Badges</option>
-                            </select>
-                        </div>
                     </div>
 
-                    <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
-                        Showing {filteredPlayers.length} of {players.length} players
-                    </div>
                 </motion.div>
 
                 {/* top 3 podium */}
@@ -212,19 +185,19 @@ const Players = () => {
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '2px solid var(--primary-navy)' }}>
-                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-medium)' }}>
+                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
                                             Rank
                                         </th>
-                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-medium)' }}>
-                                            Player
+                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
+                                            Players
                                         </th>
-                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-medium)' }}>
+                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
                                             Level
                                         </th>
-                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-medium)' }}>
+                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
                                             XP
                                         </th>
-                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '10px', color: 'var(--text-medium)' }}>
+                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
                                             Badges
                                         </th>
                                     </tr>
@@ -309,7 +282,7 @@ const Players = () => {
                                                     fontSize: '11px',
                                                     fontWeight: 'bold'
                                                 }}>
-                                                    {player.badges?.length || 0}
+                                                    {player.badgeCount || 0}
                                                 </span>
                                             </td>
                                         </motion.tr>

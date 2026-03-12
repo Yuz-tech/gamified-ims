@@ -21,6 +21,8 @@ src\App.js
 
 7. Under players tab, show players' avatars. Also, show avatars in navbar
 
+8. Make badges bigger in home and achievements tab
 
+9. for materials, allow any kind of links? except video
 
-
+10. Admin, add an option to change the completion form link

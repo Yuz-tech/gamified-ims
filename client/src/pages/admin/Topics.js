@@ -344,7 +344,7 @@ const Topics = () => {
                   value = {formData.badgeName} onChange={(e) => setFormData({
                     ...formData, badgeName: e.target.value
                   })}
-                  placeholder = "ISO 9001 Master"
+                  placeholder = "Suggested: YEAR-Topic Name"
                   required
                 />
               </div>

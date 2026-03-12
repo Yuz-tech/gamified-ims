@@ -148,7 +148,8 @@ const Achievements = () => {
                   background: topic.earned ? 'var(--bg-lightest)' : 'var(--bg-medium)',
                   boxShadow: topic.earned ? '3px 3px 0 var(--primary-navy)' : 'none',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  borderRadius: '57px'
                 }}>
                   {topic.earned ? (
                     imageUrl ? (
@@ -157,7 +158,7 @@ const Achievements = () => {
                           style={{
                             maxWidth: '90%',
                             maxHeight: '90%',
-                            objectFit: 'contain'
+                            objectFit: 'cover'
                           }}
                           onError={(e) => {
                             e.target.style.display = 'none';

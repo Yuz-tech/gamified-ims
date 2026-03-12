@@ -20,8 +20,9 @@ const Profile = () => {
 
     const avatarOptions = [
         '/avatars/eeb.png',
-        '/avatars/sheep.png',
-        '/avatars/optimum prime.png'
+        '/avatars/pitdog.png',
+        '/avatars/khajit.png',
+        '/avatars/optimum pride.png'
     ];
 
     useEffect(() => {
@@ -193,7 +194,6 @@ const Profile = () => {
                   className="retro-card"
                 >
                     <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-                        <Icon name = "badge" size={18} />
                         Profile Information
                     </h3>
 
@@ -240,7 +240,6 @@ const Profile = () => {
                     <div style = {{ marginBottom: '15px' }}>
                         <div style = {{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
                             <Icon name = "person" size={14} />
-                            Username
                         </div>
                         <div style = {{ fontSize: '12px', color: 'var(--text-dark)', fontWeight: 'bold' }}>
                             {user?.username}
@@ -250,16 +249,14 @@ const Profile = () => {
                     <div style = {{ marginBottom: '15px' }}>
                         <div style = {{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
                             <Icon name="email" size = {14} />
-                            Email
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--text-dark)' }}>
                             {user?.email}
                         </div>
 
-                        <div style = {{ marginBottom: '15px' }}>
+                        <div style = {{ marginBottom: '15px', paddingTop: '15px' }}>
                             <div style = {{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
                                 <Icon name = "admin_panel_settings" size={14} />
-                                Role
                             </div>
                             <div style = {{ fontSize: '12px', color: 'var(--text-dark)', textTransform: 'uppercase' }}>
                                 {user?.role}
@@ -269,18 +266,14 @@ const Profile = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '20px' }}>
                             <div style={{ padding: '10px', border: '2px solid var(--bright-blue)', textAlign: 'center' }}>
                                 <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>
-                                    <Icon name = "trending_up" size = {14} />
                                     Level
                                 </div>
-                                <div style = {{ fontSize: '18px', color: 'var(--bright-blue)', marginTop: '5px' }}>
+                                <div style = {{ fontSize: '18px', paddingBottom: '10px', color: 'var(--bright-blue)', marginTop: '5px' }}>
                                     {user?.level || 1}
                                 </div>
                                 <div style={{ padding: '10px', border: '2px solid var(--orange-accent)', textAlign: 'center' }}>
-                                    <div style = {{ fontSize: '9px', color: 'var(--text-medium)' }}>
-                                        <Icon name = "star" size={14} /> XP
-                                    </div>
                                     <div style={{ fontSize: '18px', color: 'var(--orange-accent)', marginTop: '5px' }}>
-                                        {user?.xp || 0}
+                                        {user?.xp || 0} XP
                                     </div>
                                 </div>
                             </div>
@@ -301,7 +294,6 @@ const Profile = () => {
 
                     {!showPasswordChange ? (
                         <button onClick={() => setShowPasswordChange(true)} className="retro-btn" style={{ width: '100%', marginBottom: '20px' }}>
-                            <Icon name="lock_reset" size={18} />
                             Change Password
                         </button>
                     ) : (
@@ -358,7 +350,6 @@ const Profile = () => {
                     )}
 
                     <h4 style = {{ fontSize: '12px', color: 'var(--primary-navy)', marginBottom: '15px' }}>
-                        <Icon name="devices" size={16} />
                         Active Sessions ({sessions.length})
                     </h4>
 
