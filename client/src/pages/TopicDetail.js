@@ -70,17 +70,17 @@ const TopicDetail = () => {
         // Passed - refresh topic data
         await fetchTopic();
         
-        // Show success for 5 seconds
+        // Show success for n seconds
         setTimeout(() => {
           setCurrentStage(null);
-        }, 15000);
+        }, 10000);
       } else {
         // Failed - show error then reset
         setTimeout(() => {
           setCurrentStage(null);
           setSelectedAnswer(null);
           setMandatoryResult(null);
-        }, 15000);
+        }, 10000);
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting answer');
@@ -262,7 +262,7 @@ const TopicDetail = () => {
                   onChange={(e) => setMaterialsConfirmed(e.target.checked)}
                   style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                 />
-                <span>
+                <span style = {{ lineHeight: '18px' }}>
                   <strong>I confirm that I have reviewed the training materials.</strong>
                 </span>
               </label>
@@ -287,7 +287,7 @@ const TopicDetail = () => {
               </h3>
 
               <div style={{ textAlign: 'center', padding: '20px' }}>
-                <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
+                <div style={{ fontSize: '14px', marginBottom: '20px', lineHeight: '1.6' }}>
                   Answer the question correctly to earn <strong>100 XP</strong> and unlock a badge!
                 </div>
 
@@ -408,8 +408,8 @@ const TopicDetail = () => {
                   onClick={() => setSelectedAnswer(oIndex)}
                   style={{
                     padding: '15px',
-                    border: `3px solid ${selectedAnswer === oIndex ? 'var(--orange-accent)' : 'var(--border-color)'}`,
-                    background: selectedAnswer === oIndex ? 'rgba(249, 115, 22, 0.1)' : 'white',
+                    border: `3px solid ${selectedAnswer === oIndex ? '#000000' : 'var(--border-color)'}`,
+                    background: selectedAnswer === oIndex ? 'rgba(77, 234, 248, 0.89)' : 'white',
                     cursor: 'pointer',
                     fontSize: '11px',
                     textAlign: 'left',
@@ -465,7 +465,7 @@ const TopicDetail = () => {
               marginBottom: '20px',
               fontWeight: 'bold'
             }}>
-              {mandatoryResult.correctAnswer ? 'CORRECT!' : 'INCORRECT!'}
+              {mandatoryResult.correctAnswer ? 'CORRECT!' : 'WRONG!'}
             </div>
 
             {mandatoryResult.correctAnswer ? (
@@ -486,6 +486,9 @@ const TopicDetail = () => {
                     style={{ width: '80px', height: '80px', margin: '10px auto' }}
                   />
                 )}
+                <div style={{ marginTop: '15px', fontSize: '12px', lineHeight: '2.0'}}>
+                    Remember that you can still take the bonus questions for more XP.
+                  </div>
               </div>
             ) : (
               <div style={{
@@ -494,8 +497,8 @@ const TopicDetail = () => {
                 border: '2px solid var(--error-red)',
                 fontSize: '14px'
               }}>
-                <div style={{ marginBottom: '10px' }}>
-                  That's the wrong answer. <strong>It looks like you didn't review the training materials.</strong>
+                <div style={{ marginBottom: '10px', lineHeight: '18px' }}>
+                  <strong>It looks like you didn't review the training materials.</strong>
                 </div>
                 {/* {mandatoryResult.explanation && (
                   <div style={{ marginTop: '10px', fontSize: '10px', lineHeight: '1.6' }}>
@@ -503,7 +506,7 @@ const TopicDetail = () => {
                   </div>
                 )} */}
                   <div style={{ marginTop: '15px', fontSize: '12px', lineHeight: '2.0'}}>
-                    Redirecting you back to the topic...
+                    Redirecting you back...
                   </div>
               </div>
             )}

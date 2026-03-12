@@ -1,22 +1,26 @@
-Register or request an account still not working (An error occurred) 
+1. Register or request an account still not working (An error occurred) 
 
-(Yearly) Reset button is not working
-
-const Layout is not in App.js
-
-Games tab not working
-
-change topic badge not working anymore
-
-disable custom avatar uploads, just choose from pre-made or given  
-show avatar in navbar
-
+2. (Yearly) Reset button is not working
 resetting revamp 
--retain badges for as long as the badges have a yearly label 
+-retain badges
+*to distnguish a badge from one year to another, we just change the badge name. Hence, when resetting the badge dont get reset, not wasting the user's achievements.  
 -retain XP and Level
--reset all topics progress 
+-reset all topics progress
+-change current code in YearlyReset.js (I can provide previous)
 
+3. const Layout is not in App.js
 [eslint] 
 src\App.js
   Line 154:16:  'Layout' is not defined  react/jsx-no-undef
+
+4. Games tab not working
+
+5. change topic badge not working unless i remove imageFilter or FileFilter
+
+6. disable custom avatar uploads, just choose from pre-made or given  
+
+7. Under players tab, show players' avatars. Also, show avatars in navbar
+
+
+
 

@@ -13,9 +13,9 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
 import AdminTopics from './pages/admin/Topics';
-import AdminBadges from './pages/admin/Badges';
 import ActivityLogs from './pages/admin/ActivityLogs';
 import Analytics from './pages/admin/Analytics';
+import YearlyReset from './pages/admin/YearlyReset';
 import './styles/retro.css';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -73,18 +73,18 @@ const AdminLayout = ({ children }) => {
           )}
         </NavLink>
         
-        <NavLink to="/admin/badges" style={({ isActive }) => ({ textDecoration: 'none' })}>
-          {({ isActive }) => (
-            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
-              BADGES
-            </button>
-          )}
-        </NavLink>
-        
         <NavLink to="/admin/logs" style={({ isActive }) => ({ textDecoration: 'none' })}>
           {({ isActive }) => (
             <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
               LOGS
+            </button>
+          )}
+        </NavLink>
+
+        <NavLink to="/admin/Analytics" style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              ANALYTICS
             </button>
           )}
         </NavLink>
@@ -201,16 +201,6 @@ const AppRoutes = () => {
           } 
         />
         <Route 
-          path="/admin/badges" 
-          element={
-            <ProtectedRoute adminOnly={true}>
-              <AdminLayout>
-                <AdminBadges />
-              </AdminLayout>
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
           path="/admin/logs" 
           element={
             <ProtectedRoute adminOnly={true}>
@@ -221,7 +211,17 @@ const AppRoutes = () => {
           } 
         />
         <Route
-          path="/admin/analytics"
+          path="/admin/yearly-reset"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminLayout>
+                <YearlyReset />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/Analytics"
           element={
             <ProtectedRoute adminOnly={true}>
               <AdminLayout>

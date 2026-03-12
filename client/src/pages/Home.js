@@ -113,7 +113,8 @@ const Home = () => {
         style={{ marginBottom: '40px', textAlign: 'center' }}
       >
         <h1 className="neon-text" style={{ fontSize: '32px', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-          Konnichiwa, {user?.username?.toUpperCase()}!
+          <strong style = {{ fontSize: '52px'}}>こんにちは</strong>
+          , {user?.username}!
         </h1>
         <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
           Ready to Train?
@@ -380,13 +381,13 @@ const Home = () => {
                   display: 'flex',
                   alignItems: 'center',
                   padding: '15px',
-                  border: index === 0 ? '3px solid var(--orange-accent)' : '2px solid var(--border-color)',
+                  border: index === 0 ? '3px solid var(--warning-yellow)' : '2px solid var(--border-color)',
                   background: index === 0 ? 'rgba(249, 115, 22, 0.05)' : 'var(--bg-light)',
                   boxShadow: index === 0 ? '3px 3px 0 var(--primary-navy)' : 'none'
                 }}
               >
-                <div style={{ fontSize: '20px', marginRight: '15px', minWidth: '30px', textAlign: 'center' }}>
-                  {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                <div style={{ fontSize: '15px', marginRight: '15px', minWidth: '30px', textAlign: 'center' }}>
+                  {index === 0 ? '1' : index === 1 ? '2' : index === 2 ? '3' : `${index + 1}`}
                 </div>
                 <div style = {{ flex: 1 }}>
                   <div style = {{ fontSize: '11px', color: 'var(--primary-navy)', fontWeight: 'bold' }}>
@@ -395,6 +396,9 @@ const Home = () => {
                   <div style = {{ fontSize: '8px', color: 'var(--text-light)' }}>
                     Level {player.level} • {player.xp} XP 
                   </div>
+                </div>
+                <div style={{ paddingRight: '4px' }}>
+                  Badges: 
                 </div>
                 <div style = {{
                   fontSize: '10px',

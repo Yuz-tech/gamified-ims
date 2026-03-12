@@ -43,23 +43,13 @@ const avatarStorage = multer.diskStorage({
   }
 });
 
-const imageFilter = (req, file, cb) => {
-  if (file.mimeType.startsWith('image/')) {
-    cb(null,true);
-  } else {
-    cb(new Error('Only image files are allowed'), false);
-  }
-};
-
 const uploadBadge = multer({
   storage: badgeStorage,
-  fileFilter: imageFilter,
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 const uploadAvatar = multer({
   storage: avatarStorage,
-  fileFilter: imageFilter,
   limits: { fileSize: 2 * 1024 * 1024 }
 });
 
