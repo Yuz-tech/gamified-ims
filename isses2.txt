@@ -1,113 +1,1156 @@
-Start with models -> authentication -> components
+routes/auth.js
 
-March 11 Issues:
-1. Cannot register/request account (An error occurred after submitting/clicking button in login page)
-2. Settings.js code is gone
-3. No Games tab seen in Navbar
-4. Failed to change password for user
-Profile.js:114  PUT http://localhost:5000/api/auth/change-password net::ERR_CONNECTION_REFUSED
-5. Failed to change avatar for use (show error)
-6. Add new tab "Players" showing all participants from highest xp/level to lowest (add search and filter feature similar to topics)
-7. Failed to upload Badge in admin edit topic
-file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/upload.js:44
-  if (file.mimeType.startsWith('image/'))
-8. Error updating topics (disablin, endabling still works, but editing the topic questions and others don't work anymore)
+// Register (Request Account)
+router.post('/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
 
-Add angry man meme emoji when failed mandatory
+    console.log('📝 Registration attempt:', { username, email });
 
-Migrate to latest NodeJS
--> server error duplicate
+    // Validation
+    if (!username || !email || !password) {
+      console.log('❌ Missing fields');
+      return res.status(400).json({ message: 'All fields are required' });
+    }
 
-docker perhaps??? use docker 
+    if (password.length < 6) {
+      console.log('❌ Password too short');
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
 
-I cannot register (request account) in the login page
-An error occurred after submitting/clicking button
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log('❌ Invalid email format');
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
 
-Settings.js code is gone
+    // Check existing user
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      console.log('❌ Username exists:', username);
+      return res.status(400).json({ message: 'Username already exists' });
+    }
 
-no games tab in nav
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      console.log('❌ Email exists:', email);
+      return res.status(400).json({ message: 'Email already registered' });
+    }
 
+    // Create user (password will be hashed by pre-save hook)
+    const user = new User({
+      username,
+      email,
+      password,
+      role: 'employee',
+      isApproved: false,
+      xp: 0,
+      level: 1,
+      badges: [],
+      completedTopics: [],
+      avatar: null
+    });
 
+    await user.save();
 
-Failed to change password
-api.js:27 API Error: undefined undefined
-(anonymous) @ api.js:27
-Promise.then
-_request @ Axios.js:172
-request @ Axios.js:41
-httpMethod @ Axios.js:233
-wrap @ bind.js:12
-handlePasswordChange @ Profile.js:114
-executeDispatch @ react-dom-client.development.js:19116
-runWithFiberInDEV @ react-dom-client.development.js:870
-processDispatchQueue @ react-dom-client.development.js:19165
-(anonymous) @ react-dom-client.development.js:19767
-batchedUpdates$1 @ react-dom-client.development.js:3255
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:19320
-dispatchEvent @ react-dom-client.development.js:23584
-dispatchDiscreteEvent @ react-dom-client.development.js:23552
-<form>
-(anonymous) @ react-jsx-dev-runtime.development.js:327
-Profile @ Profile.js:306
-react_stack_bottom_frame @ react-dom-client.development.js:25904
-renderWithHooksAgain @ react-dom-client.development.js:7762
-renderWithHooks @ react-dom-client.development.js:7674
-updateFunctionComponent @ react-dom-client.development.js:10166
-beginWork @ react-dom-client.development.js:11778
-runWithFiberInDEV @ react-dom-client.development.js:870
-performUnitOfWork @ react-dom-client.development.js:17639
-workLoopSync @ react-dom-client.development.js:17469
-renderRootSync @ react-dom-client.development.js:17450
-performWorkOnRoot @ react-dom-client.development.js:16498
-performSyncWorkOnRoot @ react-dom-client.development.js:18972
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:18803
-processRootScheduleInMicrotask @ react-dom-client.development.js:18851
-(anonymous) @ react-dom-client.development.js:18986Understand this error
-Profile.js:114  PUT http://localhost:5000/api/auth/change-password net::ERR_CONNECTION_REFUSED
+    console.log('✅ User registered successfully:', username);
 
-
-Failed to change avatar 
-TypeError: Cannot read properties of undefined (reading 'startsWith')
-    at imageFilter (file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/upload.js:44:21)
-    at wrappedFileFilter (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\multer\index.js:44:7)
-    at Multipart.<anonymous> (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\multer\lib\make-middleware.js:132:7)
-    at Multipart.emit (node:events:519:28)
-    at HeaderParser.cb (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\busboy\lib\types\multipart.js:358:14)
-    at HeaderParser.push (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\busboy\lib\types\multipart.js:162:20)
-    at SBMH.ssCb [as _cb] (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\busboy\lib\types\multipart.js:394:37)
-    at feed (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\streamsearch\lib\sbmh.js:219:14)
-    at SBMH.push (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\streamsearch\lib\sbmh.js:104:16)
-    at Multipart._write (C:\Users\julius.galejo\Desktop\ims\gamified-ims\server\node_modules\busboy\lib\types\multipart.js:567:19)
+    res.status(201).json({
+      message: 'Registration successful! Please wait for admin approval.',
+      username: user.username
+    });
+  } catch (error) {
+    console.error('❌ Registration error:', error);
+    res.status(500).json({ 
+      message: 'Registration failed. Please try again.', 
+      error: error.message 
+    });
+  }
+});
 
 
-Add angry man meme emoji when failed mandatory
+routes/admin.js
+// Yearly reset (topics only - keep badges, XP, levels)
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { confirmCode } = req.body;
 
-Level and XP => scaling w/ threshold
-Multiplayer options
-Deployment changes 127.0.0.1 => actual IP testing to prod 
-Testing Phases
-- JUnit Test
-- User testing
-- Performance Test
-Security Issues not just /admin
+    console.log('🔥 Yearly reset requested by:', req.user.username);
 
-Graph level up scaling -> project 3-5 years level up scale
+    if (confirmCode !== 'RESET_ALL_DATA') {
+      return res.status(400).json({ message: 'Invalid confirmation code' });
+    }
 
-Admin reset settings -> user progress for topics only (retain XP and levels)
+    // Reset only employee topic progress (keep badges, XP, levels)
+    const result = await User.updateMany(
+      { role: 'employee' },
+      {
+        $set: {
+          completedTopics: []  // Only clear completed topics
+          // Keep: badges, xp, level, avatar, username, email, password
+        }
+      }
+    );
 
-Navbar font style not p2p
+    // Clear activity logs
+    await ActivityLog.deleteMany({});
 
-Request an account not working -> An error occurred
-Actual IP login not working -> 
-Access to XMLHttpRequest at 'http://localhost:5000/api/auth/login' from origin 'http://192.168.232.247:3000' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header has a value 'http://localhost:3000' that is not equal to the supplied origin.Understand this error
-api.js:27 API Error: undefined undefined
-(anonymous) @ api.js:27Understand this error
-AuthContext.js:68 Login failed: Network Error
-login @ AuthContext.js:68Understand this error
-localhost:5000/api/auth/login:1  Failed to load resource: net::ERR_FAILED
+    console.log(`✅ Yearly reset complete: ${result.modifiedCount} users reset`);
+    console.log('✅ Topics progress cleared');
+    console.log('✅ Activity logs cleared');
+    console.log('✅ Badges, XP, and levels PRESERVED');
+
+    await logActivity(req.user._id, 'yearly_reset', {
+      usersReset: result.modifiedCount,
+      timestamp: new Date()
+    }, req);
+
+    res.json({
+      message: 'Yearly reset complete! Topic progress cleared. Badges, XP, and levels preserved.',
+      usersReset: result.modifiedCount
+    });
+  } catch (error) {
+    console.error('❌ Yearly reset error:', error);
+    res.status(500).json({ message: 'Reset failed', error: error.message });
+  }
+});
 
 
-Submit Mandatory Error:
- ERROR submitting mandatory: ReferenceError: savedUser is not defined
-    at file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/topics.js:152:19
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+src/App.js
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
+import Home from './pages/Home';
+import Topics from './pages/Topics';
+import TopicDetail from './pages/TopicDetail';
+import Achievements from './pages/Achievements';
+import Profile from './pages/Profile';
+import Players from './pages/Players';
+import Games from './pages/Games';
+import GameRouter from './pages/games/GameRouter';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminUsers from './pages/admin/Users';
+import AdminTopics from './pages/admin/Topics';
+import AdminAnalytics from './pages/admin/Analytics';
+import AdminSettings from './pages/admin/Settings';
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
+import './App.css';
+
+// Layout component
+const Layout = ({ children }) => (
+  <>
+    <Navbar />
+    <main>{children}</main>
+  </>
+);
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Home />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/topics"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Topics />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/topics/:topicId"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <TopicDetail />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/achievements"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Achievements />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Profile />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/players"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Players />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/games"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Games />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/games/:gameId"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <GameRouter />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <AdminDashboard />
+                </Layout>
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <AdminUsers />
+                </Layout>
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/topics"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <AdminTopics />
+                </Layout>
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/analytics"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <AdminAnalytics />
+                </Layout>
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/settings"
+            element={
+              <AdminRoute>
+                <Layout>
+                  <AdminSettings />
+                </Layout>
+              </AdminRoute>
+            }
+          />
+
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
+
+
+pages/Games.js
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../utils/api';
+
+const Games = () => {
+  const navigate = useNavigate();
+  const [games, setGames] = useState([]);
+  const [filteredGames, setFilteredGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState('all');
+  const [filterDifficulty, setFilterDifficulty] = useState('all');
+
+  useEffect(() => {
+    fetchGames();
+  }, []);
+
+  useEffect(() => {
+    filterGames();
+  }, [games, filterType, filterDifficulty]);
+
+  const fetchGames = async () => {
+    try {
+      const response = await api.get('/games');
+      setGames(response.data);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      alert('Failed to load games');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterGames = () => {
+    let filtered = [...games];
+
+    if (filterType !== 'all') {
+      filtered = filtered.filter(game => game.type === filterType);
+    }
+
+    if (filterDifficulty !== 'all') {
+      filtered = filtered.filter(game => game.difficulty === filterDifficulty);
+    }
+
+    setFilteredGames(filtered);
+  };
+
+  const getGameIcon = (type) => {
+    const icons = {
+      crossword: '📝',
+      word_scramble: '🔤',
+      quick_quiz: '🎯',
+      true_false: '✓✗',
+      memory_match: '🧩',
+      image_match: '🖼️'
+    };
+    return icons[type] || '🎮';
+  };
+
+  const getDifficultyColor = (difficulty) => {
+    const colors = {
+      easy: 'var(--success-green)',
+      medium: 'var(--orange-accent)',
+      hard: 'var(--error-red)'
+    };
+    return colors[difficulty] || 'var(--text-medium)';
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING GAMES...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div className="scanlines"></div>
+
+      <motion.h1
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="neon-text"
+        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
+      >
+        🎮 TRAINING GAMES
+      </motion.h1>
+
+      {/* Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              GAME TYPE
+            </label>
+            <select
+              className="retro-input"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="all">All Types</option>
+              <option value="crossword">Crossword</option>
+              <option value="word_scramble">Word Scramble</option>
+              <option value="quick_quiz">Quick Quiz</option>
+              <option value="true_false">True/False</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              DIFFICULTY
+            </label>
+            <select
+              className="retro-input"
+              value={filterDifficulty}
+              onChange={(e) => setFilterDifficulty(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <option value="all">All Levels</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
+              SHOWING {filteredGames.length} OF {games.length} GAMES
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Games Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+        {filteredGames.map((game, index) => (
+          <motion.div
+            key={game._id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="retro-card"
+            style={{ cursor: 'pointer', position: 'relative' }}
+            onClick={() => navigate(`/games/${game._id}`)}
+          >
+            <div style={{ fontSize: '48px', textAlign: 'center', marginBottom: '15px' }}>
+              {getGameIcon(game.type)}
+            </div>
+
+            <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '10px', fontWeight: 'bold', textAlign: 'center' }}>
+              {game.title}
+            </h3>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '15px' }}>
+              <span style={{
+                padding: '4px 12px',
+                background: getDifficultyColor(game.difficulty),
+                color: 'white',
+                fontSize: '9px',
+                fontWeight: 'bold',
+                borderRadius: '12px',
+                textTransform: 'uppercase'
+              }}>
+                {game.difficulty}
+              </span>
+
+              <span style={{
+                padding: '4px 12px',
+                background: 'var(--bright-blue)',
+                color: 'white',
+                fontSize: '9px',
+                fontWeight: 'bold',
+                borderRadius: '12px'
+              }}>
+                {game.xpReward} XP
+              </span>
+            </div>
+
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', textAlign: 'center', marginBottom: '15px' }}>
+              ⏱️ {Math.floor(game.timeLimit / 60)} minutes
+            </div>
+
+            {game.userProgress && (
+              <div style={{
+                padding: '10px',
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '2px solid var(--success-green)',
+                fontSize: '10px',
+                textAlign: 'center'
+              }}>
+                ✅ Completed | Best: {game.userProgress.bestScore}%
+              </div>
+            )}
+
+            <button
+              className="retro-btn"
+              style={{ width: '100%', marginTop: '15px', fontSize: '11px' }}
+            >
+              {game.userProgress ? '🔄 PLAY AGAIN' : '🎮 PLAY NOW'}
+            </button>
+          </motion.div>
+        ))}
+      </div>
+
+      {filteredGames.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-medium)' }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>🎮</div>
+          <div>No games found matching your filters</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Games;
+
+
+src/components/Navbar.js
+{/* User Dropdown */}
+<div style={{ position: 'relative' }}>
+  <button
+    onClick={() => setShowDropdown(!showDropdown)}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      background: 'transparent',
+      border: '2px solid var(--primary-navy)',
+      padding: '8px 15px',
+      cursor: 'pointer',
+      fontFamily: 'inherit',
+      fontSize: '11px',
+      fontWeight: 'bold'
+    }}
+  >
+    {/* USER AVATAR */}
+    <div style={{
+      width: '30px',
+      height: '30px',
+      borderRadius: '50%',
+      border: '2px solid var(--bright-blue)',
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--bg-medium)'
+    }}>
+      {user.avatar ? (
+        <img 
+          src={user.avatar.startsWith('/uploads/') 
+            ? `http://localhost:5000${user.avatar}` 
+            : user.avatar}
+          alt={user.username}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.parentElement.innerHTML = '<div style="font-size: 16px;">👤</div>';
+          }}
+        />
+      ) : (
+        <div style={{ fontSize: '16px' }}>👤</div>
+      )}
+    </div>
+    
+    <span>{user.username}</span>
+    <span style={{ fontSize: '8px' }}>▼</span>
+  </button>
+
+  {/* Dropdown menu stays the same */}
+</div>
+
+
+routes/upload.js
+
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import { authenticateToken, isAdmin } from '../middleware/auth.js';
+
+const router = express.Router();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ensure upload directories exist
+const badgeDir = path.join(__dirname, '../uploads/badges');
+const avatarDir = path.join(__dirname, '../uploads/avatars');
+
+if (!fs.existsSync(badgeDir)) {
+  fs.mkdirSync(badgeDir, { recursive: true });
+}
+if (!fs.existsSync(avatarDir)) {
+  fs.mkdirSync(avatarDir, { recursive: true });
+}
+
+// Badge storage
+const badgeStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, badgeDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'badge-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// Avatar storage
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, avatarDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// REMOVE FILE FILTER - Accept all files
+const uploadBadge = multer({
+  storage: badgeStorage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
+});
+
+// Upload badge (admin only)
+router.post('/badge', authenticateToken, isAdmin, uploadBadge.single('badge'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/badges/${req.file.filename}`;
+    
+    console.log('✅ Badge uploaded:', fileUrl);
+
+    res.json({
+      message: 'Badge uploaded successfully',
+      url: fileUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error('Badge upload error:', error);
+    res.status(500).json({ message: 'Upload failed', error: error.message });
+  }
+});
+
+// Upload avatar (any authenticated user)
+router.post('/avatar', authenticateToken, uploadAvatar.single('avatar'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/avatars/${req.file.filename}`;
+    
+    console.log('✅ Avatar uploaded:', fileUrl);
+
+    res.json({
+      message: 'Avatar uploaded successfully',
+      url: fileUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({ message: 'Upload failed', error: error.message });
+  }
+});
+
+// Delete badge (admin only)
+router.delete('/badge/:filename', authenticateToken, isAdmin, (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filepath = path.join(badgeDir, filename);
+
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+      console.log('✅ Badge deleted:', filename);
+      res.json({ message: 'Badge deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'File not found' });
+    }
+  } catch (error) {
+    console.error('Badge delete error:', error);
+    res.status(500).json({ message: 'Delete failed', error: error.message });
+  }
+});
+
+export default router;
+
+pages/Home.js
+
+{/* Badge images - BIGGER SIZE */}
+<div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
+  {stats.badges.slice(0, 6).map((badge, index) => (
+    <motion.div
+      key={index}
+      initial={{ scale: 0, rotate: -180 }}
+      animate={{ scale: 1, rotate: 0 }}
+      transition={{ delay: index * 0.1 }}
+      style={{
+        width: '100px',  // Changed from 60px
+        height: '100px', // Changed from 60px
+        border: '3px solid var(--orange-accent)',
+        borderRadius: '50%',
+        overflow: 'hidden',
+        boxShadow: '0 0 15px rgba(249, 115, 22, 0.3)'
+      }}
+    >
+      <img
+        src={badge.badgeImage?.startsWith('/uploads/') 
+          ? `http://localhost:5000${badge.badgeImage}` 
+          : badge.badgeImage}
+        alt="Badge"
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        onError={(e) => {
+          e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text y="50" font-size="40">🏆</text></svg>';
+        }}
+      />
+    </motion.div>
+  ))}
+</div>
+
+
+pages/Achievements.js
+
+{/* Badge image - BIGGER */}
+<div style={{
+  width: '120px',   // Changed from 80px
+  height: '120px',  // Changed from 80px
+  margin: '0 auto 15px',
+  border: `4px solid ${badge.earned ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+  borderRadius: '50%',
+  overflow: 'hidden',
+  opacity: badge.earned ? 1 : 0.3,
+  filter: badge.earned ? 'none' : 'grayscale(100%)',
+  boxShadow: badge.earned ? '0 0 20px rgba(249, 115, 22, 0.4)' : 'none'
+}}>
+  <img
+    src={badge.badgeImage?.startsWith('/uploads/') 
+      ? `http://localhost:5000${badge.badgeImage}` 
+      : badge.badgeImage}
+    alt={badge.badgeName}
+    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+    onError={(e) => {
+      e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><text y="60" font-size="50">🏆</text></svg>';
+    }}
+  />
+</div>
+
+
+models/SystemSettings.js
+import mongoose from 'mongoose';
+
+const systemSettingsSchema = new mongoose.Schema({
+  completionFormUrl: {
+    type: String,
+    default: 'https://forms.google.com/YOUR_FORM_ID'
+  },
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+export default mongoose.model('SystemSettings', systemSettingsSchema);
+
+
+routes/admin.js (add)
+
+import SystemSettings from '../models/SystemSettings.js';
+
+// Get system settings
+router.get('/settings', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    let settings = await SystemSettings.findOne();
+    
+    if (!settings) {
+      settings = new SystemSettings();
+      await settings.save();
+    }
+
+    res.json(settings);
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update system settings
+router.put('/settings', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { completionFormUrl } = req.body;
+
+    let settings = await SystemSettings.findOne();
+    
+    if (!settings) {
+      settings = new SystemSettings();
+    }
+
+    settings.completionFormUrl = completionFormUrl;
+    settings.updatedBy = req.user._id;
+    settings.updatedAt = new Date();
+
+    await settings.save();
+
+    console.log('✅ Settings updated by:', req.user.username);
+
+    res.json(settings);
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+client/src/pages/admin/Settings.js
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+
+const Settings = () => {
+  const [confirmCode, setConfirmCode] = useState('');
+  const [resetting, setResetting] = useState(false);
+  const [formUrl, setFormUrl] = useState('');
+  const [savingUrl, setSavingUrl] = useState(false);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await api.get('/admin/settings');
+      setFormUrl(response.data.completionFormUrl);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
+  const handleSaveFormUrl = async (e) => {
+    e.preventDefault();
+    setSavingUrl(true);
+
+    try {
+      await api.put('/admin/settings', { completionFormUrl: formUrl });
+      alert('✅ Completion form URL updated!');
+    } catch (error) {
+      alert('Failed to update form URL');
+    } finally {
+      setSavingUrl(false);
+    }
+  };
+
+  const handleYearlyReset = async (e) => {
+    e.preventDefault();
+
+    if (!window.confirm('⚠️ THIS WILL RESET ALL EMPLOYEE TOPIC PROGRESS! Are you absolutely sure?')) {
+      return;
+    }
+
+    if (!window.confirm('⚠️ FINAL WARNING: This will clear all topic completions. Badges, XP, and levels will be retained. Continue?')) {
+      return;
+    }
+
+    setResetting(true);
+
+    try {
+      const response = await api.post('/admin/yearly-reset', { confirmCode });
+      alert(`✅ Reset complete! ${response.data.usersReset} users reset (topics only).`);
+      setConfirmCode('');
+    } catch (error) {
+      alert(error.response?.data?.message || 'Reset failed');
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: '40px' }}>
+      <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '30px' }}>
+        ⚙️ SYSTEM SETTINGS
+      </h1>
+
+      {/* Completion Form URL */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="retro-card"
+        style={{ maxWidth: '600px', marginBottom: '30px' }}
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--bright-blue)', marginBottom: '20px' }}>
+          📋 COMPLETION FORM URL
+        </h3>
+
+        <form onSubmit={handleSaveFormUrl}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              GOOGLE FORM URL
+            </label>
+            <input
+              type="url"
+              className="retro-input"
+              value={formUrl}
+              onChange={(e) => setFormUrl(e.target.value)}
+              placeholder="https://forms.google.com/..."
+              required
+            />
+            <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>
+              This URL is shown to users when they complete all topics
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="retro-btn"
+            style={{ width: '100%' }}
+            disabled={savingUrl}
+          >
+            {savingUrl ? '💾 SAVING...' : '💾 SAVE FORM URL'}
+          </button>
+        </form>
+      </motion.div>
+
+      {/* Yearly Reset Section - Same as before */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="retro-card"
+        style={{ maxWidth: '600px', border: '3px solid var(--error-red)' }}
+      >
+        {/* ... rest of yearly reset code ... */}
+      </motion.div>
+    </div>
+  );
+};
+
+export default Settings;
+
+
+src/pages/Home.js
+
+const [formUrl, setFormUrl] = useState('');
+
+useEffect(() => {
+  fetchStats();
+  fetchFormUrl();
+}, []);
+
+const fetchFormUrl = async () => {
+  try {
+    const response = await api.get('/admin/settings');
+    setFormUrl(response.data.completionFormUrl);
+  } catch (error) {
+    console.error('Error fetching form URL:', error);
+    setFormUrl('https://forms.google.com/YOUR_FORM_ID'); // Fallback
+  }
+};
+
+// In the completion button:
+
+  href={formUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="retro-btn"
+  style={{ 
+    display: 'inline-block',
+    textDecoration: 'none',
+    opacity: canFinish ? 1 : 0.5,
+    pointerEvents: canFinish ? 'auto' : 'none'
+  }}
+>
+  🎓 FINISH TRAINING
+</a>
+
+
+client/src/pages/Players.js
+const [currentPage, setCurrentPage] = useState(1);
+const playersPerPage = 50;
+
+// Calculate pagination
+const indexOfLastPlayer = currentPage * playersPerPage;
+const indexOfFirstPlayer = indexOfLastPlayer - playersPerPage;
+const currentPlayers = filteredPlayers.slice(indexOfFirstPlayer, indexOfLastPlayer);
+const totalPages = Math.ceil(filteredPlayers.length / playersPerPage);
+
+// Add after the top 3 podium, before the table:
+{/* Pagination Controls */}
+<div style={{ 
+  display: 'flex', 
+  justifyContent: 'center', 
+  gap: '10px', 
+  marginBottom: '20px',
+  alignItems: 'center'
+}}>
+  <button
+    onClick={() => setCurrentPage(currentPage - 1)}
+    disabled={currentPage === 1}
+    className="retro-btn secondary"
+    style={{ opacity: currentPage === 1 ? 0.5 : 1 }}
+  >
+    ← PREV
+  </button>
+
+  <span style={{ fontSize: '12px', color: 'var(--text-dark)' }}>
+    PAGE {currentPage} OF {totalPages}
+  </span>
+
+  <button
+    onClick={() => setCurrentPage(currentPage + 1)}
+    disabled={currentPage === totalPages}
+    className="retro-btn secondary"
+    style={{ opacity: currentPage === totalPages ? 0.5 : 1 }}
+  >
+    NEXT →
+  </button>
+</div>
+
+{/* Change the map to use currentPlayers instead of filteredPlayers */}
+{currentPlayers.map((player, index) => (
+  <motion.tr
+    key={player._id}
+    // ... rest of row code
+    // Update the rank calculation:
+    <td style={{ padding: '15px 10px', fontSize: '14px', fontWeight: 'bold', color: getRankColor(indexOfFirstPlayer + index + 1) }}>
+      {getRankIcon(indexOfFirstPlayer + index + 1)}
+    </td>
+  </motion.tr>
+))}
+
+
+routes/admin.js
+
+// Toggle all topics active/inactive
+router.put('/topics/toggle-all', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { isActive } = req.body;
+
+    const result = await Topic.updateMany(
+      {},
+      { $set: { isActive } }
+    );
+
+    console.log(`✅ All topics ${isActive ? 'enabled' : 'disabled'} by:`, req.user.username);
+
+    await logActivity(req.user._id, 'topics_bulk_toggle', {
+      isActive,
+      count: result.modifiedCount
+    }, req);
+
+    res.json({
+      message: `All topics ${isActive ? 'enabled' : 'disabled'}`,
+      count: result.modifiedCount
+    });
+  } catch (error) {
+    console.error('Error toggling all topics:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+pages/admin/Topics.js
+const handleEnableAll = async () => {
+  if (!window.confirm('Enable all topics?')) return;
+
+  try {
+    await api.put('/admin/topics/toggle-all', { isActive: true });
+    alert('✅ All topics enabled!');
+    fetchTopics();
+  } catch (error) {
+    alert('Failed to enable all topics');
+  }
+};
+
+const handleDisableAll = async () => {
+  if (!window.confirm('⚠️ Disable all topics? Users won\'t be able to access them.')) return;
+
+  try {
+    await api.put('/admin/topics/toggle-all', { isActive: false });
+    alert('✅ All topics disabled!');
+    fetchTopics();
+  } catch (error) {
+    alert('Failed to disable all topics');
+  }
+};
+
+// Add these buttons before the topics list:
+<div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+  <button onClick={handleEnableAll} className="retro-btn" style={{ background: 'var(--success-green)' }}>
+    ✅ ENABLE ALL
+  </button>
+  <button onClick={handleDisableAll} className="retro-btn" style={{ background: 'var(--error-red)' }}>
+    ❌ DISABLE ALL
+  </button>
+</div>
+
+pages/admin/Topics.js
+const handleSave = async (e) => {
+  e.preventDefault();
+
+  try {
+    if (editMode) {
+      await api.put(`/admin/topics/${selectedTopic._id}`, formData);
+      alert('✅ Topic updated successfully!');
+    } else {
+      await api.post('/admin/topics', formData);
+      alert('✅ Topic created successfully!');
+    }
+
+    setShowForm(false);
+    setEditMode(false);
+    setSelectedTopic(null);
+    resetForm();
+    fetchTopics();
+
+    // SCROLL TO TOP
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (error) {
+    console.error('Error saving topic:', error);
+    alert(error.response?.data?.message || 'Failed to save topic');
+  }
+};
+
