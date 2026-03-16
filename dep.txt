@@ -1,0 +1,551 @@
+Part 1: Environment Variables Setup
+Server .env (Production)
+Create server/.env.production:
+env# Environment
+NODE_ENV=production
+
+# Server
+PORT=5000
+
+# Database (MongoDB Atlas - get this from cloud.mongodb.com)
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ims-arcade?retryWrites=true&w=majority
+
+# JWT Secret (generate a strong random string)
+JWT_SECRET=your-super-secure-random-string-min-64-characters-long-please
+
+# Frontend URL (your deployed frontend URL)
+FRONTEND_URL=https://your-app.vercel.app
+
+# Session timeout (24 hours)
+SESSION_TIMEOUT=86400000
+
+# Max login attempts
+MAX_LOGIN_ATTEMPTS=5
+Generate a secure JWT_SECRET:
+bash# On terminal:
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+Part 2: Update All Localhost References
+File: client/src/utils/api.js (FIX BACKEND URL)
+javascriptimport axios from 'axios';
+
+// Dynamic base URL based on environment
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+
+File: client/.env.development (NEW)
+envREACT_APP_API_URL=http://localhost:5000/api
+
+File: client/.env.production (NEW)
+envREACT_APP_API_URL=https://your-backend-url.com/api
+Replace your-backend-url.com with your actual deployed backend URL
+
+Part 3: Fix All Image URLs
+File: client/src/utils/getImageUrl.js (NEW HELPER)
+javascript// Helper to get correct image URLs for both dev and production
+export const getImageUrl = (path) => {
+  if (!path) return null;
+  
+  // If it's already a full URL, return as-is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // If it starts with /uploads/, prepend API base URL
+  if (path.startsWith('/uploads/')) {
+    const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    return `${API_BASE}${path}`;
+  }
+  
+  // If it starts with /assets/ or other public paths, return as-is (served from React public folder)
+  return path;
+};
+
+export default getImageUrl;
+
+File: client/src/pages/Home.js (UPDATE IMAGE URLS)
+javascriptimport { getImageUrl } from '../utils/getImageUrl';
+
+// Update avatar display:
+<img 
+  src={getImageUrl(leader.avatar) || '/default-avatar.png'}
+  alt={leader.username}
+  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+  onError={(e) => {
+    e.target.src = '/default-avatar.png';
+  }}
+/>
+
+File: client/src/pages/Players.js (UPDATE IMAGE URLS)
+javascriptimport { getImageUrl } from '../utils/getImageUrl';
+
+// Update avatar display:
+{player.avatar ? (
+  <img 
+    src={getImageUrl(player.avatar)}
+    alt={player.username}
+    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+    onError={(e) => {
+      e.target.style.display = 'none';
+      e.target.parentElement.innerHTML = '<div style="font-size: 20px;">👤</div>';
+    }}
+  />
+) : (
+  <div style={{ fontSize: '20px' }}>👤</div>
+)}
+
+File: client/src/pages/Profile.js (UPDATE IMAGE URLS)
+javascriptimport { getImageUrl } from '../utils/getImageUrl';
+
+// Update avatar display:
+<img
+  src={getImageUrl(user.avatar) || '/default-avatar.png'}
+  alt="Avatar"
+  style={{
+    width: '150px',
+    height: '150px',
+    borderRadius: '50%',
+    objectFit: 'cover',
+    border: '5px solid var(--bright-blue)'
+  }}
+  onError={(e) => {
+    e.target.src = '/default-avatar.png';
+  }}
+/>
+
+File: client/src/pages/Achievements.js (UPDATE BADGE URLS)
+javascriptimport { getImageUrl } from '../utils/getImageUrl';
+
+// Update badge images:
+<img
+  src={getImageUrl(badge.badgeImage)}
+  alt={badge.badgeName}
+  style={{
+    width: '80px',
+    height: '80px',
+    filter: isEarned ? 'none' : 'grayscale(100%) opacity(0.3)'
+  }}
+  onError={(e) => {
+    e.target.style.display = 'none';
+    e.target.parentElement.innerHTML = `<div style="font-size: 48px; filter: ${isEarned ? 'none' : 'grayscale(100%) opacity(0.3)'}">🏅</div>`;
+  }}
+/>
+
+File: client/src/pages/TopicDetail.js (UPDATE BADGE URLS)
+javascriptimport { getImageUrl } from '../utils/getImageUrl';
+
+// Update badge image in mandatory result:
+{mandatoryResult.badgeImage && (
+  <img
+    src={getImageUrl(mandatoryResult.badgeImage)}
+    alt="Badge"
+    style={{ width: '80px', height: '80px', margin: '10px auto' }}
+    onError={(e) => {
+      e.target.style.display = 'none';
+    }}
+  />
+)}
+
+Part 4: Update Server CORS for Production
+File: server/server.js (UPDATE CORS)
+javascriptimport cors from 'cors';
+
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000', // Development
+      'http://localhost:5173', // Vite dev server
+      process.env.FRONTEND_URL, // Production frontend
+      'https://your-app.vercel.app', // Your actual frontend URL
+      'https://your-app.netlify.app', // Alternative deployment
+    ].filter(Boolean); // Remove undefined values
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+Part 5: Serve Static Files in Production
+File: server/server.js (ADD STATIC FILE SERVING)
+javascriptimport path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Serve React build in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from React build
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // Handle React routing - return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
+```
+
+---
+
+## Part 6: MongoDB Atlas Setup
+
+### **Step 1: Create MongoDB Atlas Account**
+
+1. Go to https://cloud.mongodb.com
+2. Sign up (free tier available)
+3. Create a new cluster (free M0 tier)
+
+### **Step 2: Configure Database Access**
+
+1. Database Access → Add New Database User
+2. Username: `ims-admin`
+3. Password: (generate strong password)
+4. Database User Privileges: `Atlas admin`
+5. Save
+
+### **Step 3: Configure Network Access**
+
+1. Network Access → Add IP Address
+2. Choose: **"Allow Access from Anywhere"** (0.0.0.0/0)
+   - Or add specific IPs if you know your server IPs
+3. Confirm
+
+### **Step 4: Get Connection String**
+
+1. Clusters → Connect → Connect your application
+2. Copy connection string:
+```
+   mongodb+srv://ims-admin:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
+```
+3. Replace `<password>` with your actual password
+4. Add database name: `ims-arcade`
+```
+   mongodb+srv://ims-admin:yourpassword@cluster0.xxxxx.mongodb.net/ims-arcade?retryWrites=true&w=majority
+```
+
+---
+
+## Part 7: Deployment Options
+
+---
+
+## Option A: Deploy to Render (EASIEST - Recommended)
+
+### **Backend Deployment:**
+
+1. **Create Render Account:** https://render.com
+2. **New Web Service:**
+   - Connect GitHub repo
+   - Root Directory: `server`
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+3. **Environment Variables:**
+```
+   NODE_ENV=production
+   MONGODB_URI=your-mongodb-atlas-uri
+   JWT_SECRET=your-generated-secret
+   FRONTEND_URL=https://your-frontend.vercel.app
+   PORT=5000
+
+Deploy!
+
+Your backend will be at: https://your-app.onrender.com
+Frontend Deployment:
+
+Build React App:
+
+bash   cd client
+   npm run build
+
+Deploy to Vercel:
+
+bash   npm install -g vercel
+   vercel login
+   vercel --prod
+
+Or deploy to Netlify:
+
+Drag & drop client/build folder to https://app.netlify.com/drop
+
+
+Update Environment Variables:
+
+In Vercel/Netlify dashboard
+Add: REACT_APP_API_URL=https://your-backend.onrender.com/api
+Redeploy
+
+
+
+
+Option B: Deploy to Railway
+Backend:
+
+Go to https://railway.app
+New Project → Deploy from GitHub
+Select your repo
+Root Directory: server
+Add environment variables (same as Render)
+Deploy
+
+Frontend:
+Same as Option A (Vercel or Netlify)
+
+Option C: Deploy to Heroku
+Backend:
+bash# Install Heroku CLI
+# Login
+heroku login
+
+# Create app
+heroku create ims-arcade-backend
+
+# Set environment variables
+heroku config:set NODE_ENV=production
+heroku config:set MONGODB_URI=your-mongodb-uri
+heroku config:set JWT_SECRET=your-secret
+heroku config:set FRONTEND_URL=https://your-frontend.com
+
+# Deploy
+git subtree push --prefix server heroku main
+
+Option D: Single Server Deployment (Backend + Frontend Together)
+File: server/server.js (UPDATED FOR SINGLE DEPLOYMENT)
+javascript// At the end of server.js, AFTER all API routes:
+
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from React build
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // ALL non-API routes return the React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
+Build Process:
+bash# Build frontend
+cd client
+npm run build
+
+# Deploy entire project
+# The server will serve both API and React app
+Deploy to Render/Railway/Heroku with:
+
+Root Directory: / (entire project)
+Build Command: cd client && npm install && npm run build && cd ../server && npm install
+Start Command: cd server && npm start
+
+
+Part 8: Pre-Deployment Checklist
+Code Updates:
+
+ All localhost:5000 replaced with process.env.REACT_APP_API_URL
+ All localhost:3000 replaced with process.env.FRONTEND_URL
+ Image URLs use getImageUrl() helper
+ CORS configured for production domains
+ Environment variables files created (.env.production)
+ MongoDB Atlas connection string obtained
+ JWT_SECRET generated (64+ characters)
+
+Database:
+
+ MongoDB Atlas cluster created
+ Database user created
+ Network access configured (0.0.0.0/0)
+ Connection string tested locally
+
+Frontend Build:
+
+ npm run build succeeds without errors
+ Build folder created in client/build
+ Environment variables set in deployment platform
+
+Backend:
+
+ Server starts without errors
+ All routes tested
+ File uploads work
+ CORS allows frontend domain
+
+
+Part 9: Seed Production Database
+After deployment, seed your production database:
+bash# SSH into your server or run locally pointing to production DB
+
+# Update server/.env to use production MONGODB_URI temporarily
+cd server
+node seedData.js
+node seedGames.js
+
+# Create admin user
+node createAdmin.js
+Or create a one-time seed endpoint (DELETE AFTER USE):
+File: server/routes/seed.js (TEMPORARY - DELETE AFTER SEEDING)
+javascriptimport express from 'express';
+import Topic from '../models/Topic.js';
+import Game from '../models/Game.js';
+import { topicsData } from '../seedData.js'; // Import your seed data
+import { gamesData } from '../seedGames.js'; // Import your games data
+
+const router = express.Router();
+
+// ONLY allow in development or with secret key
+router.post('/initialize-database', async (req, res) => {
+  try {
+    const { secretKey } = req.body;
+    
+    // Change this to a secure key
+    if (secretKey !== 'YOUR-SECRET-SEED-KEY-12345') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    // Clear existing data
+    await Topic.deleteMany({});
+    await Game.deleteMany({});
+
+    // Seed topics
+    await Topic.insertMany(topicsData);
+
+    // Seed games
+    await Game.insertMany(gamesData);
+
+    res.json({ 
+      message: 'Database seeded successfully!',
+      warning: 'DELETE THIS ENDPOINT NOW!'
+    });
+  } catch (error) {
+    console.error('Seed error:', error);
+    res.status(500).json({ message: 'Seed failed', error: error.message });
+  }
+});
+
+export default router;
+```
+
+**Call once via Postman:**
+```
+POST https://your-backend.com/api/seed/initialize-database
+Body: { "secretKey": "YOUR-SECRET-SEED-KEY-12345" }
+Then immediately delete server/routes/seed.js and remove the route!
+
+Part 10: Post-Deployment Testing
+Test Checklist:
+
+Authentication:
+
+ Can register new account
+ Can login
+ Can logout
+ Session persists on refresh
+
+
+Topics:
+
+ All 28 topics visible
+ Can complete mandatory question
+ Can complete bonus questions
+ Badge images load
+ XP awarded correctly
+
+
+Games:
+
+ All 26 games visible
+ Each game type works
+ XP awarded on completion
+ Timers work
+
+
+Profile:
+
+ Avatar upload works
+ Password change works
+ Stats display correctly
+
+
+Admin:
+
+ Can approve users
+ Can create topics
+ Can upload badges
+ Analytics work
+
+
+General:
+
+ No console errors
+ All images load
+ Mobile responsive
+ Fast load times
+
+
+
+
+Part 11: Environment Variables Summary
+Backend (.env):
+envNODE_ENV=production
+PORT=5000
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=your-64-char-secret
+FRONTEND_URL=https://your-frontend-url.com
+Frontend (.env.production):
+envREACT_APP_API_URL=https://your-backend-url.com/api
+
+Quick Deploy Commands:
+Render:
+bash# Just push to GitHub
+# Render auto-deploys on push
+Vercel (Frontend):
+bashcd client
+npm run build
+vercel --prod
+Railway:
+bash# Connect GitHub repo in Railway dashboard
+# Auto-deploys on push

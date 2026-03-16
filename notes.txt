@@ -1,0 +1,797 @@
+XP/Level Scaling Scheme
+1. Level Threshold computation
+-> No MAX Level
+-> Continuous
+
+2. LDAP (Sir Tony/Boots)
+-> Credentials
+-> Email format
+
+utils/levelsystem
+/**
+ * Infinite Level System - No Maximum Level
+ * Pokemon-style progressive difficulty up to Level 30, then formula-based continuation
+ */
+
+// Base thresholds for Levels 1-30 (hand-tuned for good progression)
+const BASE_LEVEL_THRESHOLDS = [
+  0,      // Level 1
+  100,    // Level 2
+  250,    // Level 3
+  450,    // Level 4
+  700,    // Level 5
+  1000,   // Level 6
+  1350,   // Level 7
+  1750,   // Level 8
+  2200,   // Level 9
+  2700,   // Level 10
+  3250,   // Level 11
+  3850,   // Level 12
+  4500,   // Level 13
+  5200,   // Level 14
+  5950,   // Level 15
+  6750,   // Level 16
+  7600,   // Level 17
+  8500,   // Level 18
+  9450,   // Level 19
+  10450,  // Level 20
+  11500,  // Level 21
+  12600,  // Level 22
+  13750,  // Level 23
+  14950,  // Level 24
+  16200,  // Level 25
+  17500,  // Level 26
+  18850,  // Level 27
+  20250,  // Level 28
+  21700,  // Level 29
+  23200   // Level 30
+];
+
+/**
+ * Calculate XP required for any level (infinite scaling)
+ * Levels 1-30: Use predefined thresholds
+ * Levels 31+: Use mathematical formula for infinite progression
+ */
+export const getXPForLevel = (level) => {
+  // Levels 1-30: Use base thresholds
+  if (level <= 30) {
+    return BASE_LEVEL_THRESHOLDS[level - 1] || 0;
+  }
+  
+  // Levels 31+: Formula-based infinite scaling
+  // Formula: XP = 23200 + (level - 30) * 1500 + ((level - 30) * (level - 29) / 2) * 50
+  // This creates increasing difficulty while remaining theoretically achievable
+  
+  const levelsAbove30 = level - 30;
+  const baseXP = 23200; // XP for Level 30
+  const linearGrowth = levelsAbove30 * 1500; // Base increase per level
+  const exponentialGrowth = (levelsAbove30 * (levelsAbove30 + 1) / 2) * 50; // Accelerating difficulty
+  
+  return baseXP + linearGrowth + exponentialGrowth;
+};
+
+/**
+ * Calculate level from total XP (infinite scaling)
+ */
+export const calculateLevel = (xp) => {
+  if (xp < 0) return 1;
+  
+  // Check levels 1-30 first (fast lookup)
+  for (let i = BASE_LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (xp >= BASE_LEVEL_THRESHOLDS[i]) {
+      return i + 1;
+    }
+  }
+  
+  // If XP is beyond Level 30, calculate using formula
+  if (xp >= 23200) {
+    // Iterative calculation for levels 31+
+    let level = 30;
+    
+    while (getXPForLevel(level + 1) <= xp) {
+      level++;
+      
+      // Safety check: prevent infinite loop (shouldn't happen, but just in case)
+      if (level > 10000) break;
+    }
+    
+    return level;
+  }
+  
+  return 1; // Default to level 1
+};
+
+/**
+ * Get XP required for next level
+ */
+export const getXPForNextLevel = (currentLevel) => {
+  return getXPForLevel(currentLevel + 1);
+};
+
+/**
+ * Get XP required for current level
+ */
+export const getXPForCurrentLevel = (currentLevel) => {
+  return getXPForLevel(currentLevel);
+};
+
+/**
+ * Calculate progress percentage to next level
+ */
+export const getLevelProgress = (currentXP, currentLevel) => {
+  const currentLevelXP = getXPForCurrentLevel(currentLevel);
+  const nextLevelXP = getXPForNextLevel(currentLevel);
+  const xpIntoLevel = currentXP - currentLevelXP;
+  const xpNeededForLevel = nextLevelXP - currentLevelXP;
+  
+  return Math.min(100, Math.max(0, (xpIntoLevel / xpNeededForLevel) * 100));
+};
+
+/**
+ * Get XP needed to reach next level
+ */
+export const getXPToNextLevel = (currentXP, currentLevel) => {
+  const nextLevelXP = getXPForNextLevel(currentLevel);
+  return Math.max(0, nextLevelXP - currentXP);
+};
+
+/**
+ * Get milestone levels and their XP requirements
+ * Useful for displaying achievement targets
+ */
+export const getMilestones = () => {
+  return [
+    { level: 5, xp: getXPForLevel(5), name: 'Bronze Learner' },
+    { level: 10, xp: getXPForLevel(10), name: 'Silver Learner' },
+    { level: 15, xp: getXPForLevel(15), name: 'Gold Learner' },
+    { level: 20, xp: getXPForLevel(20), name: 'Platinum Learner' },
+    { level: 25, xp: getXPForLevel(25), name: 'Diamond Master' },
+    { level: 30, xp: getXPForLevel(30), name: 'Elite Champion' },
+    { level: 50, xp: getXPForLevel(50), name: 'Legendary Master' },
+    { level: 100, xp: getXPForLevel(100), name: 'Ultimate Legend' }
+  ];
+};
+
+/**
+ * Calculate what level someone would be at with given XP
+ * (Inverse of getXPForLevel)
+ */
+export const calculateLevelFromXP = (xp) => {
+  return calculateLevel(xp);
+};
+
+export default {
+  calculateLevel,
+  getXPForLevel,
+  getXPForNextLevel,
+  getXPForCurrentLevel,
+  getLevelProgress,
+  getXPToNextLevel,
+  getMilestones,
+  calculateLevelFromXP
+};
+
+pages/Profile
+{/* Level Display */}
+<div style={{ textAlign: 'center', marginBottom: '30px' }}>
+  <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--bright-blue)', marginBottom: '10px' }}>
+    LEVEL {user.level}
+  </div>
+  <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '20px' }}>
+    {user.level >= 30 
+      ? '♾️ Infinite Level Scaling - No Cap!' 
+      : `${Math.round(levelProgress)}% to Level ${user.level + 1}`
+    }
+  </div>
+  
+  {/* XP Progress Bar */}
+  <div style={{
+    width: '100%',
+    maxWidth: '400px',
+    height: '30px',
+    background: 'var(--bg-medium)',
+    border: '3px solid var(--primary-navy)',
+    position: 'relative',
+    margin: '0 auto',
+    overflow: 'hidden'
+  }}>
+    <div style={{
+      width: `${levelProgress}%`,
+      height: '100%',
+      background: `linear-gradient(90deg, var(--bright-blue), var(--secondary-pink))`,
+      transition: 'width 0.3s ease'
+    }} />
+    <div style={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      fontSize: '11px',
+      fontWeight: 'bold',
+      color: 'var(--text-dark)',
+      textShadow: '1px 1px 2px white'
+    }}>
+      {user.xp.toLocaleString()} / {nextLevelXP.toLocaleString()} XP
+    </div>
+  </div>
+
+  <div style={{ fontSize: '10px', color: 'var(--text-light)', marginTop: '10px' }}>
+    {user.level >= 30 
+      ? `You've reached infinite scaling! Next level requires ${nextLevelXP.toLocaleString()} XP total.`
+      : `${(nextLevelXP - user.xp).toLocaleString()} XP to next level`
+    }
+  </div>
+</div>
+
+pages/Home.js 
+{/* Level Card */}
+<div className="retro-card" style={{ textAlign: 'center' }}>
+  <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+    CURRENT LEVEL
+  </div>
+  <div style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--bright-blue)', marginBottom: '5px' }}>
+    {user?.level || 1}
+  </div>
+  <div style={{ fontSize: '8px', color: 'var(--text-light)' }}>
+    {user?.level >= 30 ? '♾️ Infinite Scaling' : `Level ${(user?.level || 1) + 1} at ${nextLevelXP?.toLocaleString()} XP`}
+  </div>
+</div>
+
+
+pages/Home (after leaderboard)
+
+{/* Recent Activity Feed */}
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.5 }}
+  className="retro-card"
+  style={{ marginTop: '30px' }}
+>
+  <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+    📰 RECENT ACTIVITY
+  </h3>
+  
+  {recentActivity && recentActivity.length > 0 ? (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {recentActivity.slice(0, 10).map((activity, index) => (
+        <div
+          key={index}
+          style={{
+            padding: '12px',
+            background: index % 2 === 0 ? 'var(--bg-light)' : 'transparent',
+            border: '1px solid var(--border-color)',
+            fontSize: '10px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '16px' }}>
+              {activity.action === 'topic_completed' ? '📚' :
+               activity.action === 'game_completed' ? '🎮' :
+               activity.action === 'level_up' ? '⬆️' :
+               activity.action === 'badge_earned' ? '🏅' : '✨'}
+            </span>
+            <div>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-dark)' }}>
+                {activity.action === 'topic_completed' ? 'Completed Topic' :
+                 activity.action === 'game_completed' ? 'Played Game' :
+                 activity.action === 'level_up' ? 'Leveled Up!' :
+                 activity.action === 'badge_earned' ? 'Earned Badge' :
+                 activity.action}
+              </div>
+              <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>
+                {activity.details?.topicTitle || activity.details?.gameTitle || activity.details?.message || 'Activity'}
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: '9px', color: 'var(--text-light)' }}>
+            {new Date(activity.timestamp).toLocaleDateString()}
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-medium)' }}>
+      No recent activity
+    </div>
+  )}
+</motion.div>
+
+const [recentActivity, setRecentActivity] = useState([]);
+
+useEffect(() => {
+  const fetchDashboardData = async () => {
+    try {
+      const [statsRes, leaderboardRes, activityRes] = await Promise.all([
+        api.get('/stats'),
+        api.get('/leaderboard?limit=10'),
+        api.get('/activity/recent') // NEW
+      ]);
+
+      setStats(statsRes.data);
+      setLeaderboard(leaderboardRes.data);
+      setRecentActivity(activityRes.data); // NEW
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDashboardData();
+}, []);
+
+
+routes/activity.js
+
+import express from 'express';
+import ActivityLog from '../models/ActivityLog.js';
+import { authenticateToken } from '../middleware/auth.js';
+
+const router = express.Router();
+
+// Get recent activity for current user
+router.get('/recent', authenticateToken, async (req, res) => {
+  try {
+    const activities = await ActivityLog.find({ userId: req.user._id })
+      .sort({ timestamp: -1 })
+      .limit(20)
+      .lean();
+
+    res.json(activities);
+  } catch (error) {
+    console.error('Error fetching recent activity:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all activity logs (admin only)
+router.get('/all', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const activities = await ActivityLog.find()
+      .populate('userId', 'username email')
+      .sort({ timestamp: -1 })
+      .limit(100)
+      .lean();
+
+    res.json(activities);
+  } catch (error) {
+    console.error('Error fetching all activity:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+export default router;
+
+server.js
+import activityRoutes from './routes/activity.js';
+
+app.use('/api/activity', activityRoutes);
+
+
+src/components/LevelUpToast
+
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const LevelUpToast = ({ show, level, onClose }) => {
+  useEffect(() => {
+    if (show) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000); // Auto-close after 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [show, onClose]);
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, y: -100, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -100, scale: 0.8 }}
+          style={{
+            position: 'fixed',
+            top: '80px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+            background: 'linear-gradient(135deg, var(--bright-blue), var(--secondary-pink))',
+            padding: '30px 50px',
+            borderRadius: '10px',
+            border: '4px solid var(--primary-navy)',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+            textAlign: 'center',
+            minWidth: '300px'
+          }}
+        >
+          <motion.div
+            animate={{ rotate: [0, -10, 10, -10, 10, 0] }}
+            transition={{ duration: 0.5, repeat: 2 }}
+            style={{ fontSize: '64px', marginBottom: '10px' }}
+          >
+            🎉
+          </motion.div>
+          
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'white', marginBottom: '5px' }}>
+            LEVEL UP!
+          </div>
+          
+          <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'white', marginBottom: '10px' }}>
+            LEVEL {level}
+          </div>
+          
+          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.9)' }}>
+            You're making great progress! 🚀
+          </div>
+
+          <button
+            onClick={onClose}
+            style={{
+              marginTop: '15px',
+              padding: '8px 20px',
+              background: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              fontWeight: 'bold',
+              color: 'var(--primary-navy)',
+              cursor: 'pointer',
+              fontSize: '11px'
+            }}
+          >
+            AWESOME!
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+export default LevelUpToast;
+
+pages/TopicDetail.js
+
+import LevelUpToast from '../components/LevelUpToast';
+
+// Inside component:
+const [showLevelUp, setShowLevelUp] = useState(false);
+const [newLevel, setNewLevel] = useState(null);
+
+
+const handleSubmitMandatory = async (e) => {
+  e.preventDefault();
+  setSubmitting(true);
+
+  try {
+    const oldLevel = user.level; // Store old level
+
+    const response = await api.post(`/topics/${topicId}/submit-mandatory`, {
+      answer: selectedAnswer
+    });
+
+    if (response.data.passed) {
+      setMandatoryResult({
+        passed: true,
+        correctAnswer: true,
+        badgeImage: response.data.badgeImage
+      });
+
+      // Check for level up
+      if (response.data.newLevel && response.data.newLevel > oldLevel) {
+        setNewLevel(response.data.newLevel);
+        setShowLevelUp(true);
+      }
+
+      // Refresh user data
+      const userResponse = await api.get('/auth/me');
+      updateUser(userResponse.data);
+
+      // Auto-advance to bonus
+      setTimeout(() => {
+        setCurrentStage('bonus');
+      }, 3000);
+    } else {
+      // ... wrong answer handling
+    }
+  } catch (error) {
+    console.error('Error submitting mandatory:', error);
+    alert('Error submitting answer');
+  } finally {
+    setSubmitting(false);
+  }
+};
+add at end:
+return (
+  <div className="retro-container">
+    {/* ... all existing content ... */}
+    
+    <LevelUpToast 
+      show={showLevelUp} 
+      level={newLevel} 
+      onClose={() => setShowLevelUp(false)} 
+    />
+  </div>
+);
+
+
+routes/auth.js
+// Check daily login bonus
+router.post('/daily-bonus', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const lastActivity = user.streak.lastActivityDate 
+      ? new Date(user.streak.lastActivityDate) 
+      : null;
+    
+    if (lastActivity) {
+      lastActivity.setHours(0, 0, 0, 0);
+    }
+
+    let bonusAwarded = false;
+    let streakBroken = false;
+    
+    if (!lastActivity || lastActivity < today) {
+      // New day!
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (lastActivity && lastActivity.getTime() === yesterday.getTime()) {
+        // Consecutive day - increase streak
+        user.streak.current += 1;
+        user.streak.longest = Math.max(user.streak.current, user.streak.longest);
+      } else if (lastActivity && lastActivity < yesterday) {
+        // Streak broken
+        streakBroken = true;
+        user.streak.current = 1;
+      } else {
+        // First login ever or same day
+        user.streak.current = 1;
+      }
+      
+      user.streak.lastActivityDate = new Date();
+      
+      // Award bonus XP based on streak
+      const bonusXP = Math.min(50, 10 + (user.streak.current * 2));
+      const oldLevel = user.level;
+      user.xp += bonusXP;
+      user.level = calculateLevel(user.xp);
+      
+      await user.save();
+      
+      await logActivity(user._id, 'daily_login', {
+        streak: user.streak.current,
+        bonusXP,
+        streakBroken
+      }, req);
+      
+      bonusAwarded = true;
+      
+      res.json({
+        bonusAwarded: true,
+        bonusXP,
+        streak: user.streak.current,
+        longestStreak: user.streak.longest,
+        streakBroken,
+        leveledUp: user.level > oldLevel,
+        newLevel: user.level
+      });
+    } else {
+      // Already logged in today
+      res.json({
+        bonusAwarded: false,
+        streak: user.streak.current,
+        longestStreak: user.streak.longest,
+        message: 'Already claimed today!'
+      });
+    }
+  } catch (error) {
+    console.error('Daily bonus error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+pages/Home.js
+const [dailyBonus, setDailyBonus] = useState(null);
+const [showBonusModal, setShowBonusModal] = useState(false);
+
+useEffect(() => {
+  checkDailyBonus();
+}, []);
+
+const checkDailyBonus = async () => {
+  try {
+    const response = await api.post('/auth/daily-bonus');
+    if (response.data.bonusAwarded) {
+      setDailyBonus(response.data);
+      setShowBonusModal(true);
+    }
+  } catch (error) {
+    console.error('Error checking daily bonus:', error);
+  }
+};
+
+{/* Daily Bonus Modal */}
+<AnimatePresence>
+  {showBonusModal && dailyBonus && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.7)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999
+      }}
+      onClick={() => setShowBonusModal(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.8, y: 50 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.8, y: 50 }}
+        className="retro-card"
+        style={{ maxWidth: '500px', textAlign: 'center' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+          {dailyBonus.streakBroken ? '💔' : '🔥'}
+        </div>
+        
+        <h2 style={{ fontSize: '24px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+          {dailyBonus.streakBroken ? 'STREAK BROKEN!' : 'DAILY BONUS!'}
+        </h2>
+        
+        <div style={{ fontSize: '14px', marginBottom: '30px' }}>
+          <div style={{ marginBottom: '15px' }}>
+            <strong>Current Streak:</strong>{' '}
+            <span style={{ fontSize: '24px', color: 'var(--orange-accent)' }}>
+              {dailyBonus.streak} days 🔥
+            </span>
+          </div>
+          
+          <div style={{ marginBottom: '15px' }}>
+            <strong>Longest Streak:</strong> {dailyBonus.longestStreak} days
+          </div>
+          
+          <div style={{
+            padding: '20px',
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '2px solid var(--bright-blue)',
+            marginBottom: '15px'
+          }}>
+            <div style={{ fontSize: '12px', marginBottom: '5px' }}>BONUS XP EARNED</div>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
+              +{dailyBonus.bonusXP} XP
+            </div>
+          </div>
+          
+          {dailyBonus.leveledUp && (
+            <div style={{
+              padding: '15px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '2px solid var(--success-green)',
+              marginBottom: '15px'
+            }}>
+              🎉 You leveled up to Level {dailyBonus.newLevel}!
+            </div>
+          )}
+          
+          <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
+            Login daily to build your streak and earn bigger bonuses!
+          </div>
+        </div>
+        
+        <button
+          onClick={() => setShowBonusModal(false)}
+          className="retro-btn"
+          style={{ width: '100%' }}
+        >
+          AWESOME! 🚀
+        </button>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+pages/TopicDetail.js
+const [nextTopic, setNextTopic] = useState(null);
+
+// In the completion screen:
+{topicCompleted && (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="retro-card"
+    style={{ marginTop: '20px' }}
+  >
+    <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
+      🎯 WHAT'S NEXT?
+    </h3>
+    
+    {nextTopic ? (
+      <div>
+        <div style={{ fontSize: '12px', marginBottom: '15px' }}>
+          Continue your learning journey:
+        </div>
+        <button
+          onClick={() => navigate(`/topics/${nextTopic._id}`)}
+          className="retro-btn"
+          style={{ width: '100%', marginBottom: '10px' }}
+        >
+           START: {nextTopic.title}
+        </button>
+      </div>
+    ) : (
+      <div style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
+         You've completed all available topics!
+      </div>
+    )}
+    
+    <button
+      onClick={() => navigate('/topics')}
+      className="retro-btn secondary"
+      style={{ width: '100%' }}
+    >
+      ← BACK TO ALL TOPICS
+    </button>
+  </motion.div>
+)}
+
+useEffect(() => {
+  const fetchNextTopic = async () => {
+    try {
+      const response = await api.get('/topics/recommended-next');
+      setNextTopic(response.data);
+    } catch (error) {
+      console.error('Error fetching next topic:', error);
+    }
+  };
+  
+  if (topicCompleted) {
+    fetchNextTopic();
+  }
+}, [topicCompleted]);
+
+
+routes/topics.js
+// Get recommended next topic
+router.get('/recommended-next', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const completedTopicIds = user.completedTopics.map(ct => ct.topicId.toString());
+    
+    // Find first active topic not completed
+    const nextTopic = await Topic.findOne({
+      _id: { $nin: completedTopicIds },
+      isActive: true
+    }).sort({ createdAt: 1 }).lean();
+    
+    res.json(nextTopic);
+  } catch (error) {
+    console.error('Error fetching recommended topic:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
