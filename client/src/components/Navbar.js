@@ -131,45 +131,61 @@ const Navbar = () => {
           PLAYERS
         </button>
 
-        {/* User stats */}
-        <div style={{
-          fontSize: '10px',
-          color: 'var(--bright-blue)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          flex: '0 0 auto'
-        }}
-        className="desktop-stats"
-        >
-          <span>LVL {user?.level || 1}</span>
-          <span>|</span>
-          <span>{user?.xp || 0} XP</span>
-        </div>
-
         {/* User Menu */}
         <div style={{ position: 'relative' }}>
-          <button onClick={() => setShowDropdown(!showDropdown)} style={{
-            background: 'var(--primary-navy)',
-            color: 'white',
-            border: '2px solid var(--primary-navy)',
-            padding: '8px 15px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontWeight: 'bold'
-          }}
-          >
-            {user?.username}
-            <span style = {{ fontSize: '8px' }}>▼</span>
-          </button>
+
+          <div style={{ position: 'relative' }}>
+            <button onClick={() => setShowDropdown(!showDropdown)} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              background: 'transparent',
+              border: 'none',
+              padding: '8px 15px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: '11px',
+              fontWeight: 'bold'
+            }}>
+              {/* User Avatar */}
+              <div style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                border: '2px solid #000000',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--bg-medium)'
+              }}>
+                {user.avatar ? (
+                  <img src={user.avatar.startsWith('/uploads/')
+                    ? `http://localhost:5000${user.avatar}`
+                    : user.avatar
+                  }
+                  alt={user.username}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+
+                    e.target.parentElement.innerHTML = '<div style = "font-size: 16px;">👤</div>'
+                  }}
+                  />
+                ) : (
+                  <div style={{ fontSize: '16px' }}>👤</div>
+                )}
+              </div>
+              {/* <span>{user.username}</span> */}
+              
+            </button>
+          </div>
 
           {/* Dropdown Menu */}
           {showDropdown && (
             <div style={{
               position: 'absolute',
-              top: '50px',
+              top: '70px',
               right: '0',
               background: 'var(--bg-light)',
               border: '3px solid var(--primary-navy)',

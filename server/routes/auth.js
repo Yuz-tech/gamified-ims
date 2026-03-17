@@ -34,48 +34,59 @@ const parseUserAgent = (userAgent) => {
 // Request new account
 router.post('/register', async(req,res) => {
   try {
-    const { username, email} = req.body;
-    
-    //Validation
-    if (!username || !email) {
+    const { username, email, password } = req.body;
+
+    // Credentials validation
+    if (!username || !email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Email
+    if (password.length < 3) {
+      return res.status(400).json({ message: 'Password must atleast be 3 characters '});
+    }
+
+    // Email Validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      console.log('Invalid email format');
       return res.status(400).json({ message: 'Invalid email format' });
     }
 
-    // Existing user
-    const existingUser = await User.findOne({
-      $or: [{ username }, { email }]
-    });
-
-    if (existingUser) {
-      if (existingUser.username === username) {
-        return res.status(400).json({ message: 'Username already exists' });
-      }
-      if (existingUser.email === email) {
-        return res.status(400).json({ message: 'Email already registered' });
-      }
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return res.status(400).json({ message: 'Username already exists' });
     }
 
-    const user = new User({
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      console.log('Email exists: ', email);
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    const user = new User ({
       username,
       email,
-      password: '143',
+      password,
       role: 'employee',
       isApproved: false,
-      requestedAt: new Date()
+      xp: 0,
+      level: 1,
+      badges: [],
+      completedTopics: [],
+      avatar: null
     });
 
     await user.save();
 
-    res.status(201).json({ message: 'Registration successful! Please wait for approval.', username: user.username });
+    res.status(201).json({
+      message: 'Registration successful! Please wait for admin approval.',
+      username: user.username
+    });
   } catch (error) {
-    console.error('Registration error: ', error);
-    res.status(500).json({ message: 'Registration failed.', error: error.message});
+    res.status(500).json({
+      message: 'Registration failed. Please try again.',
+      error: error.message
+    });
   }
 });
 

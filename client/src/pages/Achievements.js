@@ -140,8 +140,8 @@ const Achievements = () => {
                 <div style = {{
                   width: '120px',
                   height: '120px',
-                  margin: '0 auto 20px',
-                  border: `3px solid ${topic.earned ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+                  margin: '0 auto 15px',
+                  border: `4px solid ${topic.earned ? 'var(--orange-accent)' : 'var(--border-color)'}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -149,7 +149,7 @@ const Achievements = () => {
                   boxShadow: topic.earned ? '3px 3px 0 var(--primary-navy)' : 'none',
                   position: 'relative',
                   overflow: 'hidden',
-                  borderRadius: '57px'
+                  borderRadius: '50%'
                 }}>
                   {topic.earned ? (
                     imageUrl ? (

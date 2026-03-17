@@ -279,7 +279,9 @@ const Home = () => {
 
         {userBadges.length > 0 ? (
           <div style = {{
-            display: 'grid',
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
             gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
             gap: '20px'
           }}>
@@ -298,8 +300,8 @@ const Home = () => {
                   title={badge.badgeName}
                 >
                   <div style = {{
-                    width: '80px',
-                    height: '80px',
+                    width: '100px',
+                    height: '100px',
                     margin: '0 auto 10px',
                     border: '3px solid var(--orange-accent)',
                     borderRadius: '55px',

@@ -1,19 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
 import api from '../../utils/api';
 
 const Settings = () => {
     const [confirmCode, setConfirmCode] = useState('');
     const [resetting, setResetting] = useState(false);
+    const [formUrl, setFormUrl] = useState('');
+    const [savingUrl, setSavingUrl] = useState(false);
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const response = await api.get('/admin/settings');
+            setFormUrl(response.data.completionFormUrl);
+        } catch (error) {
+            console.error('Error fetching settings: ', error);
+        }
+    };
+
+    const handleSaveFormUrl = async (e) => {
+        e.preventDefault();
+        setSavingUrl(true);
+
+        try {
+            await api.put('/admin/settings', { completionFormUrl: formUrl });
+            alert('Completion from URL updated!');
+        } catch (error) {
+            alert('Failed to update form URL');
+        } finally {
+            setSavingUrl(false);
+        }
+    };
 
     const handleYearlyReset = async (e) => {
         e.preventDefault();
 
-        if (!window.confirm('This will reset all players topic progress! Are you sure to continue?')) {
+        if (!window.confirm('This will reset all employee topic progress')) {
             return;
         }
 
-        if (!window.confirm('Final Warning: This will clear all topic completions, BUT preserve/retain XP and levels. Continue?')) {
+        if (!window.confirm('Final warning: This will clear all topic completions for the year.')) {
             return;
         }
 
@@ -21,7 +50,7 @@ const Settings = () => {
 
         try {
             const response = await api.post('/admin/yearly-reset', { confirmCode });
-            alert(`Reset complete! ${response.data.usersReset} users reset (topics only - XP/Levels retained).`);
+            alert(`Reset complete! ${response.data.usersReset} users reset`);
             setConfirmCode('');
         } catch (error) {
             alert(error.response?.data?.message || 'Reset failed');
@@ -36,72 +65,43 @@ const Settings = () => {
                 System Settings
             </h1>
 
-            {/* Yearly Reset */}
-            <motion.div
+            {/* Completion form URL */}
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="retro-card"
-              style={{ maxWidth: '600px', border: '3px solid var(--error-red)' }}
-            >
-                <div style={{
-                    padding: '15px',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '2px solid var(--error-red)',
-                    marginBottom: '20px'
-                }}>
-                    <h3 style={{ fontSize: '14px', color: 'var(--error-red)', marginBottom: '10px', fontWeight: 'bold' }}>
-                        Warning Zone
-                    </h3>
-                    <p style={{ fontSize: '10px', color: 'var(--text-dark)', lineHeight: '1.6' }}>
-                        This action will reset ALL players topic progress. XP and Levels are preserved.
-                    </p>
-                </div>
-
-                <h3 style={{ fontSize: '14px', color: 'var(--error-red)', marginBottom: '20px' }}>
-                    Yearly Reset
+              style={{ maxWidth: '600px', marginBottom: '30px' }}>
+                <h3 style={{ fontSize: '14px', color: 'var(--bright-blue)', marginBottom: '20px' }}>
+                    Completion Form URL
                 </h3>
 
-                <form onSubmit={handleYearlyReset}>
+                <form onSubmit={handleSaveFormUrl}>
                     <div style={{ marginBottom: '20px' }}>
                         <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--text-medium)' }}>
-                            Confirmation Code *
+                            FORM URL
                         </label>
-                        <input type="text" className="retro-input" value={confirmCode} onChange={(e) => setConfirmCode(e.target.value)} placeholder="Type: RESET_DATA" required />
+                        <input type="url" className="retro-input" value={formUrl} onChange={(e) => setFormUrl(e.target.value)}
+                            placeholder="https://your-forms-link-here..."
+                            required
+                        />
                         <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>
-                            Type <strong>"RESET_DATA"</strong> to confirm
+                            This URL is show to users when they complete all topics
                         </div>
                     </div>
 
-                    <button type="submit" className="retro-btn" style={{
-                        width: '100%',
-                        background: 'var(--error-red)',
-                        opacity: confirmCode === 'RESET_DATA' ? 1 : 0.5
-                    }}
-                    disabled={confirmCode !== 'RESET_DATA' || resetting}
-                    >
-                        {resetting ? 'Resetting...' : 'Execute reset order'}
+                    <button type="submit" className="retro-btn" style={{ width: '100%'}} disabled={savingUrl}>
+                        {savingUrl ? 'Saving...' : 'Save Form URL'}
                     </button>
                 </form>
+              </motion.div>
 
-                <div style = {{
-                    marginTop: '20px',
-                    padding: '15px',
-                    background: 'rgba(59, 130, 246, 0.05)',
-                    border: '2px solid var(--bright-blue)',
-                    fontSize: '9px',
-                    lineHeight: '1.6'
-                }}>
-                    <strong>What gets reset:</strong><br />
-                    - ALL Employee topic progress cleared <br />
-                    - ALL quiz progress from IMS Awareness topics <br />
-                    - ALL activity logs deleted <br />
-                    <br />
-                    <strong>What gets preserved:</strong><br />
-                    - Employee XP and Levels <br />
-                    - Topics and user configurations <br />
-                    <br />
-                </div>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="retro-card"
+                style={{ maxWidth: '600px', border: '3px solid var(--error-red)' }}>
+
+                </motion.div>
         </div>
     );
 };

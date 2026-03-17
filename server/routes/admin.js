@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Topic from '../models/Topic.js';
 import Badge from '../models/Badge.js';
 import ActivityLog from '../models/ActivityLog.js';
+import SystemSettings from '../models/SystemSettings.js';
 import { authenticateToken, isAdmin } from '../middleware/auth.js';
 import { sendPasswordEmail } from '../utils/email.js';
 import { logActivity } from '../utils/logger.js';
@@ -364,37 +365,34 @@ router.get('/training-year', async (req, res) => {
 });
 
 // Archive current year and reset for new year
-router.post('/yearly-reset', authenticateToken, isAdmin, async (req,res) => {
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
   try {
     const { confirmCode } = req.body;
-
     if (confirmCode !== 'RESET_DATA') {
       return res.status(400).json({ message: 'Invalid confirmation code' });
     }
 
-    // Note to dev: The reset only affects completed topics and badges. XP and Levels are kept or retained.
     const result = await User.updateMany(
       { role: 'employee' },
       {
         $set: {
-          completedTopics: [],
-          badges: []
+          completedTopics: []
         }
       }
     );
 
     await ActivityLog.deleteMany({});
-
     await logActivity(req.user._id, 'yearly_reset', {
       usersReset: result.modifiedCount,
-      type: 'topics_only'
+      timestamp: new Date()
     }, req);
 
-    console.log('Yearly reset complete: ', result.modifiedCount, 'users reset (topics only)');
-
-    res.json({ message: 'Yearly reset completed successfully (XP and Levels retained)', userReset: result.modifiedCount });
+    res.json({
+      message: 'Yearly reset complete!',
+      usersReset: result.modifiedCount
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Reset failed', error: error.message });
   }
 });
 
@@ -469,6 +467,44 @@ router.post('/users/:userId/reset-progress', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+router.get('/settings', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    let settings = await SystemSettings.findOne();
+
+    if(!settings) {
+      settings = new SystemSettings();
+      await settings.save();
+    }
+
+    res.json(settings);
+  } catch (error) {
+    console.error('Error fetching settings: ', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/settings', authenticateToken, isAdmin, async (req,res) => {
+  try {
+    const { completionFormUrl } = req.body;
+
+    let settings = await SystemSettings.findOne();
+
+    if (!settings) {
+      settings = new SystemSettings();
+    }
+
+    settings.completionFormUrl = completionFormUrl;
+    settings.updatedBy = req.user._id;
+    settings.updatedAt = new Date();
+
+    await settings.save();
+
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

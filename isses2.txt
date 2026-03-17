@@ -9,32 +9,32 @@ router.post('/register', async (req, res) => {
 
     // Validation
     if (!username || !email || !password) {
-      console.log('❌ Missing fields');
+      console.log('  Missing fields');
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     if (password.length < 6) {
-      console.log('❌ Password too short');
+      console.log('  Password too short');
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      console.log('❌ Invalid email format');
+      console.log('  Invalid email format');
       return res.status(400).json({ message: 'Invalid email format' });
     }
 
     // Check existing user
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
-      console.log('❌ Username exists:', username);
+      console.log('  Username exists:', username);
       return res.status(400).json({ message: 'Username already exists' });
     }
 
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
-      console.log('❌ Email exists:', email);
+      console.log('  Email exists:', email);
       return res.status(400).json({ message: 'Email already registered' });
     }
 
@@ -54,14 +54,14 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    console.log('✅ User registered successfully:', username);
+    console.log('  User registered successfully:', username);
 
     res.status(201).json({
       message: 'Registration successful! Please wait for admin approval.',
       username: user.username
     });
   } catch (error) {
-    console.error('❌ Registration error:', error);
+    console.error(' Registration error:', error);
     res.status(500).json({ 
       message: 'Registration failed. Please try again.', 
       error: error.message 
@@ -76,7 +76,7 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
   try {
     const { confirmCode } = req.body;
 
-    console.log('🔥 Yearly reset requested by:', req.user.username);
+    console.log(' Yearly reset requested by:', req.user.username);
 
     if (confirmCode !== 'RESET_ALL_DATA') {
       return res.status(400).json({ message: 'Invalid confirmation code' });
@@ -96,10 +96,10 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
     // Clear activity logs
     await ActivityLog.deleteMany({});
 
-    console.log(`✅ Yearly reset complete: ${result.modifiedCount} users reset`);
-    console.log('✅ Topics progress cleared');
-    console.log('✅ Activity logs cleared');
-    console.log('✅ Badges, XP, and levels PRESERVED');
+    console.log(`  Yearly reset complete: ${result.modifiedCount} users reset`);
+    console.log('  Topics progress cleared');
+    console.log('  Activity logs cleared');
+    console.log('  Badges, XP, and levels PRESERVED');
 
     await logActivity(req.user._id, 'yearly_reset', {
       usersReset: result.modifiedCount,
@@ -111,7 +111,7 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
       usersReset: result.modifiedCount
     });
   } catch (error) {
-    console.error('❌ Yearly reset error:', error);
+    console.error('  Yearly reset error:', error);
     res.status(500).json({ message: 'Reset failed', error: error.message });
   }
 });
@@ -512,7 +512,7 @@ const Games = () => {
                 fontSize: '10px',
                 textAlign: 'center'
               }}>
-                ✅ Completed | Best: {game.userProgress.bestScore}%
+                  Completed | Best: {game.userProgress.bestScore}%
               </div>
             )}
 
@@ -661,7 +661,7 @@ router.post('/badge', authenticateToken, isAdmin, uploadBadge.single('badge'), (
 
     const fileUrl = `/uploads/badges/${req.file.filename}`;
     
-    console.log('✅ Badge uploaded:', fileUrl);
+    console.log('  Badge uploaded:', fileUrl);
 
     res.json({
       message: 'Badge uploaded successfully',
@@ -683,7 +683,7 @@ router.post('/avatar', authenticateToken, uploadAvatar.single('avatar'), (req, r
 
     const fileUrl = `/uploads/avatars/${req.file.filename}`;
     
-    console.log('✅ Avatar uploaded:', fileUrl);
+    console.log('  Avatar uploaded:', fileUrl);
 
     res.json({
       message: 'Avatar uploaded successfully',
@@ -704,7 +704,7 @@ router.delete('/badge/:filename', authenticateToken, isAdmin, (req, res) => {
 
     if (fs.existsSync(filepath)) {
       fs.unlinkSync(filepath);
-      console.log('✅ Badge deleted:', filename);
+      console.log('  Badge deleted:', filename);
       res.json({ message: 'Badge deleted successfully' });
     } else {
       res.status(404).json({ message: 'File not found' });
@@ -837,7 +837,7 @@ router.put('/settings', authenticateToken, isAdmin, async (req, res) => {
 
     await settings.save();
 
-    console.log('✅ Settings updated by:', req.user.username);
+    console.log('  Settings updated by:', req.user.username);
 
     res.json(settings);
   } catch (error) {
@@ -877,7 +877,7 @@ const Settings = () => {
 
     try {
       await api.put('/admin/settings', { completionFormUrl: formUrl });
-      alert('✅ Completion form URL updated!');
+      alert('  Completion form URL updated!');
     } catch (error) {
       alert('Failed to update form URL');
     } finally {
@@ -900,7 +900,7 @@ const Settings = () => {
 
     try {
       const response = await api.post('/admin/yearly-reset', { confirmCode });
-      alert(`✅ Reset complete! ${response.data.usersReset} users reset (topics only).`);
+      alert(`  Reset complete! ${response.data.usersReset} users reset (topics only).`);
       setConfirmCode('');
     } catch (error) {
       alert(error.response?.data?.message || 'Reset failed');
@@ -1074,7 +1074,7 @@ router.put('/topics/toggle-all', authenticateToken, isAdmin, async (req, res) =>
       { $set: { isActive } }
     );
 
-    console.log(`✅ All topics ${isActive ? 'enabled' : 'disabled'} by:`, req.user.username);
+    console.log(`  All topics ${isActive ? 'enabled' : 'disabled'} by:`, req.user.username);
 
     await logActivity(req.user._id, 'topics_bulk_toggle', {
       isActive,
@@ -1098,7 +1098,7 @@ const handleEnableAll = async () => {
 
   try {
     await api.put('/admin/topics/toggle-all', { isActive: true });
-    alert('✅ All topics enabled!');
+    alert('  All topics enabled!');
     fetchTopics();
   } catch (error) {
     alert('Failed to enable all topics');
@@ -1110,7 +1110,7 @@ const handleDisableAll = async () => {
 
   try {
     await api.put('/admin/topics/toggle-all', { isActive: false });
-    alert('✅ All topics disabled!');
+    alert('  All topics disabled!');
     fetchTopics();
   } catch (error) {
     alert('Failed to disable all topics');
@@ -1120,10 +1120,10 @@ const handleDisableAll = async () => {
 // Add these buttons before the topics list:
 <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
   <button onClick={handleEnableAll} className="retro-btn" style={{ background: 'var(--success-green)' }}>
-    ✅ ENABLE ALL
+      ENABLE ALL
   </button>
   <button onClick={handleDisableAll} className="retro-btn" style={{ background: 'var(--error-red)' }}>
-    ❌ DISABLE ALL
+      DISABLE ALL
   </button>
 </div>
 
@@ -1134,10 +1134,10 @@ const handleSave = async (e) => {
   try {
     if (editMode) {
       await api.put(`/admin/topics/${selectedTopic._id}`, formData);
-      alert('✅ Topic updated successfully!');
+      alert('  Topic updated successfully!');
     } else {
       await api.post('/admin/topics', formData);
-      alert('✅ Topic created successfully!');
+      alert('  Topic created successfully!');
     }
 
     setShowForm(false);

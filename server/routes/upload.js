@@ -84,17 +84,19 @@ router.post('/avatar', authenticateToken, uploadAvatar.single('avatar'), (req,re
 });
 
 // Delete Badge 
-router.delete('/badge/:filename', authenticateToken, isAdmin, (req,res) => {
+router.delete('/badge/:filename', authenticateToken, isAdmin, (req, res) => {
   try {
-    const filePath = path.join(__dirname, '../uploads/badges', req.params.filename);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      res.json({ message: 'File deleted successfully' });
+    const filename = req.params.filename;
+    const filepath = path.join(badgeDir, filename);
+
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+      res.json({ message: 'Badge deleted successfully' });
     } else {
       res.status(404).json({ message: 'File not found' });
     }
   } catch (error) {
-    console.error('Delete error: ', error);
+    console.error(error);
     res.status(500).json({ message: 'Delete failed', error: error.message });
   }
 });
