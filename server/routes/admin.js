@@ -172,6 +172,26 @@ router.put('/topics/:topicId/toggle', async (req, res) => {
   }
 });
 
+// toggle all topics
+router.put('/topics/toggle-all', authenticateToken, isAdmin, async (req,res) => {
+  try {
+    const { isActive } = req.body;
+    const result = await Topic.updateMany(
+      {},
+      { $set: { isActive }}
+    );
+
+    await logActivity(req.user._id, 'topics_bulk_toggle', {
+      isActive,
+      count: result.modifiedCount
+    }, req);
+
+    res.json({ message: `All topics ${isActive ? 'enabled' : 'disabled'}`, count: result.modifiedCount});
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Update topic
 router.put('/topics/:id', authenticateToken, isAdmin, async (req, res) => {
   try {
@@ -207,7 +227,8 @@ router.put('/topics/:id', authenticateToken, isAdmin, async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message})
   }
-})
+});
+
 
 // ===== BADGE MANAGEMENT =====
 

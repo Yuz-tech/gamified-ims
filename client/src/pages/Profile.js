@@ -19,10 +19,18 @@ const Profile = () => {
     });
 
     const avatarOptions = [
-        '/avatars/eeb.png',
-        '/avatars/pitdog.png',
-        '/avatars/khajit.png',
-        '/avatars/optimum pride.png'
+        '/avatars/bumblebee.png',
+        '/avatars/optimum pride.png',
+        '/avatars/luffy.jpg',
+        '/avatars/goku.jpg',
+        '/avatars/pikachu.png',
+        '/avatars/baymax.png',
+        '/avatars/charm.jpg',
+        '/avatars/bulb.jpg',
+        '/avatars/squirtle.png',
+        '/avatars/jake.png',
+        '/avatars/yoshi.png',
+        '/avatars/stitch.png'
     ];
 
     useEffect(() => {

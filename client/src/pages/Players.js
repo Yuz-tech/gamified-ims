@@ -7,6 +7,13 @@ const Players = () => {
     const [filteredPlayers, setFilteredPlayers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const playersPerPage = 50;
+
+    const indexOfLastPlayer = currentPage * playersPerPage;
+    const indexOfFirstPlayer = indexOfLastPlayer - playersPerPage;
+    const currentPlayers = filteredPlayers.slice(indexOfFirstPlayer, indexOfLastPlayer);
+    const totalPages = Math.ceil(filteredPlayers.length / playersPerPage);
 
     useEffect(() => {
         fetchPlayers();
@@ -166,6 +173,33 @@ const Players = () => {
                     </div>
                 )}
 
+                {/* Pagination */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    marginBottom: '20px',
+                    alignItems: 'center'
+                }}>
+                    <button onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="retro-btn secondary"
+                        style={{ opacity: currentPage === 1 ? 0.5 : 1 }}>
+                            ←
+                        </button>
+
+                        <span style={{ fontSize: '12px', color: 'var(--text-dark)' }}>
+                            Page {currentPage} of {totalPages}
+                        </span>
+
+                        <button onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="retro-btn secondary"
+                            style={{ opacity: currentPage === totalPages ? 0.5 : 1 }}>
+                                →
+                            </button>
+                </div>
+
                 {/* Full table */}
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -203,7 +237,7 @@ const Players = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredPlayers.map((player, index) => (
+                                    {currentPlayers.map((player, index) => (
                                         <motion.tr
                                           key={player._id}
                                           initial={{ opacity: 0, x: -20 }}
@@ -215,7 +249,7 @@ const Players = () => {
                                           }}
                                         >
                                             <td style={{ padding: '15px 10px', fontSize: '14px', fontWeight: 'bold', color: getRankColor(index + 1) }}>
-                                                {getRankIcon(index + 1)}
+                                                {getRankIcon(indexOfFirstPlayer + index + 1)}
                                             </td>
                                             <td style={{ padding: '15px 10px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

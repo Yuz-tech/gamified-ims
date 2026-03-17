@@ -134,6 +134,10 @@ const Topics = () => {
   };
 
   const handleEdit = (topic) => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
     setEditingTopic(topic);
     setFormData({
       title: topic.title,
@@ -172,6 +176,29 @@ const Topics = () => {
       } catch(error) {
         alert ('Error toggling topic');
       }
+    }
+  };
+
+  const handleEnableAll = async () => {
+    if (!window.confirm('Enable all topics?')) return;
+
+    try {
+      await api.put('/admin/topics/toggle-all', { isActive: true });
+      alert('All topics enabled!');
+      fetchTopics();
+    } catch (error) {
+      alert('Failed to enable all topics');
+    }
+  };
+
+  const handleDisableAll = async () => {
+    if (!window.confirm('Disable all topics?')) return;
+
+    try {
+      await api.put('/admin/topics/toggle-all', { isActive: false });
+      fetchTopics();
+    } catch (error) {
+      alert('Failed to disable all topics');
     }
   };
 
@@ -523,6 +550,15 @@ const Topics = () => {
         </motion.div>
       )}
 
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <button onClick={handleEnableAll} className='retro-btn' style={{ background: 'var(--success-green)' }}>
+          Enable All
+        </button>
+        <button onClick={handleDisableAll} className='retro-btn' style={{ background: 'var(--error-red)' }}>
+          Disable All
+        </button>
+      </div>
+
       {/* Topics List */}
       <div className="retro-card">
         <h3 style = {{ 
@@ -550,12 +586,12 @@ const Topics = () => {
             }}>
               <thead>
                 <tr style = {{ borderBottom: '2px solid var(--border-color)' }}>
-                  <th style = {{ padding: '10px', textAlign: 'left' }}>TITLE</th>
-                  <th style = {{ padding: '10px', textAlign: 'left' }}>BADGE</th>
-                  <th style = {{ padding: '10px', textAlign: 'left' }}>QUESTIONS</th>
-                  <th style = {{ padding: '10px', textAlign: 'left' }}>XP RANGE</th>
-                  <th style = {{ padding: '10px', textAlign: 'left' }}>STATUS</th>
-                  <th style = {{ padding: '10px', textAlign: 'left' }}>ACTIONS</th>
+                  <th style = {{ padding: '15px', textAlign: 'left' }}>TITLE</th>
+                  <th style = {{ padding: '15px', textAlign: 'left' }}>BADGE</th>
+                  <th style = {{ padding: '15px', textAlign: 'left' }}>QUESTIONS</th>
+                  <th style = {{ padding: '15px', textAlign: 'left' }}>XP RANGE</th>
+                  <th style = {{ padding: '15px', textAlign: 'left' }}>STATUS</th>
+                  <th style = {{ padding: '15px', textAlign: 'left' }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>

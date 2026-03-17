@@ -1,30 +1,15 @@
-1. Register or request an account still not working (An error occurred) 
+ERROR in ./src/App.js 15:0-50
+Module not found: Error: Can't resolve './pages/games/GameRouter' in 'C:\Users\julius.galejo\Desktop\ims\gamified-ims\client\src'
 
-2. (Yearly) Reset button is not working
-resetting revamp 
--retain badges
-*to distnguish a badge from one year to another, we just change the badge name. Hence, when resetting the badge dont get reset, not wasting the user's achievements.  
--retain XP and Level
--reset all users' topics progress
--change current code in YearlyReset.js (I can provide previous)
+ERROR in ./src/App.js 22:0-57
+Module not found: Error: Can't resolve './components/ProtectedRoute' in 'C:\Users\julius.galejo\Desktop\ims\gamified-ims\client\src'
 
-3. const Layout is not in App.js
-[eslint] 
-src\App.js
-  Line 154:16:  'Layout' is not defined  react/jsx-no-undef
+ERROR in ./src/App.js 23:0-49
+Module not found: Error: Can't resolve './components/AdminRoute' in 'C:\Users\julius.galejo\Desktop\ims\gamified-ims\client\src'
 
-4. Games tab not working
+1. Avatar Profile not saved when logging out 
+  -> not showing in Navbar when logging in again
+  -> not showing when in home and players tab when other user logs in
+  -> ensure other players can see other players avatars toLocaleString
 
-5. change topic badge not working unless i remove imageFilter or FileFilter
-
-6. Under players tab, show players' avatars. Also, show user avatar in navbar
-
-7. Make badges bigger in home and achievements tab
-
-8. Admin, add an option to change the completion form link
-
-9. Players tab rankings, pagination -> 50 per page
-
-10. Admin, add a enable/disable all topics button
-
-11. Admin, when editing a topic -> redirect user to topmost or head of the page
+2. Provide full Profile.js since there is a new levelSystem.js
