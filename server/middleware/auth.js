@@ -16,9 +16,7 @@ export const authenticateToken = async (req, res, next) => {
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log('JWT verified for user:', decoded.username);
     } catch (jwtError) {
-      console.log('JWT verification failed:', jwtError.message);
       return res.status(401).json({ message: 'Invalid or expired token' });
     }
 
@@ -30,12 +28,8 @@ export const authenticateToken = async (req, res, next) => {
     });
 
     if (!session) {
-      console.log('No active session found for token');
       return res.status(401).json({ message: 'Session expired or invalid' });
     }
-
-    console.log('Active session found');
-
     // Get user
     const user = await User.findById(decoded._id);
     if (!user) {
@@ -47,8 +41,6 @@ export const authenticateToken = async (req, res, next) => {
       console.log('User not approved:', user.username);
       return res.status(403).json({ message: 'Account not approved' });
     }
-
-    console.log('Auth successful for user:', user.username);
 
     // Attach user and session to request
     req.user = user;
