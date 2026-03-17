@@ -1,3 +1,6 @@
+
+
+1. Some settings for admin is not working such as changing completion form link and yearly-react_stack_bottom_frame
 ERROR in ./src/App.js 15:0-50
 Module not found: Error: Can't resolve './pages/games/GameRouter' in 'C:\Users\julius.galejo\Desktop\ims\gamified-ims\client\src'
 
@@ -7,11 +10,11 @@ Module not found: Error: Can't resolve './components/ProtectedRoute' in 'C:\User
 ERROR in ./src/App.js 23:0-49
 Module not found: Error: Can't resolve './components/AdminRoute' in 'C:\Users\julius.galejo\Desktop\ims\gamified-ims\client\src'
 
-1. Avatar Profile not saved when logging out 
-  -> not showing in Navbar when logging in again
+2. Avatar Profile not saved when logging out 
+  -> not showing in Navbar when logging in again, unless i refresh the page after logging in
   -> ensure other players can see other players avatars too
 
-2. Provide full Profile.js code since there is a new levelSystem.js
+Provide full Profile.js code since there is a new levelSystem.js
 
 3. ERROR
 Cannot read properties of null (reading 'level')
@@ -27,10 +30,16 @@ TypeError: Cannot read properties of null (reading 'level')
     at renderRootSync (http://localhost:3000/static/js/bundle.js:22278:7)
     at performWorkOnRoot (http://localhost:3000/static/js/bundle.js:21951:33)
 
-4. provide all pages/admin/ js files
+4. provide all pages/admin/ js files and related server files
 
 5. levelup toast code not in-line with current topicDetail.js
 
 6. sort topics alphabetically in topics.js
 
 7. Each child in a list should have a unique "key" prop. Players.js:239
+
+8. Games tab still not working
+
+9. Remove custom upload of avatars (stick to pre-made or what's availble under '/avatars')
+
+To fix these, best send the full version of each code and related files
