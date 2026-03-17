@@ -15,18 +15,14 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
 
-    console.log({ hasToken: !!token, hasUser: !!storedUser });
-
     if (token && storedUser) {
       try {
         // Set user from localStorage immediately (optimistic)
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        console.log('User loaded from localStorage:', parsedUser.username);
 
         // Verify with server
         const response = await api.get('/auth/me');
-        console.log('Server verified user:', response.data.username);
         
         // Update with fresh data from server
         setUser(response.data);

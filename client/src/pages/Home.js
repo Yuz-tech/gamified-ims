@@ -30,47 +30,18 @@ const Home = () => {
   const [userBadges, setUserBadges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [allTopicsCompleted, setAllTopicsCompleted] = useState(false);
-  const [recentActivity, setRecentActivity] = useState([]);
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const [statsRes, leaderboardRes, activityRes] = await Promise.all([
-          api.get('/stats'),
-          api.get('/leaderboard?limit=10'),
-          api.get('/activity/recent')
-        ]);
-
-        setStats(statsRes.data);
-
-        setLeaderboard(leaderboardRes.data);
-
-        setRecentActivity(activityRes.data);
-      } catch (error) {
-        console.error('Error fetching dashboard data: ', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
 
   useEffect(() => {
     fetchData();
   }, []);
 
  const fetchData = async () => {
-  try {
-    console.log('Fetching home page data...');
-    
+  try {    
     const [leaderboardRes, userRes, topicsRes] = await Promise.all([
       api.get('/leaderboard?limit=5'),
       api.get('/auth/me'),
       api.get('/topics')
     ]);
-
-    console.log('Data fetched:', userRes.data);
 
     setLeaderboard(leaderboardRes.data || []);
     
@@ -446,57 +417,6 @@ const Home = () => {
           </div>
         )}
       </motion.div>
-
-      {/* Recent Activity Feed */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className='retro-card'
-        style={{ marginTop: '30px' }}>
-          <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-            Recent Activity
-          </h3>
-
-          {recentActivity && recentActivity.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {recentActivity.slice(0, 10).map((activity, index) => (
-                <div key={index} style={{
-                  padding: '12px',
-                  background: index % 2 === 0 ? 'var(--bg-light)' : 'transparent',
-                  border: '1px solid var(--border-color)',
-                  fontSize: '10px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div>
-                      <div style={{ fontWeight: 'bold', color: 'var(--text-dark)' }}>
-                        {activity.action === 'topic_completed' ? 'Completed Topic' : 
-                         activity.action === 'level_up' ? 'Leveled Up!' :
-                         activity.action === 'badge_earned' ? 'Earned Badge' : 
-                         activity.action}
-                      </div>
-                      <div style = {{ fontSize: '9px', color: 'var(--text-medium)' }}>
-                        {activity.details?.topicTitle || activity.details?.gameTitle || activity.details?.message || 'Activity'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ fontSize: '9px', color: 'var(--text-light)' }}>
-                    {new Date(activity.timestamp).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-medium)' }}>
-              No recent activity
-            </div>
-          )}
-        </motion.div>
 
       <style>
         {`

@@ -9,7 +9,28 @@ Module not found: Error: Can't resolve './components/AdminRoute' in 'C:\Users\ju
 
 1. Avatar Profile not saved when logging out 
   -> not showing in Navbar when logging in again
-  -> not showing when in home and players tab when other user logs in
-  -> ensure other players can see other players avatars toLocaleString
+  -> ensure other players can see other players avatars too
 
-2. Provide full Profile.js since there is a new levelSystem.js
+2. Provide full Profile.js code since there is a new levelSystem.js
+
+3. ERROR
+Cannot read properties of null (reading 'level')
+TypeError: Cannot read properties of null (reading 'level')
+    at Home (http://localhost:3000/static/js/bundle.js:2164:53)
+    at Object.react_stack_bottom_frame (http://localhost:3000/static/js/bundle.js:27140:18)
+    at renderWithHooks (http://localhost:3000/static/js/bundle.js:18013:20)
+    at updateFunctionComponent (http://localhost:3000/static/js/bundle.js:19402:17)
+    at beginWork (http://localhost:3000/static/js/bundle.js:19971:16)
+    at runWithFiberInDEV (http://localhost:3000/static/js/bundle.js:14489:68)
+    at performUnitOfWork (http://localhost:3000/static/js/bundle.js:22398:93)
+    at workLoopSync (http://localhost:3000/static/js/bundle.js:22293:38)
+    at renderRootSync (http://localhost:3000/static/js/bundle.js:22278:7)
+    at performWorkOnRoot (http://localhost:3000/static/js/bundle.js:21951:33)
+
+4. provide all pages/admin/ js files
+
+5. levelup toast code not in-line with current topicDetail.js
+
+6. sort topics alphabetically in topics.js
+
+7. Each child in a list should have a unique "key" prop. Players.js:239
