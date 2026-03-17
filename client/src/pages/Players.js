@@ -98,6 +98,10 @@ const Players = () => {
 
                 </motion.div>
 
+                <div style={{ display: 'block', textAlign: 'center', justifyContent: 'center', fontSize: '28px' }}>
+                    TOP 3 PLAYERS
+                </div>
+
                 {/* top 3 podium */}
                 {filteredPlayers.length >= 3 && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '30px' }}>
@@ -113,7 +117,6 @@ const Players = () => {
                             marginTop: '20px'
                           }}
                         >
-                            <div style={{ fontSize: '48px', marginBottom: '10px' }}>🥈</div>
                             <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
                                 {filteredPlayers[1].username}
                             </div>
@@ -135,7 +138,6 @@ const Players = () => {
                             background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, var(--bg-light) 100%'
                           }}
                         >
-                            <div style={{ fontSize: '64px', marginBottom: '10px' }}>🥇</div>
                             <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
                                 {filteredPlayers[0].username}
                             </div>
@@ -159,7 +161,6 @@ const Players = () => {
                             marginTop: '40px'
                           }}
                         >
-                            <div style={{ fontSize: '40px', marginBottom: '10px' }}>🥉</div>
                             <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
                                 {filteredPlayers[2].username}
                             </div>
