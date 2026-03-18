@@ -2,3 +2,10 @@ show
 pages/admin/Dashboard.js
 App.js
 routes/admin.js
+
+Show file structure -> working app.js 
+Issues: 
+Yearly-reset
+Games
+Create account
+Avatar not showing to other users
