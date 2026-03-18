@@ -26,15 +26,11 @@ const userSchema = new mongoose.Schema({
   },
   isApproved: {
     type: Boolean,
-    default: false
+    default: true
   },
   avatar: {
     type: String,
     default: null
-  },
-  requestedAt: {
-    type: Date,
-    default: Date.now
   },
   xp: {
     type: Number,
