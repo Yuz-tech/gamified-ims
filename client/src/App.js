@@ -8,6 +8,7 @@ import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
 import Achievements from './pages/Achievements';
 import Players from './pages/Players';
+import Games from './pages/Games';
 import CrosswordGame from './pages/games/CrosswordGame';
 import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';

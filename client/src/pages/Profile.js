@@ -9,7 +9,6 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [showAvatarSelector, setShowAvatarSelector] = useState(false);
     const [selectedAvatar, setSelectedAvatar] = useState(null);
-    const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [sessions, setSessions] = useState([]);
     const [showPasswordChange, setShowPasswordChange] = useState(false);
     const [passwordData, setPasswordData] = useState({
@@ -54,7 +53,6 @@ const Profile = () => {
     };
 
     const handleSelectAvatar = async (avatarUrl) => {
-        setUploadingAvatar(true);
         try {
             await api.put('/auth/update-profile', { avatar: avatarUrl });
             setSelectedAvatar(avatarUrl);
@@ -63,47 +61,7 @@ const Profile = () => {
             alert('Avatar Updated!');
         } catch (error) {
             alert('Failed to update avatar');
-        } finally {
-            setUploadingAvatar(false);
-        }
-    };
-
-    const handleCustomUpload = async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            alert('Please upload an image file');
-            return;
-        }
-
-        if (file.size > 2 * 1024 * 1024) {
-            alert('File size must be less than 2MB');
-            return;
-        }
-
-        setUploadingAvatar(true);
-
-        try {
-            const formData = new FormData();
-            formData.append('avatar', file);
-
-            const uploadRes = await api.post('/upload/avatar', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            await api.put('/auth/update-profile', { avatar: uploadRes.data.url });
-
-            setSelectedAvatar(uploadRes.data.url);
-                setShowAvatarSelector(false);
-                checkAuth();
-                alert('Avatar updated!');
-        } catch (error) {
-            console.error('Upload error: ', error);
-            alert('Failed to upload avatar');
-        } finally {
-            setUploadingAvatar(false);
-        }
+        } 
     };
 
     const handlePasswordChange = async (e) => {
@@ -458,17 +416,6 @@ const Profile = () => {
                                         />
                                       </div>
                                 ))}
-                            </div>
-
-                            <div style = {{ padding: '15px', background: 'rgba(59,130,246,0.05)', border: '2px solid var(--bright-blue)', marginBottom: '15px' }}>
-                                <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', fontWeight: 'bold' }}>
-                                    <Icon name="upload" size={14} />
-                                    Or Upload Custom Avatar
-                                </label>
-                                <input type = "file" accept="image/*" onChange={handleCustomUpload} disabled={uploadingAvatar} style={{ fontSize: '10px' }} />
-                                <div style={{ fontSize: '8px', color: 'var(--text-light)', marginTop: '5px' }}>
-                                    Max 2MB, PNG/JPG Recommended file type
-                                </div>
                             </div>
 
                             <button onClick={() => setShowAvatarSelector(false)} className="retro-btn secondary" style={{ width: '100%' }}>
