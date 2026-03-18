@@ -97,7 +97,7 @@ const Navbar = () => {
           TOPICS
         </button>
 
-        <button onClick={() =>('/games')} style={{
+        <button onClick={() => navigate('/games')} style={{
           background: location.pathname.startsWith('/games') ? 'var(--bright-blue)' : 'transparent',
           border: location.pathname.startsWith('/games') ? '2px solid var(--primary-navy)' : 'none',
           color: location.pathname.startsWith('/games') ? 'white' : 'var(--text-dark)',

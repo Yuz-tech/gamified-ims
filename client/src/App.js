@@ -9,7 +9,7 @@ import TopicDetail from './pages/TopicDetail';
 import Achievements from './pages/Achievements';
 import Players from './pages/Players';
 import Games from './pages/Games';
-import CrosswordGame from './pages/games/CrosswordGame';
+// import CrosswordGame from './pages/games/CrosswordGame';
 import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
@@ -146,10 +146,10 @@ const AppRoutes = () => {
           } 
         />
         <Route
-          path="/games/:gameId"
+          path="/games"
           element={
             <ProtectedRoute>
-                <CrosswordGame />
+                <Games />
             </ProtectedRoute>
           }
         />
