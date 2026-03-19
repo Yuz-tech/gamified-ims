@@ -11,16 +11,21 @@ router.get('/', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
 
-    const leaderboard = await User.find({ isApproved: true })
-      .select('username level xp badges completedTopics')
+    const leaderboard = await User.find({ role: 'employee' })
+      .select('username email avatar level xp badges completedTopics')
       .sort({ xp: -1 })
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
 
     const leaderboardWithRank = leaderboard.map((user, index) => ({
+      _id: user._id,
       rank: index + 1,
       username: user.username,
+      email: user.email,
+      avatar: user.avatar,
       level: user.level,
       xp: user.xp,
+      badges: user.badges,
       badgeCount: user.badges.length,
       completedTopics: user.completedTopics.length
     }));

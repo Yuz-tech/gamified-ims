@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { getImageUrl } from '../utils/getImageUrl';
 import api from '../utils/api';
 
 const LEVEL_THRESHOLDS = [
@@ -385,6 +386,31 @@ const Home = () => {
                 <div style={{ fontSize: '15px', marginRight: '15px', minWidth: '30px', textAlign: 'center' }}>
                   {index === 0 ? '1' : index === 1 ? '2' : index === 2 ? '3' : `${index + 1}`}
                 </div>
+
+                {/* Avatar */}
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  border: index === 0 ? '3px solid var(--warning-yellow)' : '2px solid var(--bright-blue)',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  background: 'var(--bg-medium)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {player.avatar ? (
+                    <img src={getImageUrl(player.avatar)} alt={player.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<div style="font-size: 24px;">👤</div>';
+                    }}
+                    />
+                  ) : (
+                    <div style={{ fontSize: '24px' }}>👤</div>
+                  )}
+                </div>
+
                 <div style = {{ flex: 1 }}>
                   <div style = {{ fontSize: '11px', color: 'var(--primary-navy)', fontWeight: 'bold' }}>
                     {player.username}
