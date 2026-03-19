@@ -1,7 +1,7 @@
-1. To prevent sharing of form links -> secret pass for every registered user? can only be unlocked when topics are finished?
-
-2. Forgot password?
-3. Footer
+1. Add Forgot password?
+2. Footer
+3. Yearly reset should no longer reset badges (retain them)
+4. Yearly reset button not showing
 
 Registration not working but user gets saved to database
 API Error: 500 {message: 'Registration failed. Try again.', error: 'Session validation failed: expiresAt: Path `expiresAt` is required.'}

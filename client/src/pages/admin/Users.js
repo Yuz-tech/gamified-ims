@@ -149,7 +149,7 @@ const Users = () => {
       <button
         onClick={() => setShowCreateForm(!showCreateForm)}
         className="retro-btn"
-        style={{ marginBottom: '30px' }}
+        style={{ marginBottom: '30px', backgroundColor: '#92f30b' }}
       >
         {showCreateForm ? 'CANCEL' : 'CREATE USER'}
       </button>
