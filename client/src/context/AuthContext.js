@@ -47,26 +47,32 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   };
 
-  const login = async (username, password) => {
-    try {
-      console.log('Attempting login for:', username);
-      const response = await api.post('/auth/login', { username, password });
-      const { token, user } = response.data;
+  // const login = async (username, password) => {
+  //   try {
+  //     console.log('Attempting login for:', username);
+  //     const response = await api.post('/auth/login', { username, password });
+  //     const { token, user } = response.data;
 
-      console.log('Login successful:', user.username);
+  //     console.log('Login successful:', user.username);
       
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
+  //     localStorage.setItem('token', token);
+  //     localStorage.setItem('user', JSON.stringify(user));
+  //     setUser(user);
 
-      return { success: true };
-    } catch (error) {
-      console.error('Login failed:', error.response?.data || error.message);
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Login failed'
-      };
-    }
+  //     return { success: true };
+  //   } catch (error) {
+  //     console.error('Login failed:', error.response?.data || error.message);
+  //     return {
+  //       success: false,
+  //       message: error.response?.data?.message || 'Login failed'
+  //     };
+  //   }
+  // };
+
+  const login = (userData) => {
+    
+    setUser(userData);
+    setLoading(false);
   };
 
   const logout = async () => {

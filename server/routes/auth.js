@@ -31,61 +31,79 @@ const parseUserAgent = (userAgent) => {
   return { deviceType, browser, os };
 };
 
-// Request new account
-router.post('/register', async(req,res) => {
+// Register - Create account and auto-login
+router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Credentials validation
+    console.log('Registration attempt:', { username, email });
+
+    // Validation
     if (!username || !email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     if (password.length < 3) {
-      return res.status(400).json({ message: 'Password must atleast be 3 characters '});
+      return res.status(400).json({ message: 'Password must be at least 3 characters' });
     }
 
-    // Email Validation
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      console.log('Invalid email format');
       return res.status(400).json({ message: 'Invalid email format' });
     }
 
-    const existingUsername = await User.findOne({ username });
-    if (existingUsername) {
-      return res.status(400).json({ message: 'Username already exists' });
+    // Check existing user
+    const existingUser = await User.findOne({ 
+      $or: [{ username }, { email }] 
+    });
+
+    if (existingUser) {
+      if (existingUser.username === username) {
+        return res.status(400).json({ message: 'Username already taken' });
+      }
+      if (existingUser.email === email) {
+        return res.status(400).json({ message: 'Email already registered' });
+      }
     }
 
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      console.log('Email exists: ', email);
-      return res.status(400).json({ message: 'Email already registered' });
-    }
-
-    const user = new User ({
+    // Create user with auto-approval
+    const user = new User({
       username,
       email,
-      password,
+      password, // Will be hashed by pre-save hook
       role: 'employee',
-      isApproved: false,
-      xp: 0,
+      isApproved: true, // Auto-approve
       level: 1,
+      xp: 0,
       badges: [],
-      completedTopics: [],
-      avatar: null
+      completedTopics: []
     });
 
     await user.save();
 
-    res.status(201).json({
-      message: 'Registration successful! Please wait for admin approval.',
-      username: user.username
+    // Create session and generate token
+    const token = jwt.sign(
+      { _id: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Create session
+    const session = new Session({
+      userId: user._id,
+      token,
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent')
     });
+    await session.save();
+
+    console.log('User registered and logged in:', username);
   } catch (error) {
-    res.status(500).json({
-      message: 'Registration failed. Please try again.',
-      error: error.message
+    console.error('Registration error:', error);
+    res.status(500).json({ 
+      message: 'Registration failed. Please try again.', 
+      error: error.message 
     });
   }
 });

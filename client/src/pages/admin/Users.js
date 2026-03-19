@@ -4,10 +4,8 @@ import api from '../../utils/api';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
-  const [pendingUsers, setPendingUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showApproveModal, setShowApproveModal] = useState(null);
   const [password, setPassword] = useState('');
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +20,6 @@ const Users = () => {
 
   useEffect(() => {
     fetchUsers();
-    fetchPendingUsers();
   }, []);
 
   useEffect(() => {
@@ -46,35 +43,6 @@ const Users = () => {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchPendingUsers = async () => {
-    try {
-      const response = await api.get('/admin/pending-users');
-      setPendingUsers(response.data);
-    } catch (error) {
-      console.error('Error fetching pending users:', error);
-    }
-  };
-
-  const handleApproveUser = async (userId) => {
-    if (!password) {
-      alert('Please enter a password');
-      return;
-    }
-
-    try {
-      await api.post(`/admin/approve-user/${userId}`, { password });
-      alert('User approved and email sent!');
-      setShowApproveModal(null);
-      setPassword('');
-      fetchUsers();
-      fetchPendingUsers();
-      
-      
-    } catch (error) {
-      alert(error.response?.data?.message || 'Error approving user');
     }
   };
 
@@ -222,52 +190,6 @@ const Users = () => {
         </motion.div>
       )}
 
-      {/* Pending Users */}
-      {pendingUsers.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="retro-card"
-          style={{ marginBottom: '40px' }}
-        >
-          <h3 style={{ fontSize: '14px', color: 'var(--sky-blue)', marginBottom: '20px' }}>
-            PENDING REQUESTS ({pendingUsers.length})
-          </h3>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', fontSize: '10px' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--orange-accent)' }}>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>USERNAME</th>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>EMAIL</th>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>REQUESTED</th>
-                  <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingUsers.map((user) => (
-                  <tr key={user._id} style={{ borderBottom: '1px solid var(--grid-color)' }}>
-                    <td style={{ padding: '10px', color: 'var(--light-blue)' }}>{user.username}</td>
-                    <td style={{ padding: '10px', color: 'var(--bright-blue)' }}>{user.email}</td>
-                    <td style={{ padding: '10px', textAlign: 'center', color: 'var(--sky-blue)' }}>
-                      {new Date(user.requestedAt).toLocaleDateString()}
-                    </td>
-                    <td style={{ padding: '10px', textAlign: 'center' }}>
-                      <button
-                        onClick={() => setShowApproveModal(user)}
-                        className="retro-btn"
-                        style={{ fontSize: '8px', padding: '5px 10px' }}
-                      >
-                        APPROVE
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-      )}
-
       {/* All Users */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -322,60 +244,6 @@ const Users = () => {
           </table>
         </div>
       </motion.div>
-
-      {/* Approve Modal */}
-      {showApproveModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.9)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10000,
-          padding: '20px'
-        }}>
-          <div className="retro-card pixel-corners" style={{ maxWidth: '500px', width: '100%' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--orange-accent)', marginBottom: '20px' }}>
-              APPROVE USER: {showApproveModal.username}
-            </h3>
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', color: 'var(--light-blue)' }}>
-                SET PASSWORD
-              </label>
-              <input
-                type="text"
-                className="retro-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="ENTER PASSWORD"
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={() => handleApproveUser(showApproveModal._id)}
-                className="retro-btn"
-                style={{ flex: 1 }}
-              >
-                APPROVE & SEND EMAIL
-              </button>
-              <button
-                onClick={() => {
-                  setShowApproveModal(null);
-                  setPassword('');
-                }}
-                className="retro-btn secondary"
-                style={{ flex: 1 }}
-              >
-                CANCEL
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Edit Modal */}
       {editingUser && (

@@ -235,24 +235,6 @@ const YearlyReset = () => {
                         </ul>
                     </div>
 
-                    <div style = {{ marginBottom: '20px' }}>
-                        <label style = {{
-                            display: 'block',
-                            marginBottom: '10px',
-                            fontSize: '10px',
-                            color: 'var(--text-medium)'
-                        }}>
-                            NEW TRAINING YEAR
-                        </label>
-                        <input 
-                          type = "number"
-                          className="retro-input"
-                          value={newYear}
-                          onChange={(e) => setNewYear(parseInt(e.target.value))}
-                          min={stats?.currentYear + 1}
-                          max="2099"
-                          />
-                    </div>
 
                     <button 
                       onClick={handleResetYear}

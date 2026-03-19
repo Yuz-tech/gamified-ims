@@ -14,18 +14,6 @@ router.use(authenticateToken, isAdmin);
 
 // ===== USER MANAGEMENT =====
 
-// Get all pending account requests
-router.get('/pending-users', async (req, res) => {
-  try {
-    const pendingUsers = await User.find({ isApproved: false })
-      .select('-password')
-      .sort({ requestedAt: -1 });
-    res.json(pendingUsers);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
 // Get all users
 router.get('/users', async (req, res) => {
   try {
@@ -33,29 +21,6 @@ router.get('/users', async (req, res) => {
       .select('-password')
       .sort({ createdAt: -1 });
     res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Approve user and send password
-router.post('/approve-user/:userId', async (req, res) => {
-  try {
-    const { password } = req.body;
-    const user = await User.findById(req.params.userId);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    user.password = password;
-    user.isApproved = true;
-    await user.save();
-
-    // Send email with credentials (not yet fully working)
-    await sendPasswordEmail(user.email, user.username, password);
-
-    res.json({ message: 'User approved and password sent' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -329,7 +294,6 @@ router.get('/activity-logs', async (req, res) => {
 router.get('/statistics', async (req, res) => {
   try {
     const totalUsers = await User.countDocuments({ isApproved: true });
-    const pendingUsers = await User.countDocuments({ isApproved: false });
     const totalTopics = await Topic.countDocuments();
     const totalBadges = await Badge.countDocuments();
 
@@ -340,7 +304,6 @@ router.get('/statistics', async (req, res) => {
 
     res.json({
       totalUsers,
-      pendingUsers,
       totalTopics,
       totalBadges,
       topUsers

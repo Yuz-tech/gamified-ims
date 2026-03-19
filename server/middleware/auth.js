@@ -37,11 +37,6 @@ export const authenticateToken = async (req, res, next) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (!user.isApproved) {
-      console.log('User not approved:', user.username);
-      return res.status(403).json({ message: 'Account not approved' });
-    }
-
     // Attach user and session to request
     req.user = user;
     req.session = session;
@@ -62,6 +57,6 @@ export const isAdmin = (req, res, next) => {
     console.log('User is not admin:', req.user.username);
     return res.status(403).json({ message: 'Admin access required' });
   }
-  console.log('dmin access granted:', req.user.username);
+  console.log('admin access granted:', req.user.username);
   next();
 };

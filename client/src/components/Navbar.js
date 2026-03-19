@@ -94,7 +94,7 @@ const Navbar = () => {
           fontWeight: location.pathname.startsWith('/topics') ? 'bold' : 'normal'
         }}
         >
-          TOPICS
+          TRAINING
         </button>
 
         <button onClick={() => navigate('/games')} style={{
