@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
 import api from '../utils/api';
+import getImageUrl from "../utils/getImageUrl";
 
 const Players = () => {
     const [players, setPlayers] = useState([]);
@@ -117,6 +118,38 @@ const Players = () => {
                             marginTop: '20px'
                           }}
                         >
+
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '50%',
+                                border: '3px solid #c0c0c0',
+                                overflow: 'hidden',
+                                margin: '0 auto 15px',
+                                background: 'var(--bg-medium)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                {filteredPlayers[1].avatar ? (
+                                    <img src={filteredPlayers[1].avatar.startsWith('/uploads')
+                                        ? `http://localhost:5000${filteredPlayers[1].avatar}`
+                                        : filteredPlayers[1].avatar
+                                    }
+                                    alt={filteredPlayers[1].username} style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }} onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.parentElement.innerHTML = '<div style="font-size: 20px;">👤</div>';
+                                    }}
+                                    />
+                                ) : (
+                                    <div style={{ fontSize: '40px' }}>👤</div>
+                                )}
+                            </div>
+
                             <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
                                 {filteredPlayers[1].username}
                             </div>
@@ -138,6 +171,38 @@ const Players = () => {
                             background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, var(--bg-light) 100%'
                           }}
                         >
+
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '50%',
+                                border: '3px solid #c0c0c0',
+                                overflow: 'hidden',
+                                margin: '0 auto 15px',
+                                background: 'var(--bg-medium)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                {filteredPlayers[1].avatar ? (
+                                    <img src={filteredPlayers[0].avatar.startsWith('/uploads')
+                                        ? `http://localhost:5000${filteredPlayers[0].avatar}`
+                                        : filteredPlayers[0].avatar
+                                    }
+                                    alt={filteredPlayers[0].username} style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }} onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.parentElement.innerHTML = '<div style="font-size: 20px;">👤</div>';
+                                    }}
+                                    />
+                                ) : (
+                                    <div style={{ fontSize: '40px' }}>👤</div>
+                                )}
+                            </div>
+
                             <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
                                 {filteredPlayers[0].username}
                             </div>
@@ -161,6 +226,38 @@ const Players = () => {
                             marginTop: '40px'
                           }}
                         >
+
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '50%',
+                                border: '3px solid #c0c0c0',
+                                overflow: 'hidden',
+                                margin: '0 auto 15px',
+                                background: 'var(--bg-medium)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                {filteredPlayers[1].avatar ? (
+                                    <img src={filteredPlayers[2].avatar.startsWith('/uploads')
+                                        ? `http://localhost:5000${filteredPlayers[2].avatar}`
+                                        : filteredPlayers[2].avatar
+                                    }
+                                    alt={filteredPlayers[2].username} style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }} onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.parentElement.innerHTML = '<div style="font-size: 20px;">👤</div>';
+                                    }}
+                                    />
+                                ) : (
+                                    <div style={{ fontSize: '40px' }}>👤</div>
+                                )}
+                            </div>
+
                             <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>
                                 {filteredPlayers[2].username}
                             </div>

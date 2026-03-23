@@ -65,27 +65,11 @@ const Dashboard = () => {
           className="retro-card"
           style={{ textAlign: 'center' }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>👥</div>
           <div style={{ fontSize: '36px', color: 'var(--light-blue)', marginBottom: '10px' }}>
             {stats?.totalUsers || 0}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--bright-blue)' }}>
             ACTIVE USERS
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="retro-card"
-          style={{ textAlign: 'center' }}
-        >
-          <div style={{ fontSize: '36px', color: 'var(--orange-accent)', marginBottom: '10px' }}>
-            {stats?.pendingUsers || 0}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--bright-blue)' }}>
-            PENDING REQUESTS
           </div>
         </motion.div>
 

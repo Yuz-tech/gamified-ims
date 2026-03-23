@@ -43,8 +43,8 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    if (password.length < 3) {
-      return res.status(400).json({ message: 'Password must be at least 3 characters' });
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
     // Email validation
@@ -73,7 +73,7 @@ router.post('/register', async (req, res) => {
       email,
       password, // Will be hashed by pre-save hook
       role: 'employee',
-      isApproved: true, // Auto-approve
+      isApproved: true, // ✅ Auto-approve
       level: 1,
       xp: 0,
       badges: [],
@@ -82,27 +82,56 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    // Create session and generate token
+    // Create JWT token
     const token = jwt.sign(
       { _id: user._id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // Create session
+    // ✅ FIX: Create session with expiresAt
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+
     const session = new Session({
       userId: user._id,
       token,
-      ipAddress: req.ip,
-      userAgent: req.get('user-agent')
+      deviceInfo: {
+        deviceType: /mobile/i.test(req.headers['user-agent']) ? 'mobile' : 'desktop',
+        browser: /chrome/i.test(req.headers['user-agent']) ? 'Chrome' : 'Unknown',
+        os: /windows/i.test(req.headers['user-agent']) ? 'Windows' : 'Unknown',
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent']
+      },
+      expiresAt: expiresAt // ✅ THIS WAS MISSING!
     });
+
     await session.save();
 
-    console.log('User registered and logged in:', username);
+    console.log('✅ User registered and logged in:', username);
+
+    // Return user data + token (auto-login)
+    res.status(201).json({
+      message: 'Account created successfully!',
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        level: user.level,
+        xp: user.xp,
+        badges: user.badges,
+        completedTopics: user.completedTopics,
+        isApproved: user.isApproved,
+        createdAt: user.createdAt
+      }
+    });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('❌ Registration error:', error);
     res.status(500).json({ 
-      message: 'Registration failed. Please try again.', 
+      message: 'Registration failed. Try again.', 
       error: error.message 
     });
   }

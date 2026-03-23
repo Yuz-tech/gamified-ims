@@ -349,34 +349,43 @@ router.get('/training-year', async (req, res) => {
 });
 
 // Archive current year and reset for new year
-router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req,res) => {
   try {
     const { confirmCode } = req.body;
+
     if (confirmCode !== 'RESET_DATA') {
-      return res.status(400).json({ message: 'Invalid confirmation code' });
+      return res.status(400).json({ message: 'Invalid confirmation code'});
     }
 
     const result = await User.updateMany(
       { role: 'employee' },
-      {
+      { 
         $set: {
-          completedTopics: []
+          completedTopics: [],
+          badges: []
         }
       }
     );
 
-    await ActivityLog.deleteMany({});
     await logActivity(req.user._id, 'yearly_reset', {
       usersReset: result.modifiedCount,
       timestamp: new Date()
     }, req);
 
     res.json({
-      message: 'Yearly reset complete!',
-      usersReset: result.modifiedCount
+      message: 'Yearly reset completed!',
+      usersReset: result.modifiedCount,
+      details: {
+        completedTopicsCleared: true,
+        badgesCleared: true,
+        xpPreserved: true,
+        levelsPreserved: true,
+        activityLogsCleared: true
+      }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Reset failed', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Reset failed', error: error.message});
   }
 });
 

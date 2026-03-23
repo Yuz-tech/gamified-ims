@@ -17,7 +17,7 @@ const Login = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, authLogin } = useAuth();
+  const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -37,6 +37,7 @@ const Login = () => {
 
     try {
       if (isLogin) {
+        // LOGIN
         const response = await api.post('/auth/login', {
           username: formData.username,
           password: formData.password
@@ -46,6 +47,8 @@ const Login = () => {
         authLogin(response.data.user);
         navigate('/');
       } else {
+        // CREATE ACCOUNT
+        // Validation
         if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
           setError('All fields are required');
           setLoading(false);
@@ -58,8 +61,8 @@ const Login = () => {
           return;
         }
 
-        if (formData.password.length < 3) {
-          setError('Password must be at least 3 characters');
+        if (formData.password.length < 6) {
+          setError('Password must be at least 6 characters');
           setLoading(false);
           return;
         }
@@ -70,9 +73,11 @@ const Login = () => {
           password: formData.password
         });
 
+        // Auto-login after successful registration
         localStorage.setItem('token', response.data.token);
         authLogin(response.data.user);
-        setSuccess('Account created successfully! Redirecting...');
+        
+        setSuccess('✅ Account created successfully! Redirecting...');
         setTimeout(() => navigate('/'), 1500);
       }
     } catch (err) {
@@ -153,45 +158,75 @@ const Login = () => {
                 </div>
               )}
 
-              <div style={{ marginBottom: !isLogin ? '20px' : '30px' }}>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '12px', color: 'var(--light-blue)' }}>
-                  Password
+            <div style={{ marginBottom: !isLogin ? '20px' : '30px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '10px', 
+                fontSize: '12px',
+                color: 'var(--light-blue)'
+              }}>
+                PASSWORD
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="retro-input"
+                placeholder={isLogin ? "******" : "min. 6 characters"}
+                required
+              />
+            </div>
+
+            {!isLogin && (
+              <div style={{ marginBottom: '30px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '10px', 
+                  fontSize: '12px',
+                  color: 'var(--light-blue)'
+                }}>
+                  CONFIRM PASSWORD
                 </label>
-                <input type="password" name="password" value={formData.password} onChange={handleChange} className="retro-input" placeholder={isLogin ? "******" : "min. 3 characters"} required />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="retro-input"
+                  placeholder="re-enter password"
+                  required
+                />
               </div>
+            )}
 
-              {!isLogin && (
-                <div style={{ marginBottom: '30px' }}>
-                  <label style={{ display: 'block', marginBottom: '10px', fontSize: '12px', color: 'var(--light-blue)' }}>
-                    Confirm Password
-                  </label>
-                  <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className="retro-input" placeholder="re-enter-password" required />
-                </div>
-              )}
+            <motion.button
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.95 }}
+              type="submit"
+              className="retro-btn"
+              style={{ width: '100%', marginBottom: '20px' }}
+              disabled={loading}
+            >
+              {loading ? 'LOADING...' : (isLogin ? 'LOG IN' : 'CREATE ACCOUNT')}
+            </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.95 }}
-                type="submit"
-                className="retro-btn"
-                style={{ width: '100%', marginBottom: '20px' }}
-                disabled={loading}>
-                  {loading ? 'Loading...' : (isLogin ? 'Log in' : 'Create Account')}
-                </motion.button>
-
-                <div style={{ textAlign: 'center' }}>
-                  <button type="button" onClick={() => {
-                    setIsLogin(!isLogin);
-                    setError('');
-                    setSuccess('');
-                    setFormData({ username: '', email: '', password: '', confirmPassword: ''});
-                  }}
-                  className="retro-btn secondary"
-                  style={{ fontSize: '10px', color: 'black' }}>
-                    {isLogin ? 'Create new account' : 'Back to login'}
-                  </button>
-                </div>
-            </form>
+            <div style={{ textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                  setSuccess('');
+                  setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+                }}
+                className="retro-btn secondary"
+                style={{ fontSize: '10px', color: 'black' }}
+              >
+                {isLogin ? 'CREATE NEW ACCOUNT' : 'BACK TO LOGIN'}
+              </button>
+            </div>
+          </form>
 
             <div style={{ marginTop: '30px', padding: '15px', fontSize: '8px', textAlign: 'center', color: 'var(--text-secondary)' }}>
               v1.0 by Jose Dante Chan and Julius Galejo
