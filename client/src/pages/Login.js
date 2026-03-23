@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import api from '../utils/api';
 import '../styles/retro.css';
 
 const Login = () => {
@@ -9,13 +10,14 @@ const Login = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, requestAccount } = useAuth();
+  const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -35,12 +37,48 @@ const Login = () => {
 
     try {
       if (isLogin) {
-        await login(formData.username, formData.password);
+        // LOGIN
+        const response = await api.post('/auth/login', {
+          username: formData.username,
+          password: formData.password
+        });
+
+        localStorage.setItem('token', response.data.token);
+        authLogin(response.data.user);
         navigate('/');
       } else {
-        await requestAccount(formData.username, formData.email);
-        setSuccess('Account request submitted! Wait for admin approval.');
-        setFormData({ username: '', email: ''});
+        // CREATE ACCOUNT
+        // Validation
+        if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+          setError('All fields are required');
+          setLoading(false);
+          return;
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+          setError('Passwords do not match');
+          setLoading(false);
+          return;
+        }
+
+        if (formData.password.length < 6) {
+          setError('Password must be at least 6 characters');
+          setLoading(false);
+          return;
+        }
+
+        const response = await api.post('/auth/register', {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password
+        });
+
+        // Auto-login after successful registration
+        localStorage.setItem('token', response.data.token);
+        authLogin(response.data.user);
+        
+        setSuccess('✅ Account created successfully! Redirecting...');
+        setTimeout(() => navigate('/'), 1500);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred');
@@ -172,7 +210,27 @@ const Login = () => {
               </div>
             )}
 
-            {isLogin && (
+            <div style={{ marginBottom: !isLogin ? '20px' : '30px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '10px', 
+                fontSize: '12px',
+                color: 'var(--light-blue)'
+              }}>
+                PASSWORD
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="retro-input"
+                placeholder={isLogin ? "******" : "min. 6 characters"}
+                required
+              />
+            </div>
+
+            {!isLogin && (
               <div style={{ marginBottom: '30px' }}>
                 <label style={{ 
                   display: 'block', 
@@ -180,15 +238,15 @@ const Login = () => {
                   fontSize: '12px',
                   color: 'var(--light-blue)'
                 }}>
-                  PASSWORD
+                  CONFIRM PASSWORD
                 </label>
                 <input
                   type="password"
-                  name="password"
-                  value={formData.password}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
                   onChange={handleChange}
                   className="retro-input"
-                  placeholder="******"
+                  placeholder="re-enter password"
                   required
                 />
               </div>
@@ -202,7 +260,7 @@ const Login = () => {
               style={{ width: '100%', marginBottom: '20px' }}
               disabled={loading}
             >
-              {loading ? 'LOADING...' : (isLogin ? 'LOG IN' : 'SUBMIT REQUEST')}
+              {loading ? 'LOADING...' : (isLogin ? 'LOG IN' : 'CREATE ACCOUNT')}
             </motion.button>
 
             <div style={{ textAlign: 'center' }}>
@@ -212,12 +270,12 @@ const Login = () => {
                   setIsLogin(!isLogin);
                   setError('');
                   setSuccess('');
-                  setFormData({ username: '', email: '', password: '' });
+                  setFormData({ username: '', email: '', password: '', confirmPassword: '' });
                 }}
                 className="retro-btn secondary"
                 style={{ fontSize: '10px', color: 'black' }}
               >
-                {isLogin ? 'REQUEST NEW ACCOUNT' : 'BACK TO LOGIN'}
+                {isLogin ? 'CREATE NEW ACCOUNT' : 'BACK TO LOGIN'}
               </button>
             </div>
           </form>
