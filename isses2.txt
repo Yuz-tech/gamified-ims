@@ -1,13 +1,436 @@
-1. Add Forgot password?
-2. Footer
-3. Yearly reset should no longer reset badges (retain them)
-4. Yearly reset button not showing
+src/context/AuthContext.js
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import api from '../utils/api';
 
-Registration not working but user gets saved to database
-API Error: 500 {message: 'Registration failed. Try again.', error: 'Session validation failed: expiresAt: Path `expiresAt` is required.'}
-src/utils/api.js line 27
+const AuthContext = createContext();
 
-Registration error: Error: Session validation failed: expiresAt: Path `expiresAt` is required.
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Verify token and get user data
+      const response = await api.get('/auth/me');
+      setUser(response.data);
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      // Token invalid or expired - clear it
+      localStorage.removeItem('token');
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (username, password) => {
+    try {
+      const response = await api.post('/auth/login', { username, password });
+      
+      // Save token
+      localStorage.setItem('token', response.data.token);
+      
+      // Set user data
+      setUser(response.data.user);
+      
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local state regardless
+      localStorage.removeItem('token');
+      setUser(null);
+    }
+  };
+
+  const updateUser = (userData) => {
+    setUser(userData);
+  };
+
+  const value = {
+    user,
+    loading,
+    login,
+    logout,
+    updateUser,
+    checkAuth
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export default AuthContext;
+
+
+pages/Login.js
+if (isLogin) {
+  // LOGIN
+  await authLogin(formData.username, formData.password); // ✅ Call with username & password
+  navigate('/');
+}
+
+else {
+  // CREATE ACCOUNT
+  // ... validation ...
+  
+  const response = await api.post('/auth/register', {
+    username: formData.username,
+    email: formData.email,
+    password: formData.password
+  });
+
+  // Auto-login after successful registration
+  localStorage.setItem('token', response.data.token);
+  authLogin(response.data.user); // ✅ This should work now too
+  
+  setSuccess('✅ Account created successfully! Redirecting...');
+  setTimeout(() => navigate('/'), 1500);
+}
+
+
 
 AuthContext.js
-i can provide old const login
+const login = async (usernameOrUserData, password) => {
+  // If called with user object directly (from registration)
+  if (typeof usernameOrUserData === 'object') {
+    setUser(usernameOrUserData);
+    return;
+  }
+
+  // Normal login with username & password
+  try {
+    const response = await api.post('/auth/login', { 
+      username: usernameOrUserData, 
+      password 
+    });
+    
+    // Save token
+    localStorage.setItem('token', response.data.token);
+    
+    // Set user data
+    setUser(response.data.user);
+    
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// client/src/utils/api.js
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor - Add token to every request
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor - Handle 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+
+
+src/pages/Login.js
+
+const [showForgotPassword, setShowForgotPassword] = useState(false);
+const [resetEmail, setResetEmail] = useState('');
+const [resetSent, setResetSent] = useState(false);
+
+const handleForgotPassword = async (e) => {
+  e.preventDefault();
+  
+  try {
+    await api.post('/auth/forgot-password', { email: resetEmail });
+    setResetSent(true);
+    alert('Password reset instructions sent to your email!');
+  } catch (error) {
+    alert('Failed to send reset email. Please contact admin.');
+  }
+};
+
+below login form
+{isLogin && !showForgotPassword && (
+  <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+    <button
+      type="button"
+      onClick={() => setShowForgotPassword(true)}
+      style={{
+        background: 'none',
+        border: 'none',
+        color: 'var(--bright-blue)',
+        fontSize: '10px',
+        cursor: 'pointer',
+        textDecoration: 'underline'
+      }}
+    >
+      Forgot Password?
+    </button>
+  </div>
+)}
+
+{showForgotPassword && (
+  <motion.div
+    initial={{ opacity: 0, height: 0 }}
+    animate={{ opacity: 1, height: 'auto' }}
+    style={{
+      padding: '15px',
+      background: 'rgba(59, 130, 246, 0.1)',
+      border: '2px solid var(--bright-blue)',
+      marginBottom: '20px',
+      fontSize: '10px'
+    }}
+  >
+    <div style={{ marginBottom: '10px', fontWeight: 'bold' }}>
+      Password Reset
+    </div>
+    <div style={{ marginBottom: '15px' }}>
+      Contact your system administrator to reset your password.
+    </div>
+    <button
+      onClick={() => setShowForgotPassword(false)}
+      className="retro-btn secondary"
+      style={{ fontSize: '9px', padding: '5px 10px' }}
+    >
+      ← BACK TO LOGIN
+    </button>
+  </motion.div>
+)}
+
+
+src/components/Footer.js
+import React from 'react';
+
+const Footer = () => {
+  return (
+    <footer style={{
+      marginTop: '80px',
+      padding: '40px 20px',
+      background: 'var(--primary-navy)',
+      borderTop: '3px solid var(--bright-blue)',
+      textAlign: 'center'
+    }}>
+      <div className="retro-container">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '30px',
+          marginBottom: '30px'
+        }}>
+          {/* About */}
+          <div>
+            <h4 style={{ fontSize: '12px', color: 'var(--bright-blue)', marginBottom: '15px' }}>
+              ABOUT
+            </h4>
+            <p style={{ fontSize: '10px', color: 'var(--text-light)', lineHeight: '1.6' }}>
+              IMS Awareness Training Platform for Advanced World Solutions, Inc.
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 style={{ fontSize: '12px', color: 'var(--bright-blue)', marginBottom: '15px' }}>
+              QUICK LINKS
+            </h4>
+            <div style={{ fontSize: '10px', color: 'var(--text-light)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <a href="/" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Home</a>
+              <a href="/topics" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Topics</a>
+              <a href="/games" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Games</a>
+              <a href="/achievements" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Achievements</a>
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h4 style={{ fontSize: '12px', color: 'var(--bright-blue)', marginBottom: '15px' }}>
+              CONTACT
+            </h4>
+            <p style={{ fontSize: '10px', color: 'var(--text-light)', lineHeight: '1.6' }}>
+              For support, contact your HR department or system administrator.
+            </p>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div style={{
+          paddingTop: '20px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          fontSize: '9px',
+          color: 'var(--text-light)'
+        }}>
+          <div style={{ marginBottom: '10px' }}>
+            © {new Date().getFullYear()} Advanced World Solutions, Inc. All rights reserved.
+          </div>
+          <div>
+            Developed by Jose Dante Chan & Julius Galejo
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
+
+App.js
+import Footer from './components/Footer';
+
+// At the bottom of your layout, after all routes:
+<Footer />
+
+
+server/routes/admin.js
+// Yearly Reset - Clear topic progress ONLY (keep badges, XP, levels)
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { confirmCode } = req.body;
+    
+    // Validate confirmation code
+    if (confirmCode !== 'RESET_ALL_DATA') {
+      return res.status(400).json({ message: 'Invalid confirmation code' });
+    }
+
+    console.log('🔥 Starting yearly reset...');
+
+    // Reset employee data (ONLY clear topics, keep badges/XP/levels)
+    const result = await User.updateMany(
+      { role: 'employee' }, // Only reset employees, not admins
+      {
+        $set: {
+          completedTopics: []  // ✅ Only clear completed topics
+          // badges: []         // ❌ NO LONGER CLEARED - badges are kept!
+        }
+        // XP and level are NOT touched - they remain intact
+      }
+    );
+
+    console.log(`✅ Reset ${result.modifiedCount} employee accounts`);
+
+    // Clear activity logs
+    await ActivityLog.deleteMany({});
+    console.log('✅ Cleared activity logs');
+
+    // Log the reset action
+    await logActivity(req.user._id, 'yearly_reset', {
+      usersReset: result.modifiedCount,
+      timestamp: new Date()
+    }, req);
+
+    res.json({
+      message: 'Yearly reset completed successfully!',
+      usersReset: result.modifiedCount,
+      details: {
+        completedTopicsCleared: true,
+        badgesPreserved: true,      // ✅ Changed
+        xpPreserved: true,
+        levelsPreserved: true,
+        activityLogsCleared: true
+      }
+    });
+  } catch (error) {
+    console.error('❌ Yearly reset error:', error);
+    res.status(500).json({ 
+      message: 'Reset failed', 
+      error: error.message 
+    });
+  }
+});
+
+
+src/pages/admin/YearlyReset.js
+<div style={{ fontSize: '11px', lineHeight: '1.8', marginBottom: '15px' }}>
+  <strong>This action will:</strong>
+  <ul style={{ marginTop: '10px', marginLeft: '20px' }}>
+    <li>❌ Clear ALL employee topic completions</li>
+    <li>❌ Delete ALL activity logs</li>
+  </ul>
+</div>
+
+<div style={{ fontSize: '11px', lineHeight: '1.8', marginBottom: '15px' }}>
+  <strong>This action will PRESERVE:</strong>
+  <ul style={{ marginTop: '10px', marginLeft: '20px' }}>
+    <li>✅ User accounts (username/password)</li>
+    <li>✅ Employee XP and levels</li>
+    <li>✅ ALL earned badges</li>
+    <li>✅ User avatars</li>
+    <li>✅ Admin accounts (untouched)</li>
+    <li>✅ Topics and configurations</li>
+  </ul>
+</div>
+
+App.js
+<Route
+  path="/admin/yearly-reset"
+  element={
+    <ProtectedRoute adminOnly={true}>
+      <AdminLayout>
+        <YearlyReset />
+      </AdminLayout>
+    </ProtectedRoute>
+  }
+/>
+
+<NavLink to="/admin/yearly-reset" style={({ isActive }) => ({ textDecoration: 'none' })}>
+  {({ isActive }) => (
+    <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+      RESET
+    </button>
+  )}
+</NavLink>
+
