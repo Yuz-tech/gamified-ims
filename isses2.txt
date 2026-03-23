@@ -434,3 +434,585 @@ App.js
   )}
 </NavLink>
 
+
+seedGames.js
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import Game from './models/Game.js';
+
+dotenv.config();
+
+const gamesData = [
+  // ========== CROSSWORD GAMES (8) ==========
+  {
+    title: 'IMS Basics Crossword',
+    type: 'crossword',
+    difficulty: 'easy',
+    xpReward: 50,
+    questions: [
+      { clue: 'System for managing quality standards', answer: 'IMS' },
+      { clue: 'Document that outlines procedures', answer: 'POLICY' },
+      { clue: 'Continuous improvement methodology', answer: 'KAIZEN' },
+      { clue: 'International standards organization (abbr.)', answer: 'ISO' },
+      { clue: 'Process of checking compliance', answer: 'AUDIT' }
+    ]
+  },
+  {
+    title: 'Quality Management Crossword',
+    type: 'crossword',
+    difficulty: 'medium',
+    xpReward: 75,
+    questions: [
+      { clue: 'Meeting customer needs consistently', answer: 'QUALITY' },
+      { clue: 'Preventing defects before they occur', answer: 'PREVENTION' },
+      { clue: 'Systematic examination of records', answer: 'REVIEW' },
+      { clue: 'Measure of process effectiveness', answer: 'METRIC' },
+      { clue: 'Action to eliminate nonconformity', answer: 'CORRECTION' }
+    ]
+  },
+  {
+    title: 'Document Control Crossword',
+    type: 'crossword',
+    difficulty: 'medium',
+    xpReward: 75,
+    questions: [
+      { clue: 'Official authorization to use', answer: 'APPROVAL' },
+      { clue: 'Unique identifier for documents', answer: 'NUMBER' },
+      { clue: 'Most current version', answer: 'LATEST' },
+      { clue: 'No longer in effect', answer: 'OBSOLETE' },
+      { clue: 'Change to a document', answer: 'REVISION' }
+    ]
+  },
+  {
+    title: 'Risk Management Crossword',
+    type: 'crossword',
+    difficulty: 'hard',
+    xpReward: 100,
+    questions: [
+      { clue: 'Potential source of harm', answer: 'HAZARD' },
+      { clue: 'Likelihood of occurrence', answer: 'PROBABILITY' },
+      { clue: 'Reducing risk to acceptable level', answer: 'MITIGATION' },
+      { clue: 'Effect of uncertainty on objectives', answer: 'RISK' },
+      { clue: 'Plan to address potential issues', answer: 'CONTINGENCY' }
+    ]
+  },
+  {
+    title: 'Process Improvement Crossword',
+    type: 'crossword',
+    difficulty: 'medium',
+    xpReward: 75,
+    questions: [
+      { clue: 'Japanese term for workplace', answer: 'GEMBA' },
+      { clue: 'Visual management board', answer: 'KANBAN' },
+      { clue: 'Eliminating waste', answer: 'LEAN' },
+      { clue: 'Six _____ methodology', answer: 'SIGMA' },
+      { clue: 'Plan-Do-Check-___', answer: 'ACT' }
+    ]
+  },
+  {
+    title: 'Compliance Crossword',
+    type: 'crossword',
+    difficulty: 'easy',
+    xpReward: 50,
+    questions: [
+      { clue: 'Following established rules', answer: 'COMPLIANCE' },
+      { clue: 'Required by regulation', answer: 'MANDATORY' },
+      { clue: 'Official inspection', answer: 'AUDIT' },
+      { clue: 'Written guideline', answer: 'PROCEDURE' },
+      { clue: 'Meets requirements', answer: 'CONFORMITY' }
+    ]
+  },
+  {
+    title: 'Training & Competence Crossword',
+    type: 'crossword',
+    difficulty: 'medium',
+    xpReward: 75,
+    questions: [
+      { clue: 'Ability to perform a task', answer: 'COMPETENCE' },
+      { clue: 'Learning program', answer: 'TRAINING' },
+      { clue: 'Official recognition of skills', answer: 'CERTIFICATION' },
+      { clue: 'Proof of completion', answer: 'RECORD' },
+      { clue: 'Evaluation of performance', answer: 'ASSESSMENT' }
+    ]
+  },
+  {
+    title: 'Internal Audit Crossword',
+    type: 'crossword',
+    difficulty: 'hard',
+    xpReward: 100,
+    questions: [
+      { clue: 'Person conducting audit', answer: 'AUDITOR' },
+      { clue: 'Area being examined', answer: 'SCOPE' },
+      { clue: 'Evidence of noncompliance', answer: 'FINDING' },
+      { clue: 'Planned audit schedule', answer: 'PROGRAM' },
+      { clue: 'Corrective action plan', answer: 'CAPA' }
+    ]
+  },
+
+  // ========== WORD SCRAMBLE GAMES (5) ==========
+  {
+    title: 'IMS Terminology Scramble',
+    type: 'word_scramble',
+    difficulty: 'easy',
+    xpReward: 50,
+    questions: [
+      { scrambled: 'TIDUAA', answer: 'AUDIT', hint: 'Systematic examination' },
+      { scrambled: 'LITYQUA', answer: 'QUALITY', hint: 'Meeting requirements' },
+      { scrambled: 'CESROPS', answer: 'PROCESS', hint: 'Set of activities' },
+      { scrambled: 'CYILOP', answer: 'POLICY', hint: 'High-level directive' },
+      { scrambled: 'DRADSTAN', answer: 'STANDARD', hint: 'Established requirement' }
+    ]
+  },
+  {
+    title: 'Quality Terms Scramble',
+    type: 'word_scramble',
+    difficulty: 'medium',
+    xpReward: 75,
+    questions: [
+      { scrambled: 'VETNPROINE', answer: 'PREVENTION', hint: 'Stopping before it happens' },
+      { scrambled: 'TNEMVORIPEM', answer: 'IMPROVEMENT', hint: 'Making better' },
+      { scrambled: 'ECNAILMOCP', answer: 'COMPLIANCE', hint: 'Following rules' },
+      { scrambled: 'FECITVEEFENS', answer: 'EFFECTIVENESS', hint: 'Achieving objectives' },
+      { scrambled: 'YCCFIEIFNE', answer: 'EFFICIENCY', hint: 'Resource optimization' }
+    ]
+  },
+  {
+    title: 'Documentation Scramble',
+    type: 'word_scramble',
+    difficulty: 'medium',
+    xpReward: 75,
+    questions: [
+      { scrambled: 'DROERC', answer: 'RECORD', hint: 'Evidence of activity' },
+      { scrambled: 'DUOCTNEM', answer: 'DOCUMENT', hint: 'Written information' },
+      { scrambled: 'VERIONIS', answer: 'REVISION', hint: 'Updated version' },
+      { scrambled: 'LOVAPARP', answer: 'APPROVAL', hint: 'Official authorization' },
+      { scrambled: 'TRLOOCN', answer: 'CONTROL', hint: 'Managing access' }
+    ]
+  },
+  {
+    title: 'Management Terms Scramble',
+    type: 'word_scramble',
+    difficulty: 'hard',
+    xpReward: 100,
+    questions: [
+      { scrambled: 'ETJBCOVIE', answer: 'OBJECTIVE', hint: 'Measurable goal' },
+      { scrambled: 'YGASRETT', answer: 'STRATEGY', hint: 'High-level plan' },
+      { scrambled: 'NERPFRACMEO', answer: 'PERFORMANCE', hint: 'Achievement level' },
+      { scrambled: 'THKREADLSOE', answer: 'STAKEHOLDER', hint: 'Interested party' },
+      { scrambled: 'NCEAEVGORN', answer: 'GOVERNANCE', hint: 'Leadership framework' }
+    ]
+  },
+  {
+    title: 'Risk & Safety Scramble',
+    type: 'word_scramble',
+    difficulty: 'medium',
+    xpReward: 75,
+    questions: [
+      { scrambled: 'AZDHAH', answer: 'HAZARD', hint: 'Source of danger' },
+      { scrambled: 'GMITIITONA', answer: 'MITIGATION', hint: 'Risk reduction' },
+      { scrambled: 'CTNEDNII', answer: 'INCIDENT', hint: 'Unwanted event' },
+      { scrambled: 'YTFSAE', answer: 'SAFETY', hint: 'Freedom from harm' },
+      { scrambled: 'NYPTNCOIECG', answer: 'CONTINGENCY', hint: 'Backup plan' }
+    ]
+  },
+
+  // ========== QUICK QUIZ GAMES (3) ==========
+  {
+    title: 'IMS Fundamentals Quiz',
+    type: 'quick_quiz',
+    difficulty: 'easy',
+    xpReward: 60,
+    questions: [
+      {
+        question: 'What does IMS stand for?',
+        options: [
+          'Internal Management System',
+          'Integrated Management System',
+          'International Monitoring Standard',
+          'Information Management Service'
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: 'What is the primary goal of IMS?',
+        options: [
+          'Reduce costs only',
+          'Increase sales',
+          'Improve overall organizational performance',
+          'Replace all existing systems'
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: 'Which ISO standard covers Quality Management?',
+        options: [
+          'ISO 9001',
+          'ISO 14001',
+          'ISO 45001',
+          'ISO 27001'
+        ],
+        correctAnswer: 0
+      },
+      {
+        question: 'What is a nonconformity?',
+        options: [
+          'A minor suggestion',
+          'Failure to meet a requirement',
+          'A best practice',
+          'An optional procedure'
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: 'Who is responsible for quality in an organization?',
+        options: [
+          'Only the Quality Manager',
+          'Only senior management',
+          'Only auditors',
+          'Everyone'
+        ],
+        correctAnswer: 3
+      }
+    ]
+  },
+  {
+    title: 'Document Control Quiz',
+    type: 'quick_quiz',
+    difficulty: 'medium',
+    xpReward: 80,
+    questions: [
+      {
+        question: 'What happens to obsolete documents?',
+        options: [
+          'They are destroyed immediately',
+          'They are retained but clearly marked',
+          'They remain in circulation',
+          'They are sent to customers'
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: 'What is document revision control?',
+        options: [
+          'Deleting old versions',
+          'Tracking changes and versions',
+          'Printing more copies',
+          'Ignoring updates'
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: 'Who can approve controlled documents?',
+        options: [
+          'Anyone in the company',
+          'Only external auditors',
+          'Authorized personnel only',
+          'Customers'
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: 'How often should documents be reviewed?',
+        options: [
+          'Never',
+          'Only when problems occur',
+          'At planned intervals',
+          'Daily'
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: 'What is a master list of documents?',
+        options: [
+          'A shopping list',
+          'An index of all controlled documents',
+          'A to-do list',
+          'A contact list'
+        ],
+        correctAnswer: 1
+      }
+    ]
+  },
+  {
+    title: 'Internal Audit Quiz',
+    type: 'quick_quiz',
+    difficulty: 'hard',
+    xpReward: 100,
+    questions: [
+      {
+        question: 'What is the purpose of an internal audit?',
+        options: [
+          'To punish employees',
+          'To verify effectiveness of the management system',
+          'To reduce headcount',
+          'To increase workload'
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: 'What should an auditor be?',
+        options: [
+          'Biased toward management',
+          'Independent and objective',
+          'Focused on finding faults only',
+          'Friendly with auditees'
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: 'What is audit evidence?',
+        options: [
+          'Rumors and gossip',
+          'Records, statements, and observations',
+          'Personal opinions',
+          'Assumptions'
+        ],
+        correctAnswer: 1
+      },
+      {
+        question: 'When should corrective actions be implemented?',
+        options: [
+          'Never',
+          'Only if convenient',
+          'Within agreed timeframes',
+          'After certification expires'
+        ],
+        correctAnswer: 2
+      },
+      {
+        question: 'What is an audit finding?',
+        options: [
+          'Lost document',
+          'Result of evaluating audit evidence',
+          'Auditor\'s lunch break',
+          'Random observation'
+        ],
+        correctAnswer: 1
+      }
+    ]
+  },
+
+  // ========== TRUE/FALSE GAMES (3) ==========
+  {
+    title: 'IMS True or False',
+    type: 'true_false',
+    difficulty: 'easy',
+    xpReward: 40,
+    questions: [
+      { statement: 'IMS combines multiple management systems into one', correctAnswer: true },
+      { statement: 'Only managers need to follow IMS procedures', correctAnswer: false },
+      { statement: 'Documents must be controlled and up-to-date', correctAnswer: true },
+      { statement: 'Internal audits are optional', correctAnswer: false },
+      { statement: 'Continuous improvement is a key principle of IMS', correctAnswer: true },
+      { statement: 'Quality is only the responsibility of the QA department', correctAnswer: false },
+      { statement: 'Risk assessment should be conducted regularly', correctAnswer: true },
+      { statement: 'Employee training records are not important', correctAnswer: false }
+    ]
+  },
+  {
+    title: 'Quality Management True or False',
+    type: 'true_false',
+    difficulty: 'medium',
+    xpReward: 60,
+    questions: [
+      { statement: 'Prevention is more cost-effective than correction', correctAnswer: true },
+      { statement: 'Customer satisfaction is not a quality metric', correctAnswer: false },
+      { statement: 'Processes should be documented and followed', correctAnswer: true },
+      { statement: 'Quality objectives should be measurable', correctAnswer: true },
+      { statement: 'Management review is conducted annually only', correctAnswer: false },
+      { statement: 'Nonconformities should be investigated', correctAnswer: true },
+      { statement: 'Competence requirements are optional', correctAnswer: false },
+      { statement: 'Data analysis helps identify improvement opportunities', correctAnswer: true }
+    ]
+  },
+  {
+    title: 'Compliance & Standards True or False',
+    type: 'true_false',
+    difficulty: 'hard',
+    xpReward: 80,
+    questions: [
+      { statement: 'ISO 9001 certification guarantees perfect quality', correctAnswer: false },
+      { statement: 'Legal requirements must be identified and met', correctAnswer: true },
+      { statement: 'External audits are conducted by the organization itself', correctAnswer: false },
+      { statement: 'Context of the organization should be determined', correctAnswer: true },
+      { statement: 'Interested parties\' needs can be ignored', correctAnswer: false },
+      { statement: 'Management system should be continually improved', correctAnswer: true },
+      { statement: 'Documented information must be retained as required', correctAnswer: true },
+      { statement: 'Leadership commitment is not necessary for IMS success', correctAnswer: false }
+    ]
+  }
+];
+
+const seedGames = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('📁 Connected to MongoDB');
+
+    // Clear existing games
+    await Game.deleteMany({});
+    console.log('🗑️  Cleared existing games');
+
+    // Insert new games
+    const games = await Game.insertMany(gamesData);
+    console.log(`✅ Created ${games.length} games`);
+
+    console.log('\n📊 Games by type:');
+    console.log(`  Crossword: ${games.filter(g => g.type === 'crossword').length}`);
+    console.log(`  Word Scramble: ${games.filter(g => g.type === 'word_scramble').length}`);
+    console.log(`  Quick Quiz: ${games.filter(g => g.type === 'quick_quiz').length}`);
+    console.log(`  True/False: ${games.filter(g => g.type === 'true_false').length}`);
+
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Seed error:', error);
+    process.exit(1);
+  }
+};
+
+seedGames();
+
+
+server/routes/games.js
+import express from 'express';
+import Game from '../models/Game.js';
+import GameProgress from '../models/GameProgress.js';
+import User from '../models/User.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { logActivity } from '../utils/logger.js';
+
+const router = express.Router();
+
+router.use(authenticateToken);
+
+// Get all games
+router.get('/', async (req, res) => {
+  try {
+    const games = await Game.find()
+      .select('title type difficulty xpReward')
+      .sort({ difficulty: 1, title: 1 });
+
+    // Get user's completed games
+    const userProgress = await GameProgress.find({ userId: req.user._id });
+    const completedGameIds = userProgress.map(p => p.gameId.toString());
+
+    const gamesWithProgress = games.map(game => ({
+      ...game.toObject(),
+      completed: completedGameIds.includes(game._id.toString()),
+      lastPlayed: userProgress.find(p => p.gameId.toString() === game._id.toString())?.lastPlayed
+    }));
+
+    res.json(gamesWithProgress);
+  } catch (error) {
+    console.error('Error fetching games:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get single game
+router.get('/:gameId', async (req, res) => {
+  try {
+    const game = await Game.findById(req.params.gameId);
+    
+    if (!game) {
+      return res.status(404).json({ message: 'Game not found' });
+    }
+
+    res.json(game);
+  } catch (error) {
+    console.error('Error fetching game:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Submit game answers
+router.post('/:gameId/submit', async (req, res) => {
+  try {
+    const { gameId } = req.params;
+    const { answers } = req.body;
+    const userId = req.user._id;
+
+    const game = await Game.findById(gameId);
+    if (!game) {
+      return res.status(404).json({ message: 'Game not found' });
+    }
+
+    // Calculate score based on game type
+    let correctCount = 0;
+    let totalQuestions = game.questions.length;
+
+    game.questions.forEach((question, index) => {
+      const userAnswer = answers[index];
+
+      if (game.type === 'crossword' || game.type === 'word_scramble') {
+        // String comparison (case-insensitive)
+        if (userAnswer && userAnswer.toUpperCase() === question.answer.toUpperCase()) {
+          correctCount++;
+        }
+      } else if (game.type === 'quick_quiz' || game.type === 'true_false') {
+        // Index/boolean comparison
+        if (userAnswer === question.correctAnswer) {
+          correctCount++;
+        }
+      }
+    });
+
+    const percentage = (correctCount / totalQuestions) * 100;
+    const score = Math.round((percentage / 100) * game.xpReward);
+
+    // Update or create game progress
+    await GameProgress.findOneAndUpdate(
+      { userId, gameId },
+      {
+        score: percentage,
+        completed: true,
+        lastPlayed: new Date()
+      },
+      { upsert: true, new: true }
+    );
+
+    // Award XP to user
+    const user = await User.findById(userId);
+    const oldLevel = user.level;
+    const oldXP = user.xp;
+
+    user.xp += score;
+
+    // Check for level up
+    const { calculateLevel } = await import('../utils/levelSystem.js');
+    const newLevel = calculateLevel(user.xp);
+    const leveledUp = newLevel > oldLevel;
+    
+    if (leveledUp) {
+      user.level = newLevel;
+    }
+
+    await user.save();
+
+    // Log activity
+    await logActivity(userId, 'game_completed', {
+      gameId,
+      gameTitle: game.title,
+      score: percentage,
+      xpEarned: score,
+      correctAnswers: correctCount,
+      totalQuestions
+    }, req);
+
+    res.json({
+      score,
+      percentage: Math.round(percentage),
+      correctCount,
+      totalQuestions,
+      xpEarned: score,
+      leveledUp,
+      newLevel: user.level,
+      newXP: user.xp
+    });
+  } catch (error) {
+    console.error('Error submitting game:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+export default router;
+
