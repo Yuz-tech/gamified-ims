@@ -2,9 +2,16 @@
 
 2. Forgot password?
 
+I can no longer login nor create an account
 Registration not working but user gets saved to database
 API Error: 500 {message: 'Registration failed. Try again.', error: 'Session validation failed: expiresAt: Path `expiresAt` is required.'}
 src/utils/api.js line 27
 
 AuthContext.js
 old const login
+
+src/pages/Login.js
+src/context/AuthContext.js
+src/utils/api.js
+middleware/auth.js
+routes/auth.js
