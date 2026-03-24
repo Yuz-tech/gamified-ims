@@ -18,34 +18,32 @@ const Footer = () => {
                 }}>
                     {/* About */}
                     <div>
-                        <h4 style={{ fontSize: '12px', color: 'var(--bright-blue)', marginBottom: '15px' }}>
+                        <h4 style={{ fontSize: '12px', color: '#FFFFFF', marginBottom: '15px' }}>
                             ABOUT
                         </h4>
-                        <p style={{ fontSize: '10px', color: 'var(--text-light)', lineHeight: '1.6' }}>
+                        <p style={{ fontSize: '10px', color: '#55e8f2', lineHeight: '1.6' }}>
                             IMS Awareness Training for Advanced World Solutions, Inc.
                         </p>
                     </div>
 
                     {/* Quick Links */}
                     <div>
-                        <h4 style={{ fontSize: '12px', color: 'var(--bright-blue)', marginBottom: '15px' }}>
+                        <h4 style={{ fontSize: '12px', color: '#FFFFFF', marginBottom: '15px' }}>
                             QUICK LINKS
                         </h4>
                         <div style={{ fontSize: '10px', color: 'var(--text-light)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <a href="/" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Home</a>
-                            <a href="/topics" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Training</a>
-                            <a href="/achievements" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Achievements</a>
+                            <a href="/" style={{ color: '#55e8f2', textDecoration: 'none' }}>Home</a>
+                            <a href="/topics" style={{ color: '#55e8f2', textDecoration: 'none' }}>Training</a>
+                            <a href="/achievements" style={{ color: '#55e8f2', textDecoration: 'none' }}>Achievements</a>
                         </div>
                     </div>
 
                     {/* Contact */}
                     <div>
-                        <h4 style={{ fontSize: '12px', color: 'var(--bright-blue)', marginBottom: '15px' }}>
+                        <h4 style={{ fontSize: '12px', color: '#FFFFFF', marginBottom: '15px' }}>
                             CONTACT
                         </h4>
-                        <p style={{ fontSize: '10px', color: 'var(--text-light)', lineHeight: '1.6' }}>
-                            <a href="https://www.awsys-i.com/en/home.php">Offical Site</a>
-                        </p>
+                        <a href="https://www.awsys-i.com/en/home.php" style={{ fontSize: '10px', color: '#55e8f2', lineHeight: '1.6' }}>Offical Site</a>
                     </div>
                 </div>
 
@@ -54,9 +52,9 @@ const Footer = () => {
                     paddingTop: '20px',
                     borderTop: '1px solid rgba(255,255,255,0.1)',
                     fontSize: '9px',
-                    color: 'var(--text-light)'
+                    color: '#55e8f2'
                 }}>
-                    <div style={{ marginBottom: '10px' }}>
+                    <div style={{ marginBottom: '10px', lineHeight: '1.7' }}>
                         © {new Date().getFullYear()} Advanced World Solutions, Inc. All rights reserved.
                     </div>
                     <div>

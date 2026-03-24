@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
 import api from '../utils/api';
-import getImageUrl from "../utils/getImageUrl";
 
 const Players = () => {
     const [players, setPlayers] = useState([]);

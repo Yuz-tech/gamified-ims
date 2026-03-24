@@ -7,7 +7,7 @@ const gameSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['crossword', 'image_match', 'quiz_quiz', 'word_scramble', 'memory_match', 'flashcards'],
+        enum: ['crossword', 'quick_quiz', 'word_scramble'],
         required: true
     },
     difficulty: {
@@ -26,10 +26,6 @@ const gameSchema = new mongoose.Schema({
     timeLimit: {
         type: Number,
         default: null
-    },
-    gameData: {
-        type: mongoose.Schema.Types.Mixed,
-        required: true
     },
     isActive: {
         type: Boolean,

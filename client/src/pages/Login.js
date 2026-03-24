@@ -18,20 +18,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetSent, setResetSent] = useState(false);
-
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-
-    try {
-      await api.post('/auth/forgot-password', { email: resetEmail });
-      setResetSent(true);
-      alert('Password reset instructions sent');
-    } catch (error) {
-      alert('Failed to send reset request');
-    }
-  };
+  const [resetEmail] = useState('');
+  const [setResetSent] = useState(false);
 
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
