@@ -161,8 +161,8 @@ const YearlyReset = () => {
 
                 {/* Reset form */}
                 <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0 }}
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 1 }}
                   className="retro-card"
                   style={{ maxWidth: '600px', margin: '0 auto', border: '3px solid var(--error-red)' }}>
                     <h3 style={{ fontSize: '14px', color: 'var(--error-red)', marginBottom: '20px' }}>
@@ -174,31 +174,31 @@ const YearlyReset = () => {
                             <label style={{ display: 'block', marginBottom: '10px', fontSize: '11px', fontWeight: 'bold' }}>
                                 Confirmation Code
                             </label>
-                            <input type="text" className="retro-input" value={confirmCode} onChange={(e) => setConfirmCode(e.target.value.toUpperCase())} placeholder="Type: RESET_DATA" required style={{
+                            <input type="text" className="retro-input" value={confirmCode} onChange={(e) => setConfirmCode(e.target.value.toUpperCase())} placeholder="Type: RESET_ALL_DATA" required style={{
                                 fontFamily: 'monospace',
                                 fontSize: '14px',
                                 letterSpacing: '1px'
                             }}
                             />
                             <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '8px' }}>
-                                Type <strong style={{ color: 'var(--error-red)' }}> RESET_DATA </strong>
+                                Type <strong style={{ color: 'var(--error-red)' }}> RESET_ALL_DATA </strong>
                             </div>
                         </div>
 
                         <button type="submit" className="retro-btn" style={{
                             width: '100%',
-                            background: confirmCode === 'RESET_DATA' ? 'var(--error-red)' : 'var(--text-medium)',
-                            opacity: confirmCode === 'RESET_DATA' ? 1 : 0.5,
-                            cursor: confirmCode === 'RESET_DATA' ? 'pointer' : 'not-allowed',
+                            background: confirmCode === 'RESET_ALL_DATA' ? 'var(--error-red)' : 'var(--text-medium)',
+                            opacity: confirmCode === 'RESET_ALL_DATA' ? 1 : 0.5,
+                            cursor: confirmCode === 'RESET_ALL_DATA' ? 'pointer' : 'not-allowed',
                             fontSize: '12px',
                             padding: '15px'
                         }}
-                        disabled={confirmCode !== 'RESET_DATA' || resetting}>
+                        disabled={confirmCode !== 'RESET_ALL_DATA' || resetting}>
                             {resetting ? 'Resetting...' : 'Execute Yearly Reset'}
                         </button>
                     </form>
 
-                    {confirmCode === 'RESET_DATA' && (
+                    {confirmCode === 'RESET_ALL_DATA' && (
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}

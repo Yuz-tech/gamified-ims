@@ -348,72 +348,46 @@ router.get('/training-year', async (req, res) => {
   }
 });
 
-// Archive current year and reset for new year
-router.post('/yearly-reset', authenticateToken, isAdmin, async (req,res) => {
+// Yearly Reset
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
   try {
     const { confirmCode } = req.body;
 
-    if (confirmCode !== 'RESET_DATA') {
-      return res.status(400).json({ message: 'Invalid confirmation code'});
+    if (confirmCode !== 'RESET_ALL_DATA') {
+      return res.status(400).json({ message: 'Invalid confirmation code' });
     }
 
-    const result = await User.updateMany(
-      { role: 'employee' },
-      { 
+    console.log('Starting yearly reset...');
+
+    const result = await User.updateMany({ role: 'employee' }, 
+      {
         $set: {
-          completedTopics: [],
-          badges: []
+          completedTopics: []
         }
       }
     );
-
-    await logActivity(req.user._id, 'yearly_reset', {
+    await ActivityLog.deleteMany({});
+    await logActivity(req.user._id, 'yearly-reset', {
       usersReset: result.modifiedCount,
       timestamp: new Date()
     }, req);
 
     res.json({
-      message: 'Yearly reset completed!',
-      usersReset: result.modifiedCount,
+      message: 'Yearly reset completed',
+      usersReset: result.modifiedCount, 
       details: {
         completedTopicsCleared: true,
-        badgesCleared: true,
+        badgesPreserved: true,
         xpPreserved: true,
         levelsPreserved: true,
         activityLogsCleared: true
       }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Reset failed', error: error.message});
-  }
-});
-
-// Get user's yearly history
-router.get('/users/:userId/history', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId)
-      .select('username email yearlyArchive completedTopics badges');
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    const currentYear = new Date().getFullYear();
-    const currentYearData = user.getCurrentYearProgress();
-    
-    res.json({
-      username: user.username,
-      email: user.email,
-      currentYear: {
-        year: currentYear,
-        completedTopics: currentYearData.completedTopics.length,
-        badgesEarned: currentYearData.badges.length
-      },
-      history: user.yearlyArchive.sort((a, b) => b.year - a.year)
+    res.status(500).json({
+      message: 'Reset failed',
+      error: error.message
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
