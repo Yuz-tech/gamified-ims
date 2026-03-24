@@ -1,6 +1,7 @@
-1. Avatar not showing immediately, needs to refresh the page to show
+1. Avatar not showing immediately, needs to refresh the page to show and getImageUrl.js is not working
 2. Admin handling for users who forgot their password and the Forgot Password function not working
 3. Start system testing
 4. Games not working, clicking on a game just redirects to homepage
+5. what if deployed locally? no longer "localhost:5000"; files affected or has "localhost" must be changed?
 
 https://austinhenley.com/blog/challengingprojects.html
