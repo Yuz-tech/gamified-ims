@@ -1,0 +1,873 @@
+server/createTestUsers.js
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import User from './models/User.js';
+
+dotenv.config();
+
+const testUsers = [
+  {
+    username: 'tester1',
+    email: 'tester1@test.com',
+    password: 'Test123!',
+    role: 'employee',
+    isApproved: true
+  },
+  {
+    username: 'tester2',
+    email: 'tester2@test.com',
+    password: 'Test123!',
+    role: 'employee',
+    isApproved: true
+  },
+  {
+    username: 'tester3',
+    email: 'tester3@test.com',
+    password: 'Test123!',
+    role: 'employee',
+    isApproved: true
+  },
+  {
+    username: 'admin_test',
+    email: 'admin@test.com',
+    password: 'Admin123!',
+    role: 'admin',
+    isApproved: true
+  }
+];
+
+const createTestUsers = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('📁 Connected to MongoDB');
+
+    // Delete existing test users
+    await User.deleteMany({ 
+      email: { $in: testUsers.map(u => u.email) } 
+    });
+    console.log('🗑️  Cleared existing test users');
+
+    // Create new test users
+    for (const userData of testUsers) {
+      const user = new User(userData);
+      await user.save();
+      console.log(`✅ Created: ${userData.username} (${userData.role})`);
+    }
+
+    console.log('\n📋 Test User Credentials:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    testUsers.forEach(u => {
+      console.log(`Username: ${u.username}`);
+      console.log(`Password: ${u.password}`);
+      console.log(`Role: ${u.role}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    });
+
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error:', error);
+    process.exit(1);
+  }
+};
+
+createTestUsers();
+
+(node createTestUsers.js)
+
+Verify These Before Testing:
+```
+DATABASE & SEED DATA
+□ MongoDB is running
+□ Topics seeded (28 topics)
+□ Games seeded (19 games)
+□ Test users created
+□ Admin account exists
+
+SERVER
+□ Server running on port 5000
+□ No console errors on startup
+□ .env file configured correctly
+□ All routes responding
+
+CLIENT
+□ React app running on port 3000
+□ No console errors in browser
+□ .env file configured correctly
+□ All pages load without errors
+
+FEATURES TO VERIFY QUICKLY
+□ Login works
+□ Registration works
+□ Home page loads
+□ Topics page loads
+□ Games page loads
+□ Admin panel accessible (admin only)
+
+A. AUTHENTICATION & USER MANAGEMENT**
+
+### Registration / Account Creation
+- [ ] Can create new account with username, email, password
+- [ ] Password must be 6+ characters
+- [ ] Passwords must match (confirm password)
+- [ ] Email validation works
+- [ ] Cannot use duplicate username
+- [ ] Cannot use duplicate email
+- [ ] Automatically logs in after registration
+- [ ] User appears in database as approved
+- [ ] User appears in Admin → Users list
+
+### Login
+- [ ] Can login with correct credentials
+- [ ] Cannot login with wrong password
+- [ ] Cannot login with non-existent username
+- [ ] Shows appropriate error messages
+- [ ] Token saved in localStorage
+- [ ] User data persists after page refresh
+- [ ] "Forgot Password?" link visible
+- [ ] Can toggle between Login/Create Account
+
+### Logout
+- [ ] Logout button works
+- [ ] Redirects to login page
+- [ ] Token removed from localStorage
+- [ ] Cannot access protected pages after logout
+- [ ] Must login again to access app
+
+### Session Management
+- [ ] Session persists across browser tabs
+- [ ] Session expires after inactivity (if applicable)
+- [ ] Can see active sessions in Profile
+- [ ] Can logout specific session
+- [ ] Can logout all sessions
+
+---
+
+## **B. NAVIGATION & UI**
+
+### Navbar
+- [ ] Logo/title visible
+- [ ] All menu items visible
+- [ ] Active page highlighted
+- [ ] Home link works
+- [ ] Topics link works
+- [ ] Games link works
+- [ ] Achievements link works
+- [ ] Players link works
+- [ ] Profile link works
+- [ ] Admin link visible (admin only)
+- [ ] Logout button works
+- [ ] Avatar displays correctly
+- [ ] Username displays correctly
+- [ ] Level displays correctly
+
+### Responsive Design
+- [ ] Works on desktop (1920x1080)
+- [ ] Works on laptop (1366x768)
+- [ ] Works on tablet (iPad)
+- [ ] Works on mobile (iPhone)
+- [ ] No horizontal scroll
+- [ ] Buttons accessible
+- [ ] Text readable
+
+### Footer
+- [ ] Footer appears on all pages
+- [ ] All links work
+- [ ] Copyright year correct
+- [ ] Developer credits visible
+
+---
+
+## **C. HOME PAGE**
+
+### Stats Display
+- [ ] Level displays correctly
+- [ ] XP displays correctly
+- [ ] Level progress bar works
+- [ ] Total badges count correct
+- [ ] Completed topics count correct
+- [ ] Stats cards clickable
+
+### Recent Badges
+- [ ] Shows up to 6 recent badges
+- [ ] Badge images display correctly
+- [ ] "View All Achievements" button works
+- [ ] Shows "No badges yet" if empty
+
+### Leaderboard (Top 5)
+- [ ] Shows top 5 players
+- [ ] Players sorted by XP (highest first)
+- [ ] Shows rank, username, level, XP
+- [ ] Shows badge count
+- [ ] Current user highlighted (if in top 5)
+- [ ] Avatars display correctly
+- [ ] Medal icons for top 3 (🥇🥈🥉)
+
+### Quick Actions
+- [ ] "Start Learning" button works
+- [ ] "Play Games" button works
+- [ ] "View Badges" button works
+- [ ] "Leaderboard" button works
+
+### Completion Form
+- [ ] Shows when all topics completed
+- [ ] Form link works (if configured)
+- [ ] Shows as locked if not all topics done
+
+---
+
+## **D. TOPICS PAGE**
+
+### Topic List
+- [ ] All 28 topics display
+- [ ] Topics sorted alphabetically
+- [ ] Search works correctly
+- [ ] Filter by status works (All/Not Started/Completed)
+- [ ] Each topic shows:
+  - [ ] Title
+  - [ ] Description
+  - [ ] Badge preview
+  - [ ] Status (Not Started/In Progress/Completed)
+  - [ ] XP reward (300 XP)
+- [ ] "Start" button visible for new topics
+- [ ] "Continue" button for in-progress topics
+- [ ] Checkmark/badge for completed topics
+
+### Topic Completion Flow
+- [ ] Can view study materials (documents/videos)
+- [ ] "Start Quiz" button works
+- [ ] Mandatory question displays
+- [ ] Can select an answer
+- [ ] Submit button works
+- [ ] Shows correct/incorrect feedback
+- [ ] Awards 100 XP for correct answer
+- [ ] Awards badge for correct answer
+- [ ] Badge image displays
+- [ ] Angry emoji shows for wrong answer
+- [ ] Shows correct answer if wrong
+- [ ] Shows explanation (if available)
+- [ ] Can retry if wrong
+- [ ] Proceeds to bonus questions after correct
+
+### Bonus Questions
+- [ ] 4 bonus questions display
+- [ ] Progress bar shows question number
+- [ ] Can select answer
+- [ ] Submit button works
+- [ ] Shows correct/incorrect after each
+- [ ] Awards 50 XP per correct answer
+- [ ] Can skip remaining bonus questions
+- [ ] Final score displays correctly
+- [ ] Total XP earned shows (100 + bonus)
+
+### Level Up Toast
+- [ ] Appears when leveling up
+- [ ] Shows new level number
+- [ ] Animated entrance
+- [ ] Auto-closes after 3 seconds
+
+---
+
+## **E. GAMES PAGE**
+
+### Games List
+- [ ] All 19 games display
+- [ ] Games grouped by type (Crossword, Word Scramble, Quiz, True/False)
+- [ ] Each game shows:
+  - [ ] Title
+  - [ ] Type icon
+  - [ ] Difficulty (Easy/Medium/Hard)
+  - [ ] XP reward
+  - [ ] "Play" button
+  - [ ] Completion status (if played)
+
+### Crossword Game (8 games)
+- [ ] Game loads correctly
+- [ ] Shows all clues
+- [ ] Input fields work
+- [ ] Can type answers
+- [ ] Case doesn't matter
+- [ ] Submit button works
+- [ ] Calculates score correctly
+- [ ] Awards XP based on correct answers
+- [ ] Shows completion screen
+- [ ] "Back to Games" button works
+
+### Word Scramble Game (5 games)
+- [ ] Game loads correctly
+- [ ] Shows scrambled words
+- [ ] Shows hints (if available)
+- [ ] Input fields work
+- [ ] Can type answers
+- [ ] Case doesn't matter
+- [ ] Submit button works
+- [ ] Calculates score correctly
+- [ ] Awards XP
+- [ ] Shows completion screen
+
+### Quick Quiz Game (3 games)
+- [ ] Game loads correctly
+- [ ] Shows one question at a time
+- [ ] Progress bar works
+- [ ] Can select option (A/B/C/D)
+- [ ] Next button works
+- [ ] Shows correct/incorrect after each
+- [ ] Awards XP at end
+- [ ] Shows total score
+- [ ] Shows completion screen
+
+### True/False Game (3 games)
+- [ ] Game loads correctly
+- [ ] Shows one statement at a time
+- [ ] Progress bar works
+- [ ] TRUE button works
+- [ ] FALSE button works
+- [ ] Shows correct/incorrect after each
+- [ ] Awards XP at end
+- [ ] Shows completion screen
+
+---
+
+## **F. ACHIEVEMENTS PAGE**
+
+### Badge Display
+- [ ] All available badges visible
+- [ ] Earned badges colored
+- [ ] Unearned badges grayed out
+- [ ] Badge names visible
+- [ ] Badge descriptions visible
+- [ ] Badge images load correctly
+- [ ] Progress stats at top:
+  - [ ] Total badges earned
+  - [ ] Percentage complete
+  - [ ] Total badges available (28)
+
+### Badge Details
+- [ ] Hover shows tooltip (if applicable)
+- [ ] Badge date earned shows (if earned)
+- [ ] Filter works (All/Earned/Locked)
+
+---
+
+## **G. PLAYERS PAGE**
+
+### TOP 3 Podium
+- [ ] 1st place in center (gold)
+- [ ] 2nd place on left (silver)
+- [ ] 3rd place on right (bronze)
+- [ ] Avatars display correctly
+- [ ] Username displays
+- [ ] Level displays
+- [ ] XP displays
+- [ ] Medal icons (🥇🥈🥉)
+
+### Full Leaderboard Table
+- [ ] All players listed
+- [ ] Sorted by XP (highest first)
+- [ ] Shows rank (Ancient/Vanquisher/Marauder/#)
+- [ ] Shows avatar
+- [ ] Shows username
+- [ ] Shows email
+- [ ] Shows level
+- [ ] Shows XP
+- [ ] Shows badge count
+- [ ] Search works
+- [ ] Pagination works (if >50 players)
+
+---
+
+## **H. PROFILE PAGE**
+
+### Profile Info
+- [ ] Avatar displays correctly
+- [ ] Username displays
+- [ ] Email displays
+- [ ] Role displays (Employee/Admin)
+- [ ] Member since date correct
+- [ ] Edit avatar button works
+
+### Avatar Selection
+- [ ] Shows 10 pre-made avatars
+- [ ] Can click to select
+- [ ] Selected avatar highlighted
+- [ ] Avatar updates immediately
+- [ ] Avatar shows in navbar
+- [ ] Avatar shows to other users
+
+### Stats Display
+- [ ] Total XP correct
+- [ ] Badge count correct
+- [ ] Topics completed count correct
+- [ ] Level correct
+- [ ] Level progress bar works
+
+### Recent Badges
+- [ ] Shows last 6 badges earned
+- [ ] Badge images display
+- [ ] Hover shows badge name
+
+### Change Password
+- [ ] Current password field works
+- [ ] New password field works
+- [ ] Confirm password field works
+- [ ] Passwords must match
+- [ ] New password must be 6+ characters
+- [ ] Submit button works
+- [ ] Shows success message
+- [ ] Can login with new password
+
+### Active Sessions
+- [ ] Shows all active sessions
+- [ ] Shows device info
+- [ ] Shows last activity time
+- [ ] Current session marked
+- [ ] Can logout individual session
+- [ ] Can logout all other sessions
+
+---
+
+## **I. ADMIN PANEL** *(Admin Only)*
+
+### Dashboard
+- [ ] Total users stat correct
+- [ ] Pending approvals correct (should be 0)
+- [ ] Active topics correct
+- [ ] Total badges correct
+- [ ] Top 10 users displayed
+- [ ] Stats accurate
+
+### User Management
+- [ ] All users listed
+- [ ] Search works
+- [ ] Filter by role works (All/Admin/Employee)
+- [ ] Filter by status works (All/Approved)
+- [ ] Shows username, email, role, level, XP
+- [ ] Delete button works
+- [ ] Cannot delete admin accounts
+- [ ] Confirm before delete
+
+### Topic Management
+- [ ] All topics listed
+- [ ] Search works
+- [ ] Shows title, description, status
+- [ ] Edit button works
+- [ ] Enable/Disable toggle works
+- [ ] Delete button works (with confirm)
+- [ ] Create new topic button works
+
+### Analytics
+- [ ] Shows overall stats
+- [ ] Top topics by completion
+- [ ] Top users by XP
+- [ ] Average completion rate
+- [ ] Charts/graphs display (if applicable)
+
+### Activity Logs
+- [ ] Recent activities listed
+- [ ] Shows user, action, timestamp
+- [ ] Filter by user works
+- [ ] Filter by action works
+- [ ] Pagination works
+
+### Yearly Reset
+- [ ] Shows current statistics
+- [ ] Warning messages clear
+- [ ] Confirmation code field works
+- [ ] Must type "RESET_ALL_DATA"
+- [ ] Double confirmation popups
+- [ ] Reset button disabled until code entered
+- [ ] Reset executes correctly:
+  - [ ] Clears completed topics
+  - [ ] Preserves badges ✅ (NEW)
+  - [ ] Preserves XP
+  - [ ] Preserves levels
+  - [ ] Preserves avatars
+  - [ ] Only affects employees (not admins)
+  - [ ] Clears activity logs
+- [ ] Success message shows
+- [ ] Stats refresh after reset
+
+---
+
+## **J. PERFORMANCE & STABILITY**
+
+### Speed
+- [ ] Pages load within 2 seconds
+- [ ] No lag when navigating
+- [ ] Smooth animations
+- [ ] Quick search/filter response
+
+### Error Handling
+- [ ] Network errors handled gracefully
+- [ ] Shows error messages (not crashes)
+- [ ] Can recover from errors
+- [ ] 404 page works
+- [ ] Invalid routes redirect
+
+### Data Integrity
+- [ ] XP calculations correct
+- [ ] Level calculations correct
+- [ ] Badge awards correct
+- [ ] No duplicate badges
+- [ ] Progress saves correctly
+- [ ] No data loss on refresh
+
+### Browser Compatibility
+- [ ] Works on Chrome
+- [ ] Works on Firefox
+- [ ] Works on Edge
+- [ ] Works on Safari
+- [ ] Console shows no errors
+
+---
+
+## **K. SECURITY**
+
+### Access Control
+- [ ] Cannot access admin panel as employee
+- [ ] Cannot access pages when logged out
+- [ ] JWT token validated on requests
+- [ ] Expired tokens handled
+- [ ] Invalid tokens rejected
+
+### Data Protection
+- [ ] Passwords hashed (not visible in DB)
+- [ ] User data not exposed in API responses
+- [ ] No sensitive data in console logs
+- [ ] CORS configured correctly
+
+
+TESTER INFORMATION**
+
+1. **Your Name (Optional)**
+   - Short answer
+
+2. **Email (Optional)**
+   - Short answer
+
+3. **Testing Date**
+   - Date picker
+
+4. **Device Used**
+   - [ ] Desktop
+   - [ ] Laptop
+   - [ ] Tablet
+   - [ ] Mobile Phone
+
+5. **Browser Used**
+   - [ ] Chrome
+   - [ ] Firefox
+   - [ ] Edge
+   - [ ] Safari
+   - [ ] Other: ____
+
+6. **Operating System**
+   - [ ] Windows
+   - [ ] macOS
+   - [ ] Linux
+   - [ ] iOS
+   - [ ] Android
+
+---
+
+### **SECTION 2: FIRST IMPRESSIONS**
+
+7. **How easy was it to understand what the application does?**
+   - 1 (Very Difficult) to 5 (Very Easy)
+
+8. **First impression of the design/interface?**
+   - 1 (Very Poor) to 5 (Excellent)
+
+9. **Did the retro/arcade theme enhance your experience?**
+   - [ ] Yes, I loved it
+   - [ ] It was okay
+   - [ ] No, it was distracting
+   - [ ] Didn't notice
+
+10. **Any comments on first impression?**
+    - Long answer
+
+---
+
+### **SECTION 3: REGISTRATION & LOGIN**
+
+11. **Was the account creation process easy?**
+    - 1 (Very Difficult) to 5 (Very Easy)
+
+12. **Was the login process easy?**
+    - 1 (Very Difficult) to 5 (Very Easy)
+
+13. **Did you encounter any errors during registration/login?**
+    - [ ] Yes
+    - [ ] No
+    - If yes, please describe: ____
+
+14. **Were the error messages helpful?**
+    - 1 (Not Helpful) to 5 (Very Helpful)
+    - N/A (No errors)
+
+---
+
+### **SECTION 4: NAVIGATION & USABILITY**
+
+15. **How easy was it to navigate between pages?**
+    - 1 (Very Difficult) to 5 (Very Easy)
+
+16. **Were the menu items clearly labeled?**
+    - [ ] Yes, very clear
+    - [ ] Somewhat clear
+    - [ ] Confusing
+    - [ ] Very confusing
+
+17. **Did the app respond quickly to your actions?**
+    - [ ] Always fast
+    - [ ] Usually fast
+    - [ ] Sometimes slow
+    - [ ] Often slow
+
+18. **Rate the mobile responsiveness (if tested on mobile)**
+    - 1 (Very Poor) to 5 (Excellent)
+    - N/A (Tested on desktop only)
+
+19. **Any navigation issues encountered?**
+    - Long answer
+
+---
+
+### **SECTION 5: TOPICS MODULE**
+
+20. **Was it easy to find and select topics?**
+    - 1 (Very Difficult) to 5 (Very Easy)
+
+21. **Were the study materials helpful?**
+    - 1 (Not Helpful) to 5 (Very Helpful)
+
+22. **How was the quiz experience?**
+    - 1 (Very Poor) to 5 (Excellent)
+
+23. **Were the questions clear and understandable?**
+    - [ ] All clear
+    - [ ] Most clear
+    - [ ] Some confusing
+    - [ ] Very confusing
+
+24. **Did the mandatory + bonus question system make sense?**
+    - [ ] Yes, very clear
+    - [ ] Somewhat clear
+    - [ ] Confusing
+
+25. **Did the badge reward feel motivating?**
+    - 1 (Not Motivating) to 5 (Very Motivating)
+
+26. **Any issues with Topics module?**
+    - Long answer
+
+---
+
+### **SECTION 6: GAMES MODULE**
+
+27. **How many games did you try?**
+    - Dropdown: 0, 1, 2-3, 4-5, 6+
+
+28. **Which game types did you play?** *(Check all that apply)*
+    - [ ] Crossword
+    - [ ] Word Scramble
+    - [ ] Quick Quiz
+    - [ ] True/False
+    - [ ] None
+
+29. **Rate each game type you played:**
+    - Crossword: 1-5
+    - Word Scramble: 1-5
+    - Quick Quiz: 1-5
+    - True/False: 1-5
+
+30. **Did the games work correctly?**
+    - [ ] Yes, all worked fine
+    - [ ] Most worked
+    - [ ] Some had issues
+    - [ ] Many had issues
+
+31. **Were the XP rewards appropriate?**
+    - [ ] Too low
+    - [ ] Just right
+    - [ ] Too high
+
+32. **Any issues with Games module?**
+    - Long answer
+
+---
+
+### **SECTION 7: PROFILE & PROGRESSION**
+
+33. **Was it easy to update your profile?**
+    - 1 (Very Difficult) to 5 (Very Easy)
+
+34. **Did avatar selection work correctly?**
+    - [ ] Yes
+    - [ ] No
+    - [ ] Didn't try
+
+35. **Was the XP/Level system motivating?**
+    - 1 (Not Motivating) to 5 (Very Motivating)
+
+36. **Did you understand how to earn XP?**
+    - [ ] Very clear
+    - [ ] Somewhat clear
+    - [ ] Confusing
+
+37. **Were your achievements/badges displayed correctly?**
+    - [ ] Yes
+    - [ ] No
+    - [ ] Didn't check
+
+38. **Any issues with Profile/Progression?**
+    - Long answer
+
+---
+
+### **SECTION 8: LEADERBOARD & SOCIAL**
+
+39. **Did you check the leaderboard?**
+    - [ ] Yes
+    - [ ] No
+
+40. **If yes, did it display correctly?**
+    - [ ] Yes, worked perfectly
+    - [ ] Mostly correct
+    - [ ] Had issues
+    - [ ] Didn't work
+
+41. **Could you see other players' avatars?**
+    - [ ] Yes
+    - [ ] No
+    - [ ] Didn't notice
+
+42. **Did the leaderboard motivate you?**
+    - 1 (Not Motivating) to 5 (Very Motivating)
+
+---
+
+### **SECTION 9: BUGS & ERRORS**
+
+43. **Did you encounter any bugs or errors?**
+    - [ ] Yes, many
+    - [ ] Yes, a few
+    - [ ] No
+
+44. **If yes, please describe all bugs found:**
+    - Long answer
+    - Format: "Page name → What happened → What you expected"
+
+45. **Did the app ever crash or freeze?**
+    - [ ] Yes
+    - [ ] No
+    - If yes, when? ____
+
+46. **Were there any broken links or missing pages?**
+    - [ ] Yes
+    - [ ] No
+    - If yes, which? ____
+
+47. **Any visual/design issues? (misaligned, overlapping, etc.)**
+    - Long answer
+
+---
+
+### **SECTION 10: ADMIN FEATURES** *(If you tested admin account)*
+
+48. **Did you test admin features?**
+    - [ ] Yes
+    - [ ] No
+
+49. **If yes, which features did you test?** *(Check all)*
+    - [ ] User Management
+    - [ ] Topic Management
+    - [ ] Analytics
+    - [ ] Activity Logs
+    - [ ] Yearly Reset
+
+50. **Did admin features work correctly?**
+    - [ ] Yes, all worked
+    - [ ] Most worked
+    - [ ] Some had issues
+    - [ ] Many had issues
+
+51. **Any issues with Admin Panel?**
+    - Long answer
+
+---
+
+### **SECTION 11: OVERALL EXPERIENCE**
+
+52. **Overall satisfaction with the system**
+    - 1 (Very Dissatisfied) to 5 (Very Satisfied)
+
+53. **How likely are you to use this system regularly?**
+    - 1 (Very Unlikely) to 5 (Very Likely)
+
+54. **What did you like MOST about the system?**
+    - Long answer
+
+55. **What did you like LEAST about the system?**
+    - Long answer
+
+56. **What features would you add or improve?**
+    - Long answer
+
+57. **Would you recommend this system to colleagues?**
+    - [ ] Definitely yes
+    - [ ] Probably yes
+    - [ ] Not sure
+    - [ ] Probably not
+    - [ ] Definitely not
+
+58. **Any other comments or suggestions?**
+    - Long answer
+
+---
+
+### **SECTION 12: SEVERITY RATING** *(For found bugs)*
+
+59. **If you found bugs, rate their severity:**
+
+For each bug you found, rate:
+- **Critical** (System unusable/data loss)
+- **High** (Major feature broken)
+- **Medium** (Feature works but has issues)
+- **Low** (Minor visual/text issues)
+
+Example format:
+```
+Bug 1: Login not working → CRITICAL
+Bug 2: Typo on home page → LOW
+
+
+# TESTING SCHEDULE
+
+## Phase 1: Internal Testing (Days 1-3)
+**Testers:** Development team
+**Focus:** Core functionality, critical bugs
+- [ ] Day 1: Authentication & Navigation
+- [ ] Day 2: Topics & Games
+- [ ] Day 3: Profile & Admin
+
+## Phase 2: Alpha Testing (Days 4-7)
+**Testers:** 5-10 internal employees
+**Focus:** User experience, workflow
+- [ ] Day 4-5: Employee features
+- [ ] Day 6-7: Bug fixes & retesting
+
+## Phase 3: Beta Testing (Days 8-14)
+**Testers:** 20-30 actual users
+**Focus:** Real-world usage, edge cases
+- [ ] Day 8-10: Deploy to staging
+- [ ] Day 11-13: User testing
+- [ ] Day 14: Survey collection
+
+## Phase 4: Final Testing (Days 15-17)
+**Testers:** All stakeholders
+**Focus:** Sign-off & approval
+- [ ] Day 15-16: Final bug fixes
+- [ ] Day 17: Deployment preparation
+
+
