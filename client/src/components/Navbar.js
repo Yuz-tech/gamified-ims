@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { getImageUrl } from '../utils/getImageUrl';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -160,17 +161,13 @@ const Navbar = () => {
                 background: 'var(--bg-medium)'
               }}>
                 {user.avatar ? (
-                  <img src={user.avatar.startsWith('/uploads/')
-                    ? `http://localhost:5000${user.avatar}`
-                    : user.avatar
-                  }
-                  alt={user.username}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-
-                    e.target.parentElement.innerHTML = '<div style = "font-size: 16px;">👤</div>'
-                  }}
+                  <img src={getImageUrl(user.avatar)}
+                    alt={user.username}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML='<div style="font-size: 20px;">👤</div>';
+                    }}
                   />
                 ) : (
                   <div style={{ fontSize: '16px' }}>👤</div>

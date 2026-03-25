@@ -24,27 +24,25 @@ const app = express();
 // CORS Config
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback (null, true);
-
-    if (process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
+    if (!origin) return callback(null, true);
 
     const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5000',
-      process.env.FRONTEND_URL
+      'http://192.168.232.247:3000',
+      'http://192.168.232.247:5000',
+      'http://192.168.232.247:5173',
+      'http://192.168.232.247:27017',
+      process.env.FRONTEND_URL,
+      '192.168.232.247:3000'
     ].filter(Boolean);
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(null, true);
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  optionsSuccessStatus: 200
 };
 
 // Middleware
@@ -54,6 +52,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  app.get('*', (req,res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
 
 app.set('trust proxy', true);
 
@@ -100,8 +105,9 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0';
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, HOST, () => {
   console.log(`
   ╔════════════════════════════════════════╗
   ║        IMS AWARENESS TRAINING          ║

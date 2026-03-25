@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import Icon from "../components/Icon";
+import { getImageUrl } from '../utils/getImageUrl';
 
 const Profile = () => {
     const { user, checkAuth } = useAuth();
@@ -72,8 +73,8 @@ const Profile = () => {
             return;
         }
 
-        if (passwordData.newPassword.length < 3) {
-            alert('Password must at least be 3 characters');
+        if (passwordData.newPassword.length < 6) {
+            alert('Password must at least be 6 characters');
             return;
         }
 
@@ -128,7 +129,7 @@ const Profile = () => {
     }
 
     const avatarUrl = selectedAvatar?.startsWith('/uploads/')
-      ? `http://localhost:5000${selectedAvatar}`
+      ? `http://192.168.232.247:5000${selectedAvatar}`
       : selectedAvatar;
 
     return (
@@ -145,7 +146,6 @@ const Profile = () => {
                 textAlign: 'center',
                 color: 'var(--primary-navy)'
               }}>
-                <Icon name = "account_circle" size = {32} />
                 My Profile
               </motion.h1>
 
@@ -204,26 +204,17 @@ const Profile = () => {
                     </div>
 
                     <div style = {{ marginBottom: '15px' }}>
-                        <div style = {{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                            <Icon name = "person" size={14} />
-                        </div>
                         <div style = {{ fontSize: '12px', color: 'var(--text-dark)', fontWeight: 'bold' }}>
                             {user?.username}
                         </div>
                     </div>
 
                     <div style = {{ marginBottom: '15px' }}>
-                        <div style = {{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                            <Icon name="email" size = {14} />
-                        </div>
                         <div style={{ fontSize: '12px', color: 'var(--text-dark)' }}>
                             {user?.email}
                         </div>
 
                         <div style = {{ marginBottom: '15px', paddingTop: '15px' }}>
-                            <div style = {{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                                <Icon name = "admin_panel_settings" size={14} />
-                            </div>
                             <div style = {{ fontSize: '12px', color: 'var(--text-dark)', textTransform: 'uppercase' }}>
                                 {user?.role}
                             </div>
@@ -254,7 +245,6 @@ const Profile = () => {
                   className="retro-card"
                 >
                     <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-                        <Icon name="lock" size={18} />
                         Security
                     </h3>
 
@@ -339,7 +329,6 @@ const Profile = () => {
                                 </div>
                                 {index !== 0 && (
                                     <button onClick={() => handleLogoutSession(session._id)} className="retro-btn secondary" style={{ fontSize: '8px', padding: '5px 10px' }}>
-                                        <Icon name = "logout" size={12} />
                                         Logout
                                     </button>
                                 )}
@@ -349,7 +338,6 @@ const Profile = () => {
 
                     {sessions.length > 1 && (
                         <button onClick={handleLogoutAll} className="retro-btn" style={{ width: '100%', marginTop: '15px', background: 'var(--error-red)' }}>
-                            <Icon name = "logout" size={18} />
                             Logout all other sessions
                         </button>
                     )}
@@ -419,7 +407,6 @@ const Profile = () => {
                             </div>
 
                             <button onClick={() => setShowAvatarSelector(false)} className="retro-btn secondary" style={{ width: '100%' }}>
-                                <Icon name="close" size={18} />
                                 Close
                             </button>
                         </motion.div>

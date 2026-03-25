@@ -50,7 +50,7 @@ const Users = () => {
     e.preventDefault();
     try {
       await api.post('/admin/users', formData);
-      alert('User created and email sent!');
+      alert('User created!');
       setFormData({ username: '', email: '', password: '', role: 'employee' });
       setShowCreateForm(false);
       fetchUsers();
@@ -80,6 +80,23 @@ const Users = () => {
       fetchUsers();
     } catch (error) {
       alert(error.response?.data?.message || 'Error updating user');
+    }
+  };
+
+  const handleResetPassword = async (userId, username) => {
+    const newPassword = prompt(`Enter new password for ${username}: \n(minimum 6 characters)`);
+    if (!newPassword) return;
+    if (newPassword.length < 6) {
+      alert('Passwords must be at least 6 characters');
+      return;
+    }
+
+    if (!window.confirm(`Reset password for ${username}?`)) return;
+
+    try {
+      await api.post(`/admin/reset-user-password/${userId}`, { newPassword });
+    } catch (error) {
+      alert('Failed to reset password');
     }
   };
 
@@ -237,6 +254,13 @@ const Users = () => {
                       DELETE
                     </button>
                     
+                  </td>
+                  <td style={{ padding: '15px 10px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <button onClick={() => handleResetPassword(user._id, user.username)} className='retro-btn secondary' style={{ fontSize: '9px', padding: '5px 10px', background: 'var(--orange-accent)' }}>
+                        Password reset
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -226,16 +226,15 @@ const Login = () => {
             </div>
           </form>
 
-          {isLogin && !showForgotPassword && (
+          {isLogin && (
             <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-              <button type="button" onClick={() => setShowForgotPassword(true)} style={{
+              <button type="button" onClick={() => alert('Please contact your system administrator to reset your password.' )} style={{
                 background: 'none',
                 border: 'none',
                 color: 'var(--bright-blue)',
                 fontSize: '10px',
                 cursor: 'pointer',
-                textDecoration: 'underline',
-                paddingTop: '15px'
+                textDecoration: 'underline'
               }}
               >
                 Forgot Password?
@@ -243,32 +242,8 @@ const Login = () => {
             </div>
           )}
 
-          {showForgotPassword && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              style={{
-                padding: '15px',
-                background: 'rgba(59, 130, 246, 0.1)',
-                border: '2px solid var(--bright-blue)',
-                marginBottom: '20px',
-                fontSize: '10px'
-              }}
-            >
-              <div style={{ marginBottom: '10px', fontWeight: 'bold' }}>
-                Password reset
-              </div>
-              <div style={{ marginBottom: '15px' }}>
-                Contact admin to reset your password
-              </div>
-              <button onClick={() => setShowForgotPassword(false)} className="retro-btn secondary" style={{ fontSize: '9px', padding: '5px 10px' }}>
-                Back to Login
-              </button>
-            </motion.div>
-          )}
-
             <div style={{ marginTop: '30px', padding: '15px', fontSize: '8px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-              v1.0 by Jose Dante Chan and Julius Galejo
+              v1.0 by Dante Chan and Yuz Galejo
             </div>
           </div>
         </motion.div>

@@ -437,6 +437,37 @@ router.post('/users/:userId/reset-progress', async (req, res) => {
   }
 });
 
+// Reset password
+router.post('/reset-user-password/:userId', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+    await logActivity(req.user._id, 'password_reset_by_admin', {
+      targetUserId: user._id,
+      targetUsername: user.username
+    }, req);
+
+    res.json({
+      message: 'Password reset successfully',
+      username: user.username
+    });
+  } catch (error) {
+    console.error('Password reset error: ', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.get('/settings', authenticateToken, isAdmin, async (req, res) => {
   try {
     let settings = await SystemSettings.findOne();

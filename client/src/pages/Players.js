@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
 import api from '../utils/api';
+import { getImageUrl } from '../utils/getImageUrl';
 
 const Players = () => {
     const [players, setPlayers] = useState([]);
@@ -130,7 +131,7 @@ const Players = () => {
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}>
-                                {filteredPlayers[1].avatar ? (
+                                {/* {filteredPlayers[1].avatar ? (
                                     <img src={filteredPlayers[1].avatar.startsWith('/uploads')
                                         ? `http://localhost:5000${filteredPlayers[1].avatar}`
                                         : filteredPlayers[1].avatar
@@ -146,7 +147,20 @@ const Players = () => {
                                     />
                                 ) : (
                                     <div style={{ fontSize: '40px' }}>👤</div>
+                                )} */}
+                                {players[1].avatar ? (
+                                    <img src={getImageUrl(players[1].avatar)}
+                                        alt={players[1].username}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.parentElement.innerHTML = '<div style="font-size: 20px;">👤</div>';
+                                        }}
+                                    />
+                                ) : (
+                                    <div style={{ fontSize: '20px' }}>👤</div>
                                 )}
+                                
                             </div>
 
                             <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '5px' }}>

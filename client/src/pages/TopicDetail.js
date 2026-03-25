@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
+import { getImageUrl } from '../utils/getImageUrl';
 
 const TopicDetail = () => {
   const { topicId } = useParams();
@@ -479,11 +480,12 @@ const TopicDetail = () => {
                 </div>
                 {mandatoryResult.badgeImage && (
                   <img
-                    src={mandatoryResult.badgeImage.startsWith('/uploads/') 
-                      ? `http://localhost:5000${mandatoryResult.badgeImage}` 
-                      : mandatoryResult.badgeImage}
+                    src={getImageUrl(mandatoryResult.badgeImage)}
                     alt="Badge"
                     style={{ width: '80px', height: '80px', margin: '10px auto' }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
                   />
                 )}
                 <div style={{ marginTop: '15px', fontSize: '12px', lineHeight: '2.0'}}>

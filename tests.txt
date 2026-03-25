@@ -1,0 +1,7 @@
+Unit Tests
+Integration Tests
+Component Testing
+End-to-End Testing
+
+Testing tools 
+Jest?

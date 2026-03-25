@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { getImageUrl } from '../utils/getImageUrl';
 
 const Achievements = () => {
   const { user } = useAuth();
@@ -104,7 +105,7 @@ const Achievements = () => {
       }}>
         {topics.map((topic, index) => {
           const imageUrl = topic.badgeImage?.startsWith('/uploads/')
-            ? `http://localhost:5000${topic.badgeImage}`
+            ? `http://192.168.232.247:5000${topic.badgeImage}`
             : topic.badgeImage;
 
             return (
@@ -121,21 +122,6 @@ const Achievements = () => {
                   position: 'relative'
                 }}
               >
-                {topic.earned && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    background: 'var(--success-green)',
-                    color: 'white',
-                    padding: '5px 10px',
-                    fontSize: '8px',
-                    fontWeight: 'bold',
-                    boxShadow: '2px 2px 0 var(--primary-navy)'
-                  }}>
-                    Earned
-                  </div>
-                )}
 
                 <div style = {{
                   width: '120px',
@@ -154,7 +140,7 @@ const Achievements = () => {
                   {topic.earned ? (
                     imageUrl ? (
                       <>
-                        <img src={imageUrl} alt={topic.badgeName}
+                        <img src={getImageUrl(topic.badgeImage)} alt={topic.badgeName}
                           style={{
                             maxWidth: '90%',
                             maxHeight: '90%',
