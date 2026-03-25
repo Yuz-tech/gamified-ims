@@ -199,7 +199,7 @@ const Login = () => {
             )}
 
             <motion.button
-              whileHover={{ scale: 1.15 }}
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
               type="submit"
               className="retro-btn"
@@ -219,7 +219,7 @@ const Login = () => {
                   setFormData({ username: '', email: '', password: '', confirmPassword: '' });
                 }}
                 className="retro-btn secondary"
-                style={{ fontSize: '10px', color: 'black' }}
+                style={{ fontSize: '10px', color: 'black', width: '100%' }}
               >
                 {isLogin ? 'CREATE NEW ACCOUNT' : 'BACK TO LOGIN'}
               </button>
@@ -227,7 +227,7 @@ const Login = () => {
           </form>
 
           {isLogin && (
-            <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '15px', paddingTop: '15px' }}>
               <button type="button" onClick={() => alert('Please contact your system administrator to reset your password.' )} style={{
                 background: 'none',
                 border: 'none',

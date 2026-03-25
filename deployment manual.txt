@@ -1,0 +1,4 @@
+1. Change IP addresses from environment files
+- .env from client and server folders
+
+2. 
