@@ -1,7 +1,1087 @@
-1. Show full:
-Players.js
-Profile.js
-2. No GameRouter.js
+src/pages/Profile.js
+{sessions.length > 0 ? (
+  <>
+    {sessions.map((session, index) => (
+      <div
+        key={session._id}
+        style={{
+          padding: '12px',
+          marginBottom: '10px',
+          background: session.isCurrent ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-light)',
+          border: `2px solid ${session.isCurrent ? 'var(--bright-blue)' : 'var(--border-color)'}`,
+          fontSize: '10px'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+              {session.isCurrent && '🟢 '}
+              {session.deviceType || 'Unknown Device'} • {session.browser || 'Unknown Browser'}
+            </div>
+            <div style={{ color: 'var(--text-medium)' }}>
+              OS: {session.os || 'Unknown'}<br />
+              IP: {session.ipAddress || 'N/A'}<br />
+              Last active: {new Date(session.lastActivity).toLocaleString()}
+            </div>
+          </div>
+          {!session.isCurrent && (
+            <button
+              onClick={() => handleLogoutSession(session._id)}
+              className="retro-btn secondary"
+              style={{ fontSize: '9px', padding: '5px 10px' }}
+            >
+              LOGOUT
+            </button>
+          )}
+        </div>
+      </div>
+    ))}
+
+    {sessions.length > 1 && (
+      <button
+        onClick={handleLogoutAllSessions}
+        className="retro-btn"
+        style={{ width: '100%', marginTop: '10px', background: 'var(--error-red)' }}
+      >
+        LOGOUT ALL OTHER SESSIONS
+      </button>
+    )}
+  </>
+) : (
+  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-medium)', fontSize: '10px' }}>
+    No active sessions
+  </div>
+)}
 
 
-https://austinhenley.com/blog/challengingprojects.html
+src/pages/Games.js
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../utils/api';
+
+const Games = () => {
+  const navigate = useNavigate();
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchGames();
+  }, []);
+
+  const fetchGames = async () => {
+    try {
+      const response = await api.get('/games');
+      setGames(response.data);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredGames = games.filter(game => {
+    const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filter === 'all' || game.type === filter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const gamesByType = {
+    crossword: filteredGames.filter(g => g.type === 'crossword'),
+    word_scramble: filteredGames.filter(g => g.type === 'word_scramble'),
+    quick_quiz: filteredGames.filter(g => g.type === 'quick_quiz'),
+    true_false: filteredGames.filter(g => g.type === 'true_false')
+  };
+
+  const getGameIcon = (type) => {
+    switch (type) {
+      case 'crossword': return '🧩';
+      case 'word_scramble': return '🔤';
+      case 'quick_quiz': return '❓';
+      case 'true_false': return '✓✗';
+      default: return '🎮';
+    }
+  };
+
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case 'easy': return 'var(--success-green)';
+      case 'medium': return 'var(--orange-accent)';
+      case 'hard': return 'var(--error-red)';
+      default: return 'var(--text-medium)';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING GAMES...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div className="scanlines"></div>
+
+      <motion.h1
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="neon-text"
+        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
+      >
+        🎮 TRAINING GAMES
+      </motion.h1>
+
+      {/* Search & Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              SEARCH
+            </label>
+            <input
+              type="text"
+              className="retro-input"
+              placeholder="Search games..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
+              FILTER BY TYPE
+            </label>
+            <select
+              className="retro-input"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All Games ({games.length})</option>
+              <option value="crossword">Crossword ({gamesByType.crossword.length})</option>
+              <option value="word_scramble">Word Scramble ({gamesByType.word_scramble.length})</option>
+              <option value="quick_quiz">Quick Quiz ({gamesByType.quick_quiz.length})</option>
+              <option value="true_false">True/False ({gamesByType.true_false.length})</option>
+            </select>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Games Grid */}
+      {filteredGames.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-medium)' }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>🎮</div>
+          <div style={{ fontSize: '14px' }}>No games found</div>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          {filteredGames.map((game, index) => (
+            <motion.div
+              key={game._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="retro-card"
+              style={{
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                border: game.completed ? '3px solid var(--success-green)' : '2px solid var(--border-color)'
+              }}
+              whileHover={{ scale: 1.02 }}
+              onClick={() => navigate(`/games/${game._id}`)}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                <div style={{ fontSize: '48px' }}>
+                  {getGameIcon(game.type)}
+                </div>
+                {game.completed && (
+                  <div style={{
+                    padding: '5px 10px',
+                    background: 'var(--success-green)',
+                    color: 'white',
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    borderRadius: '3px'
+                  }}>
+                    ✓ COMPLETED
+                  </div>
+                )}
+              </div>
+
+              <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+                {game.title}
+              </h3>
+
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                <span style={{
+                  padding: '5px 10px',
+                  background: getDifficultyColor(game.difficulty),
+                  color: 'white',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  borderRadius: '3px'
+                }}>
+                  {game.difficulty}
+                </span>
+                <span style={{
+                  padding: '5px 10px',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  border: '2px solid var(--bright-blue)',
+                  color: 'var(--bright-blue)',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  borderRadius: '3px'
+                }}>
+                  {game.xpReward} XP
+                </span>
+              </div>
+
+              <button
+                className="retro-btn"
+                style={{ width: '100%', fontSize: '11px' }}
+              >
+                {game.completed ? 'PLAY AGAIN' : 'PLAY NOW'}
+              </button>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Games;
+
+
+src/pages/games/GameRouter.js
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
+import CrosswordGame from './CrosswordGame';
+import WordScrambleGame from './WordScrambleGame';
+import QuickQuizGame from './QuickQuizGame';
+import TrueFalseGame from './TrueFalseGame';
+
+const GameRouter = () => {
+  const { gameId } = useParams();
+  const navigate = useNavigate();
+  const [game, setGame] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchGame();
+  }, [gameId]);
+
+  const fetchGame = async () => {
+    try {
+      const response = await api.get(`/games/${gameId}`);
+      setGame(response.data);
+    } catch (error) {
+      console.error('Error fetching game:', error);
+      alert('Failed to load game');
+      navigate('/games');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING GAME...</div>
+      </div>
+    );
+  }
+
+  if (!game) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        <h2>Game not found</h2>
+        <button onClick={() => navigate('/games')} className="retro-btn">
+          ← BACK TO GAMES
+        </button>
+      </div>
+    );
+  }
+
+  switch (game.type) {
+    case 'crossword':
+      return <CrosswordGame game={game} />;
+    case 'word_scramble':
+      return <WordScrambleGame game={game} />;
+    case 'quick_quiz':
+      return <QuickQuizGame game={game} />;
+    case 'true_false':
+      return <TrueFalseGame game={game} />;
+    default:
+      return (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <h2>Unknown game type: {game.type}</h2>
+          <button onClick={() => navigate('/games')} className="retro-btn">
+            ← BACK TO GAMES
+          </button>
+        </div>
+      );
+  }
+};
+
+export default GameRouter;
+
+
+src/pages/games/CrosswordGame
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
+
+const CrosswordGame = ({ game }) => {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleAnswerChange = (index, value) => {
+    setAnswers({
+      ...answers,
+      [index]: value.toUpperCase()
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await api.post(`/games/${game._id}/submit`, { answers });
+      setResult(response.data);
+      setSubmitted(true);
+
+      const userResponse = await api.get('/auth/me');
+      updateUser(userResponse.data);
+    } catch (error) {
+      console.error('Error submitting game:', error);
+      alert('Failed to submit answers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted && result) {
+    return (
+      <div className="retro-container" style={{ paddingTop: '40px' }}>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="retro-card"
+          style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}
+        >
+          <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+            {result.percentage >= 70 ? '🎉' : result.percentage >= 50 ? '👍' : '📝'}
+          </div>
+          <h2 style={{ fontSize: '24px', color: 'var(--bright-blue)', marginBottom: '20px' }}>
+            GAME COMPLETE!
+          </h2>
+          <div style={{
+            padding: '20px',
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '2px solid var(--bright-blue)',
+            marginBottom: '20px'
+          }}>
+            <div style={{ fontSize: '14px', marginBottom: '10px' }}>
+              Score: {result.correctCount} / {result.totalQuestions} ({result.percentage}%)
+            </div>
+            <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
+              +{result.score} XP
+            </div>
+          </div>
+          {result.leveledUp && (
+            <div style={{
+              padding: '15px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '2px solid var(--success-green)',
+              marginBottom: '20px',
+              fontSize: '12px',
+              color: 'var(--success-green)',
+              fontWeight: 'bold'
+            }}>
+              🎉 LEVEL UP! You're now level {result.newLevel}!
+            </div>
+          )}
+          <button
+            onClick={() => navigate('/games')}
+            className="retro-btn"
+            style={{ width: '100%' }}
+          >
+            ← BACK TO GAMES
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
+        ← BACK
+      </button>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+      >
+        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+          🧩 {game.title}
+        </h1>
+        <p style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '30px' }}>
+          Fill in the crossword puzzle below. Earn {game.xpReward} XP!
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '30px' }}>
+            {game.questions.map((question, index) => (
+              <div key={index} style={{
+                padding: '15px',
+                background: 'var(--bg-light)',
+                border: '2px solid var(--border-color)'
+              }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '10px' }}>
+                  {index + 1}. {question.clue}
+                </div>
+                <input
+                  type="text"
+                  className="retro-input"
+                  value={answers[index] || ''}
+                  onChange={(e) => handleAnswerChange(index, e.target.value)}
+                  placeholder={`${question.answer.length} letters`}
+                  maxLength={question.answer.length}
+                  style={{ textTransform: 'uppercase', letterSpacing: '2px', fontSize: '14px' }}
+                  required
+                />
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="submit"
+            className="retro-btn"
+            style={{ width: '100%' }}
+            disabled={loading}
+          >
+            {loading ? 'SUBMITTING...' : 'SUBMIT ANSWERS'}
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
+
+export default CrosswordGame;
+
+
+src/pages/games/WordScrambleGame
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
+
+const WordScrambleGame = ({ game }) => {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleAnswerChange = (index, value) => {
+    setAnswers({
+      ...answers,
+      [index]: value.toUpperCase()
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await api.post(`/games/${game._id}/submit`, { answers });
+      setResult(response.data);
+      setSubmitted(true);
+
+      const userResponse = await api.get('/auth/me');
+      updateUser(userResponse.data);
+    } catch (error) {
+      console.error('Error submitting game:', error);
+      alert('Failed to submit answers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted && result) {
+    return (
+      <div className="retro-container" style={{ paddingTop: '40px' }}>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="retro-card"
+          style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}
+        >
+          <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+            {result.percentage >= 70 ? '🎉' : result.percentage >= 50 ? '👍' : '📝'}
+          </div>
+          <h2 style={{ fontSize: '24px', color: 'var(--success-green)', marginBottom: '20px' }}>
+            GAME COMPLETE!
+          </h2>
+          <div style={{
+            padding: '20px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '2px solid var(--success-green)',
+            marginBottom: '20px'
+          }}>
+            <div style={{ fontSize: '14px', marginBottom: '10px' }}>
+              Score: {result.correctCount} / {result.totalQuestions} ({result.percentage}%)
+            </div>
+            <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--success-green)' }}>
+              +{result.score} XP
+            </div>
+          </div>
+          {result.leveledUp && (
+            <div style={{
+              padding: '15px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '2px solid var(--success-green)',
+              marginBottom: '20px',
+              fontSize: '12px',
+              color: 'var(--success-green)',
+              fontWeight: 'bold'
+            }}>
+              🎉 LEVEL UP! You're now level {result.newLevel}!
+            </div>
+          )}
+          <button
+            onClick={() => navigate('/games')}
+            className="retro-btn"
+            style={{ width: '100%' }}
+          >
+            ← BACK TO GAMES
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
+        ← BACK
+      </button>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+      >
+        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+          🔤 {game.title}
+        </h1>
+        <p style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '30px' }}>
+          Unscramble the words below. Earn {game.xpReward} XP!
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '30px' }}>
+            {game.questions.map((question, index) => (
+              <div key={index} style={{
+                padding: '20px',
+                background: 'var(--bg-light)',
+                border: '2px solid var(--border-color)'
+              }}>
+                <div style={{
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  color: 'var(--orange-accent)',
+                  letterSpacing: '8px',
+                  marginBottom: '15px',
+                  textAlign: 'center',
+                  fontFamily: 'monospace'
+                }}>
+                  {question.scrambled}
+                </div>
+                <input
+                  type="text"
+                  className="retro-input"
+                  value={answers[index] || ''}
+                  onChange={(e) => handleAnswerChange(index, e.target.value)}
+                  placeholder="Your answer..."
+                  style={{ textTransform: 'uppercase', textAlign: 'center', fontSize: '16px' }}
+                  required
+                />
+                {question.hint && (
+                  <div style={{ fontSize: '9px', color: 'var(--text-light)', marginTop: '10px', textAlign: 'center' }}>
+                    💡 Hint: {question.hint}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="submit"
+            className="retro-btn"
+            style={{ width: '100%' }}
+            disabled={loading}
+          >
+            {loading ? 'SUBMITTING...' : 'SUBMIT ANSWERS'}
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
+
+export default WordScrambleGame;
+
+
+src/pages/games/QuickQuizGame
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
+
+const QuickQuizGame = ({ game }) => {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+
+  const handleAnswerSelect = (optionIndex) => {
+    setSelectedAnswer(optionIndex);
+  };
+
+  const handleNext = () => {
+    if (selectedAnswer === null) {
+      alert('Please select an answer');
+      return;
+    }
+
+    const newAnswers = { ...answers, [currentQuestion]: selectedAnswer };
+    setAnswers(newAnswers);
+
+    const correct = selectedAnswer === game.questions[currentQuestion].correctAnswer;
+    setIsCorrect(correct);
+    setShowResult(true);
+
+    setTimeout(() => {
+      if (currentQuestion < game.questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedAnswer(null);
+        setShowResult(false);
+      } else {
+        submitGame(newAnswers);
+      }
+    }, 2000);
+  };
+
+  const submitGame = async (finalAnswers) => {
+    try {
+      const response = await api.post(`/games/${game._id}/submit`, { answers: finalAnswers });
+      setResult(response.data);
+      setSubmitted(true);
+
+      const userResponse = await api.get('/auth/me');
+      updateUser(userResponse.data);
+    } catch (error) {
+      console.error('Error submitting game:', error);
+      alert('Failed to submit answers');
+    }
+  };
+
+  if (submitted && result) {
+    return (
+      <div className="retro-container" style={{ paddingTop: '40px' }}>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="retro-card"
+          style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}
+        >
+          <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+            {result.percentage >= 70 ? '🎉' : result.percentage >= 50 ? '👍' : '📝'}
+          </div>
+          <h2 style={{ fontSize: '24px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+            QUIZ COMPLETE!
+          </h2>
+          <div style={{
+            padding: '20px',
+            background: 'rgba(236, 72, 153, 0.1)',
+            border: '2px solid var(--secondary-pink)',
+            marginBottom: '20px'
+          }}>
+            <div style={{ fontSize: '14px', marginBottom: '10px' }}>
+              Score: {result.correctCount} / {result.totalQuestions} ({result.percentage}%)
+            </div>
+            <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--secondary-pink)' }}>
+              +{result.score} XP
+            </div>
+          </div>
+          {result.leveledUp && (
+            <div style={{
+              padding: '15px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '2px solid var(--success-green)',
+              marginBottom: '20px',
+              fontSize: '12px',
+              color: 'var(--success-green)',
+              fontWeight: 'bold'
+            }}>
+              🎉 LEVEL UP! You're now level {result.newLevel}!
+            </div>
+          )}
+          <button
+            onClick={() => navigate('/games')}
+            className="retro-btn"
+            style={{ width: '100%' }}
+          >
+            ← BACK TO GAMES
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const question = game.questions[currentQuestion];
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
+        ← BACK
+      </button>
+
+      <motion.div
+        key={currentQuestion}
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="retro-card"
+      >
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            QUESTION {currentQuestion + 1} OF {game.questions.length}
+          </div>
+          <div style={{
+            width: '100%',
+            height: '8px',
+            background: 'var(--bg-medium)',
+            border: '2px solid var(--border-color)'
+          }}>
+            <div style={{
+              width: `${((currentQuestion + 1) / game.questions.length) * 100}%`,
+              height: '100%',
+              background: 'var(--secondary-pink)',
+              transition: 'width 0.3s ease'
+            }} />
+          </div>
+        </div>
+
+        <h2 style={{ fontSize: '18px', color: 'var(--primary-navy)', marginBottom: '30px', lineHeight: '1.6' }}>
+          {question.question}
+        </h2>
+
+        {!showResult ? (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+              {question.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswerSelect(index)}
+                  style={{
+                    padding: '15px',
+                    border: `3px solid ${selectedAnswer === index ? 'var(--secondary-pink)' : 'var(--border-color)'}`,
+                    background: selectedAnswer === index ? 'rgba(236, 72, 153, 0.1)' : 'white',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    textAlign: 'left',
+                    transition: 'all 0.2s'
+                  }}
+                  className="quiz-option"
+                >
+                  <strong>{String.fromCharCode(65 + index)}.</strong> {option}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleNext}
+              className="retro-btn"
+              style={{ width: '100%' }}
+              disabled={selectedAnswer === null}
+            >
+              {currentQuestion === game.questions.length - 1 ? 'FINISH' : 'NEXT →'}
+            </button>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+              {isCorrect ? '✅' : '❌'}
+            </div>
+            <div style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: isCorrect ? 'var(--success-green)' : 'var(--error-red)',
+              marginBottom: '10px'
+            }}>
+              {isCorrect ? 'CORRECT!' : 'INCORRECT'}
+            </div>
+            {!isCorrect && (
+              <div style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
+                Correct answer: <strong>{String.fromCharCode(65 + question.correctAnswer)}</strong>
+              </div>
+            )}
+          </div>
+        )}
+      </motion.div>
+
+      <style>{`
+        .quiz-option:hover {
+          transform: translateX(5px);
+          border-color: var(--secondary-pink) !important;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default QuickQuizGame;
+
+
+TrueFalseGame
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
+
+const TrueFalseGame = ({ game }) => {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+
+  const handleAnswerSelect = (answer) => {
+    const newAnswers = { ...answers, [currentQuestion]: answer };
+    setAnswers(newAnswers);
+
+    const correct = answer === game.questions[currentQuestion].correctAnswer;
+    setIsCorrect(correct);
+    setShowResult(true);
+
+    setTimeout(() => {
+      if (currentQuestion < game.questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setShowResult(false);
+      } else {
+        submitGame(newAnswers);
+      }
+    }, 1500);
+  };
+
+  const submitGame = async (finalAnswers) => {
+    try {
+      const response = await api.post(`/games/${game._id}/submit`, { answers: finalAnswers });
+      setResult(response.data);
+      setSubmitted(true);
+
+      const userResponse = await api.get('/auth/me');
+      updateUser(userResponse.data);
+    } catch (error) {
+      console.error('Error submitting game:', error);
+      alert('Failed to submit answers');
+    }
+  };
+
+  if (submitted && result) {
+    return (
+      <div className="retro-container" style={{ paddingTop: '40px' }}>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="retro-card"
+          style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}
+        >
+          <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+            {result.percentage >= 70 ? '🎉' : result.percentage >= 50 ? '👍' : '📝'}
+          </div>
+          <h2 style={{ fontSize: '24px', color: 'var(--orange-accent)', marginBottom: '20px' }}>
+            GAME COMPLETE!
+          </h2>
+          <div style={{
+            padding: '20px',
+            background: 'rgba(249, 115, 22, 0.1)',
+            border: '2px solid var(--orange-accent)',
+            marginBottom: '20px'
+          }}>
+            <div style={{ fontSize: '14px', marginBottom: '10px' }}>
+              Score: {result.correctCount} / {result.totalQuestions} ({result.percentage}%)
+            </div>
+            <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--orange-accent)' }}>
+              +{result.score} XP
+            </div>
+          </div>
+          {result.leveledUp && (
+            <div style={{
+              padding: '15px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '2px solid var(--success-green)',
+              marginBottom: '20px',
+              fontSize: '12px',
+              color: 'var(--success-green)',
+              fontWeight: 'bold'
+            }}>
+              🎉 LEVEL UP! You're now level {result.newLevel}!
+            </div>
+          )}
+          <button
+            onClick={() => navigate('/games')}
+            className="retro-btn"
+            style={{ width: '100%' }}
+          >
+            ← BACK TO GAMES
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const question = game.questions[currentQuestion];
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
+        ← BACK
+      </button>
+
+      <motion.div
+        key={currentQuestion}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="retro-card"
+        style={{ maxWidth: '700px', margin: '0 auto' }}
+      >
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            QUESTION {currentQuestion + 1} OF {game.questions.length}
+          </div>
+          <div style={{
+            width: '100%',
+            height: '8px',
+            background: 'var(--bg-medium)',
+            border: '2px solid var(--border-color)'
+          }}>
+            <div style={{
+              width: `${((currentQuestion + 1) / game.questions.length) * 100}%`,
+              height: '100%',
+              background: 'var(--orange-accent)',
+              transition: 'width 0.3s ease'
+            }} />
+          </div>
+        </div>
+
+        <h2 style={{
+          fontSize: '20px',
+          color: 'var(--primary-navy)',
+          marginBottom: '40px',
+          lineHeight: '1.6',
+          textAlign: 'center',
+          minHeight: '80px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {question.statement}
+        </h2>
+
+        {!showResult ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleAnswerSelect(true)}
+              className="retro-btn"
+              style={{
+                padding: '40px 20px',
+                fontSize: '24px',
+                background: 'var(--success-green)',
+                borderColor: 'var(--success-green)'
+              }}
+            >
+              ✓ TRUE
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleAnswerSelect(false)}
+              className="retro-btn"
+              style={{
+                padding: '40px 20px',
+                fontSize: '24px',
+                background: 'var(--error-red)',
+                borderColor: 'var(--error-red)'
+              }}
+            >
+              ✗ FALSE
+            </motion.button>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+              {isCorrect ? '✅' : '❌'}
+            </div>
+            <div style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: isCorrect ? 'var(--success-green)' : 'var(--error-red)',
+              marginBottom: '10px'
+            }}>
+              {isCorrect ? 'CORRECT!' : 'INCORRECT'}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
+              {currentQuestion < game.questions.length - 1 ? 'Next question...' : 'Calculating score...'}
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
+export default TrueFalseGame;
+
+
