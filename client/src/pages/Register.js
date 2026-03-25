@@ -57,8 +57,6 @@ const Register = () => {
       // Auto-login after successful registration
       localStorage.setItem('token', response.data.token);
       login(response.data.user);
-      
-      alert('✅ Account created successfully!');
       navigate('/');
     } catch (error) {
       setError(error.response?.data?.message || 'Registration failed. Please try again.');

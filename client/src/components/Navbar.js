@@ -322,10 +322,10 @@ const Navbar = () => {
                 Home
               </button>
               <button onClick={() => navigate('/topics')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
-                Topics
+                Training
               </button>
               <button onClick={() => navigate('/games')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
-                Games (coming soon...)
+                Games
               </button>
               <button onClick={() => navigate('/achievements')} className="retro-btn" style={{ width: '100%', textAlign: 'left' }}>
                 Achievements

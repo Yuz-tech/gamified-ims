@@ -11,7 +11,6 @@ import Achievements from './pages/Achievements';
 import Players from './pages/Players';
 import Games from './pages/Games';
 import Footer from './components/Footer';
-// import CrosswordGame from './pages/games/CrosswordGame';
 import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
