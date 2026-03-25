@@ -412,15 +412,9 @@ const Home = () => {
                 </div>
 
                 <div style = {{ flex: 1 }}>
-                  <div style = {{ fontSize: '11px', color: 'var(--primary-navy)', fontWeight: 'bold' }}>
+                  <div style = {{ fontSize: '11px', color: 'var(--primary-navy)', fontWeight: 'bold', paddingLeft: '15px' }}>
                     {player.username}
                   </div>
-                  <div style = {{ fontSize: '8px', color: 'var(--text-light)' }}>
-                    Level {player.level} • {player.xp} XP 
-                  </div>
-                </div>
-                <div style={{ paddingRight: '4px' }}>
-                  Badges: 
                 </div>
                 <div style = {{
                   fontSize: '10px',
@@ -432,7 +426,7 @@ const Home = () => {
                   alignItems: 'center',
                   gap: '5px'
                 }}>
-                  {player.badgeCount || 0}
+                  Level {player.level}
                 </div>
               </motion.div>
             ))}

@@ -129,7 +129,17 @@ const Profile = () => {
     }
 
     const avatarUrl = selectedAvatar?.startsWith('/uploads/')
-      ? `http://192.168.232.247:5000${selectedAvatar}`
+      ? <img src={getImageUrl(selectedAvatar)} alt={selectedAvatar}
+                          style={{
+                            maxWidth: '90%',
+                            maxHeight: '90%',
+                            objectFit: 'cover'
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML += '<div style="font-size: 48px;">🏆</div>';
+                          }}
+                        />
       : selectedAvatar;
 
     return (
@@ -319,12 +329,9 @@ const Profile = () => {
                             }}
                             >
                                 <div style = {{ fontSize: '10px', color: 'var(--text-dark)', marginBottom: '5px' }}>
-                                    <Icon name = {session.deviceInfo?.deviceType === 'mobile' ? 'smartphone' : 'computer'} size={14} />
-                                    {' '}
                                     {session.deviceInfo?.deviceType || 'Unknown'} • {session.deviceInfo?.browser || 'Unknown'}
                                 </div>
                                 <div style={{ fontSize: '8px', color: 'var(--text-light)', marginBottom: '8px' }}>
-                                    <Icon name = "schedule" size={12} />
                                     {new Date(session.lastActivity).toLocaleString()}
                                 </div>
                                 {index !== 0 && (

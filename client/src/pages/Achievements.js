@@ -105,9 +105,19 @@ const Achievements = () => {
       }}>
         {topics.map((topic, index) => {
           const imageUrl = topic.badgeImage?.startsWith('/uploads/')
-            ? `http://192.168.232.247:5000${topic.badgeImage}`
+            ? <img src={getImageUrl(topic.badgeImage)} alt={topic.badgeName}
+                          style={{
+                            maxWidth: '90%',
+                            maxHeight: '90%',
+                            objectFit: 'cover'
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML += '<div style="font-size: 48px;">🏆</div>';
+                          }}
+                        />
             : topic.badgeImage;
-
+            
             return (
               <motion.div
                 key={topic._id}

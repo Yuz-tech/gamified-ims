@@ -69,12 +69,19 @@ const Games = () => {
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="neon-text"
+              style={{ fontSize: '50px', marginBottom: '40px', textAlign: 'center', color: 'var(--error-red)', lineHeight: '1.8' }}>
+                NOTE: IMS Awareness games are not yet available to play in beta
+              </motion.h1>
+            <motion.h1
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="neon-text"
               style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}>
-                IMS Training Games
+                IMS Training Games (Coming soon...)
               </motion.h1>
 
               {/* Filters */}
-              <motion.div 
+              {/* <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="retro-card"
@@ -111,10 +118,10 @@ const Games = () => {
                             </div>
                         </div>
                     </div>
-                </motion.div>
+                </motion.div> */}
 
                 {/* Games Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                {/* <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                     {filteredGames.map((game, index) => (
                         <motion.div 
                           key={game._id}
@@ -180,7 +187,7 @@ const Games = () => {
                             </button>
                         </motion.div>
                     ))}
-                </div>
+                </div> */}
 
                 {filteredGames.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-medium)' }}>
