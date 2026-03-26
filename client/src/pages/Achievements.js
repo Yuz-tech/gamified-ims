@@ -137,7 +137,7 @@ const Achievements = () => {
                   width: '120px',
                   height: '120px',
                   margin: '0 auto 15px',
-                  border: `4px solid ${topic.earned ? 'var(--orange-accent)' : 'var(--border-color)'}`,
+                  border: `4px solid ${topic.earned ? 'var(--bg-dark)' : 'var(--border-color)'}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -152,8 +152,8 @@ const Achievements = () => {
                       <>
                         <img src={getImageUrl(topic.badgeImage)} alt={topic.badgeName}
                           style={{
-                            maxWidth: '90%',
-                            maxHeight: '90%',
+                            width: '120px',
+                            height: '120px',
                             objectFit: 'cover'
                           }}
                           onError={(e) => {
@@ -188,27 +188,6 @@ const Achievements = () => {
                 }}>
                   {topic.badgeName || topic.title}
                 </h4>
-
-                <p style={{
-                  fontSize: '9px',
-                  color: 'var(--text-medium)',
-                  lineHeight: '1.4',
-                  marginBottom: '10px'
-                }}>
-                  {topic.badgeDescription || topic.description }
-                </p>
-
-                {!topic.earned && (
-                  <div style = {{
-                    fontSize: '8px',
-                    color: 'var(--text-light)',
-                    padding: '5px',
-                    background: 'rgba(0,0,0,0.1)',
-                    marginTop: '10px'
-                  }}>
-                    Complete "{topic.title}" to unlock
-                  </div>
-                )}
               </motion.div>
             );
         })}

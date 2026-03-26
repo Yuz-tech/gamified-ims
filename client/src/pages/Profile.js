@@ -319,35 +319,44 @@ const Profile = () => {
                         Active Sessions ({sessions.length})
                     </h4>
 
-                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    {sessions.length > 0 ? (
+                        <>
                         {sessions.map((session, index) => (
-                            <div key = {session._id} style={{
-                                padding: '10px',
-                                border: '2px solid var(--border-color)',
+                            <div key={session._id} style={{
+                                padding: '12px',
                                 marginBottom: '10px',
-                                background: 'var(--bg-light)'
+                                background: session.isCurrent ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-light)',
+                                border: `2px solid ${session.isCurrent ? 'var(--bright-blue)' : 'var(--border-color)'}`,
+                                fontSize: '10px'
                             }}
                             >
-                                <div style = {{ fontSize: '10px', color: 'var(--text-dark)', marginBottom: '5px' }}>
-                                    {session.deviceInfo?.deviceType || 'Unknown'} • {session.deviceInfo?.browser || 'Unknown'}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                                            {session.isCurrent && '🟢'}
+                                            {session.deviceType || 'Unknown'} • {session.browser || 'Unknown'}
+                                        </div>
+                                        <div style={{ color: 'var(--text-medium)'}}>
+                                            OS: {session.os || 'Unkown'} <br />
+                                            IP: {session.ipAddress || 'N/A'} <br />
+                                            Last Active: {new Date(session.lastActivity).toLocaleString()}
+                                        </div>
+                                    </div>
+                                    {!session.isCurrent && (
+                                        <button onClick={() => handleLogoutSession(session._id)} className="retro-btn secondary" style={{ fontSize: '9px', padding: '5px 10px' }}>LOGOUT</button>
+                                    )}
                                 </div>
-                                <div style={{ fontSize: '8px', color: 'var(--text-light)', marginBottom: '8px' }}>
-                                    {new Date(session.lastActivity).toLocaleString()}
-                                </div>
-                                {index !== 0 && (
-                                    <button onClick={() => handleLogoutSession(session._id)} className="retro-btn secondary" style={{ fontSize: '8px', padding: '5px 10px' }}>
-                                        Logout
-                                    </button>
-                                )}
                             </div>
                         ))}
-                    </div>
 
-                    {sessions.length > 1 && (
-                        <button onClick={handleLogoutAll} className="retro-btn" style={{ width: '100%', marginTop: '15px', background: 'var(--error-red)' }}>
-                            Logout all other sessions
-                        </button>
+                        {sessions.length > 1 && (
+                            <button onClick={handleLogoutAll} className="retro-btn" style={{ width: '100%', marginTop: '10px', background: 'var(--error-red)' }}>Logout all other sessions </button>
+                        )}
+                        </>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-medium)', fontSize: '10px' }}>No Active sessions </div>
                     )}
+                    
                 </motion.div>
               </div>
 
