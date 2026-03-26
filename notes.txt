@@ -5,3 +5,4 @@ Cannot read properties of undefined (reading 'map')
 TypeError: Cannot read properties of undefined (reading 'map')
 3. For the topicdetails, when that topic is passed, change the next topic button's function:
 instead of going to topics page, goes to a topic that has not yet been completed by the user
+4. Let's add a game called XP slots (emulate a scatter plot game)
