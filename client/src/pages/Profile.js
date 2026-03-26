@@ -196,7 +196,7 @@ const Profile = () => {
                                 }}
                                 />
                             ) : (
-                                <Icon name = "person" size={48} />
+                                <Icon name = "person" size={48} /> //to be changed to default
                             )}
                             <div style = {{
                                 position: 'absolute',
