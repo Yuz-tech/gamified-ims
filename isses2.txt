@@ -1,3 +1,10 @@
 1. In admindashboard, remove admin in top 10 players and badges card
+
 2. In admin topics tab, remove questions and xp range
 3. fix dropdowns
+
+Analytics in graph form
+
+ERROR
+Cannot read properties of undefined (reading 'map')
+TypeError: Cannot read properties of undefined (reading 'map')

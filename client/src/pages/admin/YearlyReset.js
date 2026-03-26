@@ -69,7 +69,7 @@ const YearlyReset = () => {
               animate={{ y: 0, opacity: 1 }}
               className="neon-text"
               style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--error-red)' }}>
-                Yearly Reset
+                YEARLY RESET
               </motion.h1>
 
               {/* Current Stats */}

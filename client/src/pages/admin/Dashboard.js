@@ -69,7 +69,7 @@ const Dashboard = () => {
             {stats?.totalUsers || 0}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--bright-blue)' }}>
-            ACTIVE USERS
+            TOTAL PLAYERS
           </div>
         </motion.div>
 
@@ -87,21 +87,6 @@ const Dashboard = () => {
             TOPICS
           </div>
         </motion.div>
-
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="retro-card"
-          style={{ textAlign: 'center' }}
-        >
-          <div style={{ fontSize: '36px', color: 'var(--bright-blue)', marginBottom: '10px' }}>
-            {stats?.totalBadges || 0}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--bright-blue)' }}>
-            BADGES
-          </div>
-        </motion.div>
       </div>
 
       {/* Top Users */}
@@ -112,10 +97,10 @@ const Dashboard = () => {
       >
         <h3 style={{
           fontSize: '16px',
-          color: 'var(--sky-blue)',
+          color: 'var(--text-dark)',
           marginBottom: '20px'
         }}>
-          TOP 10 USERS
+          TOP 10 PLAYERS
         </h3>
 
         <div style={{ overflowX: 'auto' }}>
@@ -127,14 +112,13 @@ const Dashboard = () => {
                 <th style={{ padding: '10px', color: 'var(--orange-accent)', textAlign: 'left' }}>EMAIL</th>
                 <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>LEVEL</th>
                 <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>XP</th>
-                <th style={{ padding: '10px', color: 'var(--orange-accent)' }}>BADGES</th>
               </tr>
             </thead>
             <tbody>
               {stats?.topUsers?.map((user, index) => (
                 <tr key={user._id} style={{ borderBottom: '1px solid var(--grid-color)' }}>
                   <td style={{ padding: '10px', color: 'var(--bright-blue)' }}>
-                    {index + 1 === 1 && '👑'} #{index + 1}
+                    {index + 1}
                   </td>
                   <td style={{ padding: '10px', color: 'var(--light-blue)' }}>
                     {user.username}
@@ -147,9 +131,6 @@ const Dashboard = () => {
                   </td>
                   <td style={{ padding: '10px', textAlign: 'center', color: 'var(--light-blue)' }}>
                     {user.xp}
-                  </td>
-                  <td style={{ padding: '10px', textAlign: 'center', color: 'var(--orange-accent)' }}>
-                    {user.badges?.length || 0}
                   </td>
                 </tr>
               ))}

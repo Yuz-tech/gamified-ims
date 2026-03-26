@@ -137,7 +137,7 @@ const ActivityLogs = () => {
           fontSize: '28px', 
           marginBottom: '40px',
           textAlign: 'center',
-          color: 'var(--primary-navy)'
+          color: 'var(--orange-accent)'
         }}
       >
         ACTIVITY LOGS

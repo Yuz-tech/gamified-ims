@@ -53,9 +53,19 @@ const Analytics = () => {
 
     return (
         <div style = {{ padding: '40px' }}>
-            <h1 style={{ fontSize: '24px', marginBottom: '30px', color: 'var(--primary-navy)' }}>
-                Analytics
-            </h1>
+            <motion.h1
+                    initial={{ y: -50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="neon-text"
+                    style={{ 
+                      fontSize: '28px', 
+                      marginBottom: '40px',
+                      textAlign: 'center',
+                      color: 'var(--orange-accent)'
+                    }}
+                  >
+                    ANALYTICS
+                  </motion.h1>
 
             {/* Stats Cards */}
             <div style={{

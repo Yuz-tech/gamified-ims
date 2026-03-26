@@ -194,60 +194,6 @@ router.put('/topics/:id', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-
-// ===== BADGE MANAGEMENT =====
-
-// Get all badges
-router.get('/badges', async (req, res) => {
-  try {
-    const badges = await Badge.find().populate('topicId');
-    res.json(badges);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Create badge
-router.post('/badges', async (req, res) => {
-  try {
-    const badge = new Badge(req.body);
-    await badge.save();
-    res.status(201).json(badge);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Update badge
-router.put('/badges/:badgeId', async (req, res) => {
-  try {
-    const badge = await Badge.findByIdAndUpdate(
-      req.params.badgeId,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!badge) {
-      return res.status(404).json({ message: 'Badge not found' });
-    }
-    res.json(badge);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Delete badge
-router.delete('/badges/:badgeId', async (req, res) => {
-  try {
-    const badge = await Badge.findByIdAndDelete(req.params.badgeId);
-    if (!badge) {
-      return res.status(404).json({ message: 'Badge not found' });
-    }
-    res.json({ message: 'Badge deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
 // ===== ACTIVITY LOGS =====
 
 // Get all activity logs
@@ -293,11 +239,11 @@ router.get('/activity-logs', async (req, res) => {
 // Get statistics
 router.get('/statistics', async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments({ isApproved: true });
+    const totalUsers = await User.countDocuments({ isApproved: true, role: 'employee' });
     const totalTopics = await Topic.countDocuments();
     const totalBadges = await Badge.countDocuments();
 
-    const topUsers = await User.find({ isApproved: true })
+    const topUsers = await User.find({ isApproved: true, role: 'employee'  })
       .select('username email xp level badges')
       .sort({ xp: -1 })
       .limit(10);
@@ -307,41 +253,6 @@ router.get('/statistics', async (req, res) => {
       totalTopics,
       totalBadges,
       topUsers
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-//Get yearly stats
-router.get('/training-year', async (req, res) => {
-  try {
-    const currentYear = new Date().getFullYear();
-    
-    const totalUsers = await User.countDocuments({ isApproved: true });
-    
-    // Count users who completed all topics this year
-    const users = await User.find({ isApproved: true });
-    let usersCompleted = 0;
-    
-    const totalTopics = await Topic.countDocuments({ isActive: true });
-    
-    users.forEach(user => {
-      const yearProgress = user.getCurrentYearProgress();
-      if (yearProgress.completedTopics.length >= totalTopics) {
-        usersCompleted++;
-      }
-    });
-    
-    const badges = await Badge.countDocuments({ year: currentYear });
-    
-    res.json({
-      currentYear,
-      totalUsers,
-      usersCompleted,
-      completionRate: totalUsers > 0 ? Math.round((usersCompleted / totalUsers) * 100) : 0,
-      totalTopics,
-      totalBadges: badges
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -388,52 +299,6 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
       message: 'Reset failed',
       error: error.message
     });
-  }
-});
-
-// Reset specific user's progress (admin override)
-router.post('/users/:userId/reset-progress', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId);
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    const currentYear = new Date().getFullYear();
-    
-    // Archive before reset
-    const yearProgress = user.getCurrentYearProgress();
-    user.yearlyArchive.push({
-      year: currentYear,
-      completedTopics: yearProgress.completedTopics.length,
-      badgesEarned: yearProgress.badges.length,
-      xpEarned: 0,
-      archivedAt: new Date()
-    });
-    
-    // Reset current year only
-    user.completedTopics = user.completedTopics.filter(ct => ct.year !== currentYear);
-    user.badges = user.badges.filter(b => b.year !== currentYear);
-    user.watchedVideos = user.watchedVideos.filter(wv => wv.year !== currentYear);
-    
-    await user.save();
-    
-    await logActivity(req.user._id, 'user_progress_reset', {
-      targetUserId: user._id,
-      targetUsername: user.username,
-      year: currentYear
-    }, req);
-    
-    res.json({
-      message: 'User progress reset successfully',
-      user: {
-        username: user.username,
-        resetYear: currentYear
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 

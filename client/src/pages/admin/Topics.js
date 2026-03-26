@@ -246,10 +246,21 @@ const Topics = () => {
         alignItems: 'center',
         marginBottom: '30px'
       }}>
-        <h1 style = {{ fontSize: '24px', color: 'var(--primary-navy)' }}>Manage Topics</h1>
-        <button onClick = {() => setShowForm(!showForm)}
-          className="retro-btn">
-            {showForm ? 'Cancel' : '+ Create Topic'}
+        <motion.h1
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="neon-text"
+                style={{ 
+                  fontSize: '28px', 
+                  marginBottom: '40px',
+                  textAlign: 'center',
+                  color: 'var(--orange-accent)'
+                }}
+              >
+                USER MANAGEMENT
+              </motion.h1>
+        <button onClick = {() => setShowForm(!showForm)} className="retro-btn" style={{ backgroundColor: '#e7fb07'}}>
+            {showForm ? 'Cancel' : '+ ADD NEW TOPIC'}
           </button>
       </div>
 
@@ -587,11 +598,9 @@ const Topics = () => {
               <thead>
                 <tr style = {{ borderBottom: '2px solid var(--border-color)' }}>
                   <th style = {{ padding: '15px', textAlign: 'left' }}>TITLE</th>
-                  <th style = {{ padding: '15px', textAlign: 'left' }}>BADGE</th>
-                  <th style = {{ padding: '15px', textAlign: 'left' }}>QUESTIONS</th>
-                  <th style = {{ padding: '15px', textAlign: 'left' }}>XP RANGE</th>
-                  <th style = {{ padding: '15px', textAlign: 'left' }}>STATUS</th>
-                  <th style = {{ padding: '15px', textAlign: 'left' }}>ACTIONS</th>
+                  <th style = {{ padding: '15px', textAlign: 'center' }}>BADGE</th>
+                  <th style = {{ padding: '15px', textAlign: 'center' }}>STATUS</th>
+                  <th style = {{ padding: '15px', textAlign: 'center' }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -600,19 +609,17 @@ const Topics = () => {
                     <td style = {{ padding: '10px', fontWeight: 'bold' }}>
                       {topic.title}
                     </td>
-                    <td style = {{ padding: '10px' }}>
+                    <td style = {{ padding: '10px', textAlign: 'center' }}>
                       {topic.badgeImage && (
                         <img src = {topic.badgeImage.startsWith('/uploads/')
                           ? `http://localhost:5000${topic.badgeImage}`
                           : topic.badgeImage}
                           alt="Badge"
-                          style={{ width: '30px', height: '30px', objectFit: 'contain' }}
+                          style={{ width: '40px', height: '40px', objectFit: 'contain' }}
                         />
                       )}
                     </td>
-                    <td style={{ padding: '10px' }}> 5 </td>
-                    <td style = {{ padding: '10px', color: 'var(--success-green)' }}>100-300 XP</td>
-                    <td style = {{ padding: '10px' }}>
+                    <td style = {{ padding: '10px', textAlign: 'center' }}>
                       <span style = {{ 
                         padding: '3px 8px',
                         background: topic.isActive ? 'var(--success-green)' : 'var(--error-red)',
