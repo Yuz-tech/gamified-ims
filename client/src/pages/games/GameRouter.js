@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import CrosswordGame from './CrosswordGame';
-// import WordScrambleGame from './WordScrambleGame';
-// import QuickQuizGame from './QuickQuizGame';
-// import TrueFalseGame from './TrueFalseGame';
+import WordScrambleGame from './WordScrambleGame';
+import QuickQuizGame from './QuickQuizGame';
+import TrueFalseGame from './TrueFalseGame';
 
 const GameRouter = () => {
     const { gameId } = useParams();
@@ -22,6 +22,7 @@ const GameRouter = () => {
             setGame(response.data);
         } catch (error) {
             console.error('Error fetching game: ', error);
+            alert('Failed to load');
             navigate('/games');
         } finally {
             setLoading(false);
@@ -49,9 +50,13 @@ const GameRouter = () => {
 
     switch (game.type) {
         case 'crossword':
-            return <CrosswordGame game={game} />;
-        // case 'word_scramble':
-        //  return <WordScrambleGame game={game} />
+            return <CrosswordGame game = {game} />;
+        case 'word_scramble':
+            return <WordScrambleGame game = {game} />;
+        case 'quick_quiz':
+            return <QuickQuizGame game = {game} />;
+        case 'true_false':
+            return <TrueFalseGame game = {game} />;
         default:
             return (
                 <div style={{ textAlign: 'center', padding: '40px' }}>
