@@ -1,3 +1,3 @@
-1. Sessions deviceType and browser not properly shown in Profile page
-2. GameRouter.js, Games.js, CrosswordGame.js, WordScrambleGame.js, QuickQuizGame.js, TrueFalseGame.js
-3. Testing tools
+1. In admindashboard, remove admin in top 10 players and badges card
+2. In admin topics tab, remove questions and xp range
+3. fix dropdowns
