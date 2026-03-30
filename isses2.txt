@@ -1,5 +1,6 @@
-1. In admindashboard, remove admin in top 10 players and badges card
-
-2. In admin topics tab, remove questions and xp range
-3. fix dropdowns
+1. Finish topic routing links to reference and video
+2. badges
+3. Tests
+4. Security
+5. Cybersec
 
