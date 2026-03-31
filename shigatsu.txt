@@ -4,4 +4,4 @@
 4a. In XP slots, set cooldown to 360 seconds after 100 tries/spins that persists even when user refreshes the page
 4b. In XP slots, add suspense, show icon for first card first, then second, then third. Not all at the same time
 5. Analytics are not showing any data at all
-6. Logs are not consistent
+6. Logs are not consistent (for example, I used edge for another account and chrome for admin, when i checked logs through admin, it didnt show logs for edge)

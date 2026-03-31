@@ -1,34 +1,1192 @@
-1. Finish topic routing links to reference and video
-2. badges
-3. Tests
-4. Security
-5. Cybersec
+TopicDetail.js
 
-ISO 9001 
-ISO 27001
-Quality and Information Security
-Internet Acceptable Use Policy
-Anti Malware Policy
-Access Control Policy
-Network Access Policy
-Data Protection & Privacy Policy
-Cryptographic Control Policy
-Cloud Service Policy
-Data Leak Prevention
-Secure Coding Policy
-Risk Assessment Procedure
-Document Control Awareness
-Exchange of Information Policy
-Asset Inventory
-Email Rules
-Confidential Information Handling Policy 
-Information Security Incident Policy
-Preventive Maintenance
-Telework Policy
-Training Policy
-Secured Area Policy
-Disposal Policy
-Backup Policy
-Software Regulation Policy 
-Time Synchronization
-Username & Password Management
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
+
+const TopicDetail = () => {
+  const { topicId } = useParams();
+  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
+
+  const [topic, setTopic] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentStep, setCurrentStep] = useState('study'); // study, mandatory, bonus, complete
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [currentBonusIndex, setCurrentBonusIndex] = useState(0);
+  const [bonusAnswers, setBonusAnswers] = useState({});
+  const [bonusResults, setBonusResults] = useState({});
+  const [mandatoryResult, setMandatoryResult] = useState(null);
+  const [totalXP, setTotalXP] = useState(0);
+  const [correctBonus, setCorrectBonus] = useState(0);
+  const [nextTopic, setNextTopic] = useState(null);
+
+  useEffect(() => {
+    fetchTopic();
+    fetchNextTopic();
+  }, [topicId]);
+
+  const fetchTopic = async () => {
+    try {
+      const response = await api.get(`/topics/${topicId}`);
+      setTopic(response.data);
+
+      // Check if already completed
+      if (response.data.userProgress?.completed) {
+        setCurrentStep('complete');
+        setTotalXP(response.data.userProgress.totalXPEarned || 300);
+      }
+    } catch (error) {
+      console.error('Error fetching topic:', error);
+      alert('Failed to load topic');
+      navigate('/topics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchNextTopic = async () => {
+    try {
+      // Fetch all topics
+      const topicsResponse = await api.get('/topics');
+      const allTopics = topicsResponse.data;
+
+      // Find first incomplete topic (not in user's completedTopics) that's not current topic
+      const incompleteTopic = allTopics.find(t => 
+        !user.completedTopics?.some(ct => ct.topicId === t._id) && 
+        t._id !== topicId && 
+        t.isActive
+      );
+
+      if (incompleteTopic) {
+        setNextTopic(incompleteTopic);
+      } else {
+        // All topics completed
+        setNextTopic(null);
+      }
+    } catch (error) {
+      console.error('Error fetching next topic:', error);
+    }
+  };
+
+  const handleStartQuiz = () => {
+    setCurrentStep('mandatory');
+  };
+
+  const handleMandatorySubmit = async () => {
+    if (selectedAnswer === null) {
+      alert('Please select an answer');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/topics/${topicId}/submit-mandatory`, {
+        answer: selectedAnswer
+      });
+
+      setMandatoryResult(response.data);
+
+      if (response.data.passed) {
+        // Correct answer - proceed to bonus
+        setTotalXP(response.data.xpEarned);
+        setTimeout(() => {
+          setCurrentStep('bonus');
+          setSelectedAnswer(null);
+        }, 3000);
+
+        // Update user data
+        const userResponse = await api.get('/auth/me');
+        updateUser(userResponse.data);
+      }
+      // If wrong, user can retry by clicking submit again
+    } catch (error) {
+      console.error('Error submitting mandatory:', error);
+      alert('Failed to submit answer');
+    }
+  };
+
+  const handleBonusSubmit = async () => {
+    if (selectedAnswer === null) {
+      alert('Please select an answer');
+      return;
+    }
+
+    const currentQuestion = topic.questions.filter(q => !q.isMandatory)[currentBonusIndex];
+
+    try {
+      const response = await api.post(`/topics/${topicId}/submit-bonus`, {
+        questionId: currentQuestion._id,
+        answer: selectedAnswer
+      });
+
+      setBonusResults({
+        ...bonusResults,
+        [currentBonusIndex]: response.data
+      });
+
+      setBonusAnswers({
+        ...bonusAnswers,
+        [currentBonusIndex]: selectedAnswer
+      });
+
+      if (response.data.correct) {
+        setCorrectBonus(correctBonus + 1);
+        setTotalXP(totalXP + response.data.xpEarned);
+      }
+
+      // Update user data
+      const userResponse = await api.get('/auth/me');
+      updateUser(userResponse.data);
+
+      // Wait 2 seconds then move to next question or complete
+      setTimeout(() => {
+        const bonusQuestions = topic.questions.filter(q => !q.isMandatory);
+        if (currentBonusIndex < bonusQuestions.length - 1) {
+          setCurrentBonusIndex(currentBonusIndex + 1);
+          setSelectedAnswer(null);
+        } else {
+          setCurrentStep('complete');
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('Error submitting bonus:', error);
+      alert('Failed to submit answer');
+    }
+  };
+
+  const handleSkipBonus = () => {
+    setCurrentStep('complete');
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING TOPIC...</div>
+      </div>
+    );
+  }
+
+  if (!topic) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        <h2>Topic not found</h2>
+        <button onClick={() => navigate('/topics')} className="retro-btn">
+          ← BACK TO TOPICS
+        </button>
+      </div>
+    );
+  }
+
+  const mandatoryQuestion = topic.questions.find(q => q.isMandatory);
+  const bonusQuestions = topic.questions.filter(q => !q.isMandatory);
+  const currentBonusQuestion = bonusQuestions[currentBonusIndex];
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div className="scanlines"></div>
+
+      <button onClick={() => navigate('/topics')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
+        ← BACK TO TOPICS
+      </button>
+
+      {/* STUDY MATERIALS */}
+      {currentStep === 'study' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="retro-card"
+        >
+          <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
+            📚 {topic.title}
+          </h1>
+
+          <p style={{ fontSize: '12px', lineHeight: '1.6', marginBottom: '30px', color: 'var(--text-medium)' }}>
+            {topic.description}
+          </p>
+
+          {topic.documentUrl && (
+            <div style={{ marginBottom: '30px' }}>
+              <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
+                📄 STUDY MATERIALS
+              </h3>
+              
+                href={topic.documentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="retro-btn secondary"
+                style={{ display: 'inline-block', marginBottom: '10px' }}
+              >
+                📖 OPEN DOCUMENT
+              </a>
+            </div>
+          )}
+
+          {topic.videoUrl && (
+            <div style={{ marginBottom: '30px' }}>
+              <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
+                🎥 VIDEO TUTORIAL
+              </h3>
+              <div style={{
+                position: 'relative',
+                paddingBottom: '56.25%',
+                height: 0,
+                overflow: 'hidden',
+                maxWidth: '100%',
+                background: '#000'
+              }}>
+                <iframe
+                  src={topic.videoUrl}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%'
+                  }}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
+
+          <div style={{
+            padding: '20px',
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '2px solid var(--bright-blue)',
+            marginBottom: '30px'
+          }}>
+            <h3 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '10px' }}>
+              🎯 QUIZ STRUCTURE
+            </h3>
+            <ul style={{ fontSize: '11px', lineHeight: '1.8', paddingLeft: '20px' }}>
+              <li><strong>Mandatory Question:</strong> 1 question (100 XP) - Must pass to continue</li>
+              <li><strong>Bonus Questions:</strong> {bonusQuestions.length} questions (50 XP each)</li>
+              <li><strong>Badge Reward:</strong> Earn upon completing mandatory question</li>
+              <li><strong>Total Possible XP:</strong> 300 XP</li>
+            </ul>
+          </div>
+
+          <button
+            onClick={handleStartQuiz}
+            className="retro-btn"
+            style={{ width: '100%', fontSize: '16px', padding: '15px' }}
+          >
+            🎯 START QUIZ
+          </button>
+        </motion.div>
+      )}
+
+      {/* MANDATORY QUESTION */}
+      {currentStep === 'mandatory' && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="retro-card"
+        >
+          <div style={{
+            padding: '15px',
+            background: 'var(--error-red)',
+            color: 'white',
+            marginBottom: '30px',
+            textAlign: 'center',
+            fontWeight: 'bold',
+            fontSize: '12px'
+          }}>
+            ⚠️ MANDATORY QUESTION - MUST PASS TO CONTINUE
+          </div>
+
+          <h2 style={{ fontSize: '18px', color: 'var(--primary-navy)', marginBottom: '30px', lineHeight: '1.6' }}>
+            {mandatoryQuestion.question}
+          </h2>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+            {mandatoryQuestion.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedAnswer(index)}
+                disabled={mandatoryResult !== null}
+                style={{
+                  padding: '15px',
+                  border: `3px solid ${selectedAnswer === index ? 'var(--bright-blue)' : 'var(--border-color)'}`,
+                  background: selectedAnswer === index ? 'rgba(59, 130, 246, 0.1)' : 'white',
+                  cursor: mandatoryResult ? 'not-allowed' : 'pointer',
+                  fontSize: '12px',
+                  textAlign: 'left',
+                  opacity: mandatoryResult ? 0.6 : 1
+                }}
+              >
+                <strong>{String.fromCharCode(65 + index)}.</strong> {option}
+              </button>
+            ))}
+          </div>
+
+          {!mandatoryResult && (
+            <button
+              onClick={handleMandatorySubmit}
+              className="retro-btn"
+              style={{ width: '100%' }}
+              disabled={selectedAnswer === null}
+            >
+              SUBMIT ANSWER
+            </button>
+          )}
+
+          <AnimatePresence>
+            {mandatoryResult && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                style={{
+                  marginTop: '30px',
+                  padding: '30px',
+                  background: mandatoryResult.passed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  border: `3px solid ${mandatoryResult.passed ? 'var(--success-green)' : 'var(--error-red)'}`,
+                  textAlign: 'center'
+                }}
+              >
+                <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+                  {mandatoryResult.passed ? '✅' : '😠'}
+                </div>
+                <div style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: mandatoryResult.passed ? 'var(--success-green)' : 'var(--error-red)',
+                  marginBottom: '15px'
+                }}>
+                  {mandatoryResult.passed ? 'CORRECT!' : 'INCORRECT'}
+                </div>
+
+                {mandatoryResult.passed ? (
+                  <>
+                    <div style={{ fontSize: '14px', marginBottom: '20px' }}>
+                      +{mandatoryResult.xpEarned} XP earned!
+                    </div>
+                    {mandatoryResult.badgeImage && (
+                      <div>
+                        <img
+                          src={mandatoryResult.badgeImage}
+                          alt="Badge"
+                          style={{ width: '100px', height: '100px', marginBottom: '15px' }}
+                        />
+                        <div style={{ fontSize: '12px', color: 'var(--success-green)' }}>
+                          🏆 Badge Unlocked!
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ fontSize: '11px', marginTop: '15px', color: 'var(--text-medium)' }}>
+                      Proceeding to bonus questions...
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '14px', marginBottom: '10px', color: 'var(--text-medium)' }}>
+                      Correct answer: <strong>{String.fromCharCode(65 + mandatoryResult.correctAnswerIndex)}</strong>
+                    </div>
+                    {mandatoryResult.explanation && (
+                      <div style={{
+                        fontSize: '11px',
+                        padding: '15px',
+                        background: 'var(--bg-light)',
+                        border: '2px solid var(--border-color)',
+                        marginTop: '15px'
+                      }}>
+                        💡 {mandatoryResult.explanation}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        setMandatoryResult(null);
+                        setSelectedAnswer(null);
+                      }}
+                      className="retro-btn"
+                      style={{ marginTop: '20px' }}
+                    >
+                      TRY AGAIN
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+
+      {/* BONUS QUESTIONS */}
+      {currentStep === 'bonus' && currentBonusQuestion && (
+        <motion.div
+          key={currentBonusIndex}
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="retro-card"
+        >
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+              BONUS QUESTION {currentBonusIndex + 1} OF {bonusQuestions.length}
+            </div>
+            <div style={{
+              width: '100%',
+              height: '8px',
+              background: 'var(--bg-medium)',
+              border: '2px solid var(--border-color)'
+            }}>
+              <div style={{
+                width: `${((currentBonusIndex + 1) / bonusQuestions.length) * 100}%`,
+                height: '100%',
+                background: 'var(--success-green)',
+                transition: 'width 0.3s ease'
+              }} />
+            </div>
+          </div>
+
+          <h2 style={{ fontSize: '18px', color: 'var(--primary-navy)', marginBottom: '30px', lineHeight: '1.6' }}>
+            {currentBonusQuestion.question}
+          </h2>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+            {currentBonusQuestion.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedAnswer(index)}
+                disabled={bonusResults[currentBonusIndex]}
+                style={{
+                  padding: '15px',
+                  border: `3px solid ${selectedAnswer === index ? 'var(--success-green)' : 'var(--border-color)'}`,
+                  background: selectedAnswer === index ? 'rgba(16, 185, 129, 0.1)' : 'white',
+                  cursor: bonusResults[currentBonusIndex] ? 'not-allowed' : 'pointer',
+                  fontSize: '12px',
+                  textAlign: 'left',
+                  opacity: bonusResults[currentBonusIndex] ? 0.6 : 1
+                }}
+              >
+                <strong>{String.fromCharCode(65 + index)}.</strong> {option}
+              </button>
+            ))}
+          </div>
+
+          {!bonusResults[currentBonusIndex] && (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={handleBonusSubmit}
+                className="retro-btn"
+                style={{ flex: 1 }}
+                disabled={selectedAnswer === null}
+              >
+                SUBMIT
+              </button>
+              <button
+                onClick={handleSkipBonus}
+                className="retro-btn secondary"
+                style={{ flex: 1 }}
+              >
+                SKIP REMAINING
+              </button>
+            </div>
+          )}
+
+          <AnimatePresence>
+            {bonusResults[currentBonusIndex] && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                style={{
+                  marginTop: '30px',
+                  padding: '20px',
+                  background: bonusResults[currentBonusIndex].correct ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  border: `3px solid ${bonusResults[currentBonusIndex].correct ? 'var(--success-green)' : 'var(--error-red)'}`,
+                  textAlign: 'center'
+                }}
+              >
+                <div style={{ fontSize: '48px', marginBottom: '10px' }}>
+                  {bonusResults[currentBonusIndex].correct ? '✅' : '❌'}
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                  {bonusResults[currentBonusIndex].correct ? `+${bonusResults[currentBonusIndex].xpEarned} XP` : 'No XP'}
+                </div>
+                {!bonusResults[currentBonusIndex].correct && (
+                  <div style={{ fontSize: '11px', marginTop: '10px', color: 'var(--text-medium)' }}>
+                    Correct: {String.fromCharCode(65 + currentBonusQuestion.correctAnswer)}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+
+      {/* COMPLETION SCREEN */}
+      {currentStep === 'complete' && (
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="retro-card"
+          style={{ textAlign: 'center' }}
+        >
+          <div style={{ fontSize: '72px', marginBottom: '20px' }}>🎉</div>
+          <h2 style={{ fontSize: '28px', color: 'var(--bright-blue)', marginBottom: '20px' }}>
+            TOPIC COMPLETE!
+          </h2>
+
+          <div style={{
+            padding: '30px',
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '3px solid var(--bright-blue)',
+            marginBottom: '30px'
+          }}>
+            <div style={{ fontSize: '14px', marginBottom: '10px' }}>
+              Bonus Questions: {correctBonus} / {bonusQuestions.length}
+            </div>
+            <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
+              +{totalXP} XP
+            </div>
+          </div>
+
+          {nextTopic ? (
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '12px', marginBottom: '15px', color: 'var(--text-medium)' }}>
+                CONTINUE LEARNING:
+              </div>
+              <button
+                onClick={() => navigate(`/topics/${nextTopic._id}`)}
+                className="retro-btn"
+                style={{ width: '100%', marginBottom: '10px' }}
+              >
+                ➡️ NEXT: {nextTopic.title}
+              </button>
+            </div>
+          ) : (
+            <div style={{
+              marginBottom: '20px',
+              padding: '20px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '2px solid var(--success-green)',
+              fontSize: '12px',
+              color: 'var(--success-green)',
+              fontWeight: 'bold'
+            }}>
+              🎉 Congratulations! You've completed ALL topics!
+            </div>
+          )}
+
+          <button
+            onClick={() => navigate('/topics')}
+            className="retro-btn secondary"
+            style={{ width: '100%' }}
+          >
+            ← BACK TO ALL TOPICS
+          </button>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+export default TopicDetail;
+
+
+# Terminal 1 - Server
+cd server
+npm start
+
+# Terminal 2 - Client (with host flag)
+cd client
+HOST=0.0.0.0 npm start
+# Or on Windows:
+set HOST=0.0.0.0 && npm start
+
+
+src/pages/XPSlots
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import api from '../utils/api';
+
+const XPSlots = () => {
+  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
+  const [spinning, setSpinning] = useState(false);
+  const [slots, setSlots] = useState(['❓', '❓', '❓']);
+  const [revealedSlots, setRevealedSlots] = useState([false, false, false]);
+  const [result, setResult] = useState(null);
+  const [canSpin, setCanSpin] = useState(true);
+  const [cooldown, setCooldown] = useState(0);
+  const [totalWins, setTotalWins] = useState(0);
+  const [totalSpins, setTotalSpins] = useState(0);
+  const [longCooldownActive, setLongCooldownActive] = useState(false);
+  const [longCooldownRemaining, setLongCooldownRemaining] = useState(0);
+
+  const symbols = ['🎮', '🏆', '⭐', '💎', '🔥', '👑', '🎯'];
+  const prizes = {
+    '🎮🎮🎮': { xp: 10, name: 'Triple Game' },
+    '🏆🏆🏆': { xp: 50, name: 'Triple Trophy' },
+    '⭐⭐⭐': { xp: 75, name: 'Triple Star' },
+    '💎💎💎': { xp: 100, name: 'Triple Diamond' },
+    '🔥🔥🔥': { xp: 150, name: 'Triple Fire' },
+    '👑👑👑': { xp: 200, name: 'Triple Crown' },
+    '🎯🎯🎯': { xp: 500, name: 'JACKPOT!' },
+  };
+
+  useEffect(() => {
+    loadStoredData();
+  }, []);
+
+  useEffect(() => {
+    let timer;
+    if (cooldown > 0) {
+      timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+    } else if (!longCooldownActive) {
+      setCanSpin(true);
+    }
+    return () => clearTimeout(timer);
+  }, [cooldown, longCooldownActive]);
+
+  useEffect(() => {
+    let timer;
+    if (longCooldownRemaining > 0) {
+      timer = setTimeout(() => setLongCooldownRemaining(longCooldownRemaining - 1), 1000);
+    } else if (longCooldownActive) {
+      setLongCooldownActive(false);
+      setCanSpin(true);
+      localStorage.removeItem('xpSlots_longCooldown');
+    }
+    return () => clearTimeout(timer);
+  }, [longCooldownRemaining, longCooldownActive]);
+
+  const loadStoredData = () => {
+    const storedSpins = parseInt(localStorage.getItem('xpSlots_totalSpins') || '0');
+    const storedWins = parseInt(localStorage.getItem('xpSlots_totalWins') || '0');
+    setTotalSpins(storedSpins);
+    setTotalWins(storedWins);
+
+    // Check for long cooldown
+    const longCooldownEnd = localStorage.getItem('xpSlots_longCooldown');
+    if (longCooldownEnd) {
+      const endTime = parseInt(longCooldownEnd);
+      const now = Date.now();
+      if (now < endTime) {
+        const remaining = Math.ceil((endTime - now) / 1000);
+        setLongCooldownRemaining(remaining);
+        setLongCooldownActive(true);
+        setCanSpin(false);
+      } else {
+        localStorage.removeItem('xpSlots_longCooldown');
+      }
+    }
+  };
+
+  const spin = async () => {
+    if (!canSpin || spinning || longCooldownActive) return;
+
+    setSpinning(true);
+    setResult(null);
+    setCanSpin(false);
+    setRevealedSlots([false, false, false]);
+
+    const newTotalSpins = totalSpins + 1;
+    setTotalSpins(newTotalSpins);
+    localStorage.setItem('xpSlots_totalSpins', newTotalSpins.toString());
+
+    // Check if reached 100 spins
+    if (newTotalSpins % 100 === 0) {
+      // Activate 360 second (6 minute) cooldown
+      const cooldownEnd = Date.now() + (360 * 1000);
+      localStorage.setItem('xpSlots_longCooldown', cooldownEnd.toString());
+      setLongCooldownActive(true);
+      setLongCooldownRemaining(360);
+    }
+
+    // Generate final slots
+    const finalSlots = [
+      symbols[Math.floor(Math.random() * symbols.length)],
+      symbols[Math.floor(Math.random() * symbols.length)],
+      symbols[Math.floor(Math.random() * symbols.length)]
+    ];
+
+    // Reveal first slot
+    await animateSlot(0, finalSlots[0]);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Reveal second slot
+    await animateSlot(1, finalSlots[1]);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Reveal third slot
+    await animateSlot(2, finalSlots[2]);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    setSlots(finalSlots);
+    setSpinning(false);
+
+    // Check for win
+    const key = finalSlots.join('');
+    const prize = prizes[key];
+
+    if (prize) {
+      // WIN!
+      setResult({
+        win: true,
+        xp: prize.xp,
+        name: prize.name
+      });
+
+      const newTotalWins = totalWins + 1;
+      setTotalWins(newTotalWins);
+      localStorage.setItem('xpSlots_totalWins', newTotalWins.toString());
+
+      // Award XP
+      try {
+        await api.post('/auth/award-xp', { xp: prize.xp, reason: `XP Slots: ${prize.name}` });
+        const userResponse = await api.get('/auth/me');
+        updateUser(userResponse.data);
+      } catch (error) {
+        console.error('Error awarding XP:', error);
+      }
+    } else {
+      // Loss
+      setResult({
+        win: false,
+        xp: 0
+      });
+    }
+
+    // Regular 10 second cooldown (if not on long cooldown)
+    if (!longCooldownActive) {
+      setCooldown(10);
+    }
+  };
+
+  const animateSlot = async (index, finalSymbol) => {
+    const spinDuration = 1000;
+    const spinInterval = 100;
+    const iterations = spinDuration / spinInterval;
+
+    for (let i = 0; i < iterations; i++) {
+      setSlots(prev => {
+        const newSlots = [...prev];
+        newSlots[index] = symbols[Math.floor(Math.random() * symbols.length)];
+        return newSlots;
+      });
+      await new Promise(resolve => setTimeout(resolve, spinInterval));
+    }
+
+    setSlots(prev => {
+      const newSlots = [...prev];
+      newSlots[index] = finalSymbol;
+      return newSlots;
+    });
+
+    setRevealedSlots(prev => {
+      const newRevealed = [...prev];
+      newRevealed[index] = true;
+      return newRevealed;
+    });
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px', minHeight: '100vh' }}>
+      <div className="scanlines"></div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        style={{ maxWidth: '800px', margin: '0 auto' }}
+      >
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <motion.h1
+            animate={{ 
+              textShadow: [
+                '0 0 10px #3b82f6',
+                '0 0 20px #3b82f6',
+                '0 0 10px #3b82f6'
+              ]
+            }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="neon-text"
+            style={{ fontSize: '48px', marginBottom: '10px', color: 'var(--bright-blue)' }}
+          >
+            🎰 XP SLOTS 🎰
+          </motion.h1>
+          <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
+            Match 3 symbols to win XP!
+          </p>
+          <div style={{ fontSize: '10px', color: 'var(--text-light)', marginTop: '10px' }}>
+            🤫 Easter Egg Found! Spins: {totalSpins} | Wins: {totalWins}
+          </div>
+          {totalSpins > 0 && totalSpins % 100 === 0 && longCooldownActive && (
+            <div style={{
+              marginTop: '15px',
+              padding: '10px',
+              background: 'rgba(239, 68, 68, 0.2)',
+              border: '2px solid var(--error-red)',
+              fontSize: '11px',
+              color: 'var(--error-red)',
+              fontWeight: 'bold'
+            }}>
+              ⚠️ 100 SPINS REACHED! 6-minute cooldown activated!
+            </div>
+          )}
+        </div>
+
+        {/* Slot Machine */}
+        <motion.div
+          className="retro-card"
+          style={{
+            padding: '40px',
+            background: 'linear-gradient(135deg, var(--primary-navy) 0%, #1e3a8a 100%)',
+            border: '5px solid var(--bright-blue)',
+            boxShadow: '0 0 30px rgba(59, 130, 246, 0.5)'
+          }}
+        >
+          {/* Slots Display */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gap: '20px',
+            marginBottom: '40px'
+          }}>
+            {slots.map((symbol, index) => (
+              <motion.div
+                key={index}
+                animate={spinning && !revealedSlots[index] ? {
+                  y: [0, -10, 0],
+                  rotate: [0, 360, 0]
+                } : revealedSlots[index] ? {
+                  scale: [1, 1.2, 1]
+                } : {}}
+                transition={spinning && !revealedSlots[index] ? {
+                  repeat: Infinity,
+                  duration: 0.3
+                } : revealedSlots[index] ? {
+                  duration: 0.5
+                } : {}}
+                style={{
+                  background: 'white',
+                  border: `5px solid ${revealedSlots[index] ? 'var(--success-green)' : 'var(--orange-accent)'}`,
+                  borderRadius: '20px',
+                  padding: '30px',
+                  textAlign: 'center',
+                  fontSize: '80px',
+                  aspectRatio: '1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: spinning && !revealedSlots[index] ? '0 0 20px rgba(249, 115, 22, 0.8)' : 
+                             revealedSlots[index] ? '0 0 20px rgba(16, 185, 129, 0.8)' : 'none'
+                }}
+              >
+                {symbol}
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Spin Button */}
+          <motion.button
+            whileHover={canSpin && !longCooldownActive ? { scale: 1.05 } : {}}
+            whileTap={canSpin && !longCooldownActive ? { scale: 0.95 } : {}}
+            onClick={spin}
+            disabled={!canSpin || spinning || longCooldownActive}
+            className="retro-btn"
+            style={{
+              width: '100%',
+              fontSize: '24px',
+              padding: '20px',
+              background: canSpin && !longCooldownActive ? 'var(--success-green)' : 'var(--text-medium)',
+              opacity: canSpin && !longCooldownActive ? 1 : 0.5,
+              cursor: canSpin && !longCooldownActive ? 'pointer' : 'not-allowed'
+            }}
+          >
+            {spinning ? '🎰 SPINNING...' : 
+             longCooldownActive ? `🔒 LONG COOLDOWN: ${formatTime(longCooldownRemaining)}` :
+             cooldown > 0 ? `⏳ COOLDOWN: ${cooldown}s` : 
+             '🎰 SPIN! 🎰'}
+          </motion.button>
+
+          {/* Result Display */}
+          <AnimatePresence>
+            {result && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                style={{
+                  marginTop: '30px',
+                  padding: '30px',
+                  background: result.win ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                  border: `3px solid ${result.win ? 'var(--success-green)' : 'var(--error-red)'}`,
+                  borderRadius: '10px',
+                  textAlign: 'center'
+                }}
+              >
+                <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+                  {result.win ? '🎉' : '😢'}
+                </div>
+                <div style={{
+                  fontSize: '24px',
+                  color: result.win ? 'var(--success-green)' : 'var(--error-red)',
+                  fontWeight: 'bold',
+                  marginBottom: '10px'
+                }}>
+                  {result.win ? result.name : 'TRY AGAIN!'}
+                </div>
+                {result.win && (
+                  <div style={{
+                    fontSize: '48px',
+                    color: 'var(--success-green)',
+                    fontWeight: 'bold'
+                  }}>
+                    +{result.xp} XP
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Prize Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="retro-card"
+          style={{ marginTop: '30px' }}
+        >
+          <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+            💰 PRIZE TABLE
+          </h3>
+          <div style={{ display: 'grid', gap: '10px' }}>
+            {Object.entries(prizes).map(([key, prize]) => (
+              <div
+                key={key}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 15px',
+                  background: 'var(--bg-light)',
+                  border: '2px solid var(--border-color)',
+                  fontSize: '12px'
+                }}
+              >
+                <div style={{ fontSize: '24px' }}>{key}</div>
+                <div>
+                  <strong>{prize.name}</strong> - {prize.xp} XP
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{
+            marginTop: '20px',
+            padding: '15px',
+            background: 'rgba(249, 115, 22, 0.1)',
+            border: '2px solid var(--orange-accent)',
+            fontSize: '10px',
+            color: 'var(--text-medium)'
+          }}>
+            ⚠️ Note: After 100 spins, a 6-minute cooldown is activated before you can spin again.
+          </div>
+        </motion.div>
+
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="retro-btn secondary"
+          style={{ width: '100%', marginTop: '30px' }}
+        >
+          ← BACK TO HOME
+        </button>
+      </motion.div>
+    </div>
+  );
+};
+
+export default XPSlots;
+
+
+server/routes/admin.js
+// Analytics endpoint
+router.get('/analytics', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const users = await User.find({ role: 'employee' }).select('username xp level completedTopics badges');
+    const topics = await Topic.find().select('title');
+
+    // Calculate stats
+    const totalUsers = users.length;
+    const totalBadges = users.reduce((sum, user) => sum + (user.badges?.length || 0), 0);
+    const avgXpPerUser = totalUsers > 0 ? Math.round(users.reduce((sum, user) => sum + user.xp, 0) / totalUsers) : 0;
+    const avgLevel = totalUsers > 0 ? Math.round(users.reduce((sum, user) => sum + user.level, 0) / totalUsers) : 0;
+    
+    const totalTopicsCompleted = users.reduce((sum, user) => sum + (user.completedTopics?.length || 0), 0);
+    const avgCompletionRate = totalUsers > 0 && topics.length > 0 ? 
+      Math.round((totalTopicsCompleted / (totalUsers * topics.length)) * 100) : 0;
+
+    // Top topics by completion
+    const topicCompletions = {};
+    topics.forEach(topic => {
+      topicCompletions[topic._id] = {
+        title: topic.title,
+        completions: 0
+      };
+    });
+
+    users.forEach(user => {
+      user.completedTopics?.forEach(ct => {
+        if (topicCompletions[ct.topicId]) {
+          topicCompletions[ct.topicId].completions++;
+        }
+      });
+    });
+
+    const topTopics = Object.values(topicCompletions)
+      .sort((a, b) => b.completions - a.completions)
+      .slice(0, 10);
+
+    // Top users by XP
+    const topUsers = users
+      .map(user => ({
+        username: user.username,
+        xp: user.xp,
+        level: user.level,
+        completedTopics: user.completedTopics?.length || 0
+      }))
+      .sort((a, b) => b.xp - a.xp)
+      .slice(0, 10);
+
+    res.json({
+      totalUsers,
+      totalBadges,
+      avgXpPerUser,
+      avgLevel,
+      avgCompletionRate,
+      topTopics,
+      topUsers
+    });
+  } catch (error) {
+    console.error('Analytics error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+
+server/utils/logger.js
+import ActivityLog from '../models/ActivityLog.js';
+import UAParser from 'ua-parser-js';
+
+export const logActivity = async (userId, action, details = {}, req) => {
+  try {
+    // Parse user agent
+    const parser = new UAParser(req.headers['user-agent']);
+    const uaResult = parser.getResult();
+
+    // Get IP address (handle proxies)
+    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || 
+                      req.headers['x-real-ip'] || 
+                      req.connection?.remoteAddress || 
+                      req.socket?.remoteAddress || 
+                      'Unknown';
+
+    const log = new ActivityLog({
+      userId,
+      action,
+      details,
+      deviceInfo: {
+        deviceType: uaResult.device.type || 'desktop',
+        browser: `${uaResult.browser.name || 'Unknown'} ${uaResult.browser.version || ''}`.trim(),
+        os: `${uaResult.os.name || 'Unknown'} ${uaResult.os.version || ''}`.trim(),
+        ipAddress: ipAddress.replace('::ffff:', '') // Clean IPv6 mapped IPv4
+      },
+      timestamp: new Date()
+    });
+
+    await log.save();
+    console.log(`📝 Activity logged: ${action} by user ${userId}`);
+  } catch (error) {
+    console.error('❌ Failed to log activity:', error);
+    // Don't throw - logging failures shouldn't break the app
+  }
+};
+
+
+cd server
+npm install ua-parser-js
+
+server/routes/auth.js
+// Login
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // ... existing validation ...
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    if (!user.isApproved) {
+      return res.status(403).json({ message: 'Account pending approval' });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Create session
+    const session = new Session({
+      userId: user._id,
+      token,
+      deviceInfo: {
+        deviceType: req.headers['user-agent']?.includes('Mobile') ? 'mobile' : 'desktop',
+        browser: req.headers['user-agent']?.match(/(Chrome|Firefox|Safari|Edge|Opera)/i)?.[0] || 'Unknown',
+        os: req.headers['user-agent']?.match(/(Windows|Mac|Linux|Android|iOS)/i)?.[0] || 'Unknown',
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection?.remoteAddress || 'Unknown'
+      },
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+
+    await session.save();
+
+    // Log activity WITH req object
+    await logActivity(user._id, 'login', {
+      deviceType: session.deviceInfo.deviceType,
+      browser: session.deviceInfo.browser,
+      os: session.deviceInfo.os
+    }, req);
+
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        level: user.level,
+        xp: user.xp,
+        avatar: user.avatar,
+        completedTopics: user.completedTopics,
+        badges: user.badges
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
