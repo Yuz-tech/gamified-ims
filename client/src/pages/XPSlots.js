@@ -91,7 +91,12 @@ const XPSlots = () => {
             });
         }
 
-        setCooldown(10);
+        if (totalSpins > 10) {
+            setCooldown(360);
+        } else {
+            setCooldown(1);
+        }
+        
     };
 
     return (
@@ -121,8 +126,8 @@ const XPSlots = () => {
                     <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
                         Match 3 symbols to win XP!
                     </p>
-                    <div style={{ fontSize: '10px', color: 'var(--text-light)', marginTop: '10px' }}>
-                        🤫 Easter Egg found! Spins: {totalSpins} | Wins: {totalWins}
+                    <div style={{ fontSize: '20px', color: 'var(--text-light)', marginTop: '10px' }}>
+                        🤫 You found the Easter Egg! <br /> Spins: {totalSpins} | Wins: {totalWins}
                     </div>
                 </div>
 
@@ -270,6 +275,7 @@ const XPSlots = () => {
                     Back to Home
                 </button>
             </motion.div>
+            
         </div>
     );
 };

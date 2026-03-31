@@ -5,111 +5,30 @@
 5. Cybersec
 
 ISO 9001 
-- https://drive.google.com/file/d/1YCSSdoBZeaBXdPF36QUdZJiu1d5lHJC0/view?usp=sharing
-
 ISO 27001
-- https://drive.google.com/file/d/1AZZdQfRFbqVFwG6qshj_eWhxw_2ZzZ_u/view?usp=sharing
-
 Quality and Information Security
-- https://docs.google.com/document/d/13GfB0MJY0kYVRzOVdxqEbDNn4-DpvFGLAe3qbzngMno/edit?usp=sharing
-- https://drive.google.com/file/d/1Gdl4WrlAr6ggWDTaBFp8em3tvHeaC8aw/view?usp=sharing
-
 Internet Acceptable Use Policy
-- https://docs.google.com/document/d/1zXO1DQ3YDgOrOFcoqSzys5zclC2ox1FO7v9Xlrt3LEA/edit?usp=sharing
-- https://drive.google.com/file/d/1VLbnRBGJGSno-oXpXIazENT2k0zPtJIb/view?usp=sharing
-
 Anti Malware Policy
-- https://docs.google.com/document/d/1gcxOMPvc7vCKgBHit4RP1bNiVTprD2hdrWYfC8zARmM/edit?usp=sharing
-- https://drive.google.com/file/d/1gOhIw7EuxQtrq2XNegq87VShgxcvgriC/view?usp=sharing
-
 Access Control Policy
-- https://docs.google.com/document/d/1QCVAxgvSKq5cz1RMH9SiU1Jpt-OZjDuGswx1gK3_NgU/edit?usp=sharing
-- https://drive.google.com/file/d/15uacYOudaxH476A_x8Fks_yNTKie41wa/view?usp=sharing
-
 Network Access Policy
-- https://docs.google.com/document/d/1soaIX11RWkl0-4Q1zNJCtvNUfUNSnPyLEtufkApwd84/edit?usp=sharing
-- https://drive.google.com/file/d/1_H_HSbvS-HyDACs23SqR1V-jmqOSI49b/view?usp=sharing
-
 Data Protection & Privacy Policy
-- https://docs.google.com/document/d/1xPpSApfzHsmRaRy7x6SbdaA-k8fVM94nvrCCmYsHWac/edit?usp=sharing
-- https://drive.google.com/file/d/1T0N0Qi6RpIxP7sqiXuAj4I161aPBVILu/view?usp=sharing
-
 Cryptographic Control Policy
-- https://docs.google.com/document/d/1f4aKPdCk2P_Ppmxnjv-UjACkj1lLCptxXwFInGZmweI/edit?usp=sharing
-- https://drive.google.com/file/d/1b9YzUuqFY6QfA3Y9BTNFSKCdqVVCE8EI/view?usp=sharing
-
 Cloud Service Policy
-- https://docs.google.com/document/d/1oV2mTrDpQTi-KOzarUGJRkN8fSszSGXPQ7T9ZzkQhZ4/edit?usp=sharing
-- https://drive.google.com/file/d/1UqjSg01oELSdh9cDF58Gq8N0RnKZVT9s/view?usp=sharing
-
 Data Leak Prevention
-- https://docs.google.com/document/d/1765EeQAiKv2xrb0oZA1jrlswgiy4BC9oPKMsxu2Ttbs/edit?usp=sharing
-- https://drive.google.com/file/d/1u_SGDRUZu6gBYKwm9pOpi9mwskWE3b7G/view?usp=sharing
-
 Secure Coding Policy
-- https://docs.google.com/document/d/1kjpCF1-76-O04wM5Js-P2-I8lsnv1RFZPgZK1P76cKc/edit?usp=sharing
-- https://drive.google.com/file/d/19XeCHPKN7EcqA23no2haUVCWyrvwruMx/view?usp=sharing
-
 Risk Assessment Procedure
-- https://docs.google.com/document/d/1djJzd7SUxixEEW-ggnfZrLX9T_r48DVP0JRSC6HsgK0/edit?usp=sharing
-- https://drive.google.com/file/d/1AEIggeiYVxJKFxBIOOsbnSVfm7OdUCLT/view?usp=sharing
-
 Document Control Awareness
-- https://docs.google.com/document/d/1Pa0hT06kDJsHNcwQ7nabn1UANJXVeB27HKW0wxAHf50/edit?usp=sharing
-- https://drive.google.com/file/d/1sbPMicRNYh65oYm4pEnlzTh-eybtGD92/view?usp=sharing
-
 Exchange of Information Policy
-- https://docs.google.com/document/d/11YCDVly0Fd7VJqU2LjRvhtMjqzJW_SIeGrwgqgNEkOo/edit?usp=sharing
-- https://drive.google.com/file/d/1_vecTZkEQuJfIHFbIeOi8hfOL5Y1b6WW/view?usp=sharing
-
 Asset Inventory
-- https://docs.google.com/document/d/1TtzLkJ1ThTA5h0Sby2e1e_kJyJgrs7Sllo9c6lzA9rY/edit?usp=sharing
-- https://drive.google.com/file/d/1ZmEtWZd1u4XsOtvuN7Qg5EPzdwaYWpGo/view?usp=sharing
-
 Email Rules
-- https://docs.google.com/document/d/1fUpuH79f6VGisrEQ2e2uTL_QEO9zqhOXkOxw8xJcoPM/edit?usp=sharing
-- https://drive.google.com/file/d/1o7HKpLzkdU63424paD_wD-SgcqV-N9Oi/view?usp=sharing
-
 Confidential Information Handling Policy 
-- https://docs.google.com/document/d/1HNsOoFHNNSFJoBJKrHngYYtysXvBduXn3xdqmjcsHf0/edit?usp=sharing
-- https://drive.google.com/file/d/17FVq8d2KbpJTrA76iOUBQgvJus8ILaMj/view?usp=sharing
-
 Information Security Incident Policy
-- https://docs.google.com/document/d/1WNtCD906BoKwUC5-BQjHbyYU4qHVxWPne0Z6I35SsvQ/edit?usp=sharing
-- https://drive.google.com/file/d/1PYXh9-SEXYrwEoo8e79WC0wHRqy2EhX3/view?usp=sharing
-
 Preventive Maintenance
-- https://docs.google.com/document/d/1RYn0DqqB6Ox212G6ExjDP36Yg203LaRDuevuwH29tAc/edit?usp=sharing
-- https://drive.google.com/file/d/1XvU-e-K9m3h3e8g3Pmka5NtKRsTM3Hu-/view?usp=sharing
-
 Telework Policy
-- https://docs.google.com/document/d/1HB41yaLhDtaS-tj81O2XzpIFA9_LViHqCDaqWKseigU/edit?usp=sharing
-- https://drive.google.com/file/d/1zhUqRyUfYVIh1eXg022q6LNacPenrYUJ/view?usp=sharing
-
 Training Policy
-- https://docs.google.com/document/d/1gp6jRPJk4kZtVyBp0wSx9nbqazwQlhtjAcYnQLXGi0o/edit?usp=sharing
-- https://drive.google.com/file/d/1TA_EuAAawhMB7uKucYCfjYCBAvyffYRz/view?usp=sharing
-
 Secured Area Policy
-- https://docs.google.com/document/d/1o5sHW2BP6UaEyiNA7PtJcAhjQW-nvjE3aAOb0buXmek/edit?usp=sharing
-- https://drive.google.com/file/d/1iyXSSf5DyHqvTsHHCtiLGOJIz3KyhYMh/view?usp=sharing
-
 Disposal Policy
-- https://docs.google.com/document/d/1DhTp46NvExZzsCZluRnu4IWCZ04goHbmLBnKCPCbp_I/edit?usp=sharing
-- https://drive.google.com/file/d/1A9YNEG-fqNMMO1356L9kArnkHZvrvS_U/view?usp=sharing
-
 Backup Policy
-- https://docs.google.com/document/d/1Pq8I2f-eR6HWCQ6v_d6zCBJNgsUXXBb2g4OgiAhFcvw/edit?usp=sharing
-- https://drive.google.com/file/d/13O41oJv0OmW6kuRhXFzuHQqebTpzTTiR/view?usp=sharing
-
 Software Regulation Policy 
-- https://docs.google.com/document/d/1dOtKvcNU3uf29uTHAAC6XN08DmJmR2bj2_aqx5fbeS0/edit?usp=sharing
-- https://drive.google.com/file/d/1TOSZZSxlsYurS_AzshwXCtC9HLVXu1By/view?usp=sharing
-
 Time Synchronization
-- https://docs.google.com/document/d/1h3TJxsEJE7YhuGij7w_l_xYsAaT1PBypibC2e9nFhwg/edit?usp=sharing
-- https://drive.google.com/file/d/1wtM-FnCx0PQuwk5rDoPC5Bbt-3uCB84x/view?usp=sharing
-
 Username & Password Management
-- https://docs.google.com/document/d/11SIIQ3HmVGQdtGeoqpsHHjKLuidpaecJ6BuNq8IWo1k/edit?usp=sharing
-- https://drive.google.com/file/d/1t7G2hgo-sM8tglkwIBcK_0pN29GOT3fV/view?usp=sharing

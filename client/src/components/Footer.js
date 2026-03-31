@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Footer = () => {
+    const navigate = useNavigate();
+    const [clickCount, setClickCount] = useState(0);
     return (
         <footer style={{
             marginTop: '80px',
@@ -62,6 +65,21 @@ const Footer = () => {
                     </div>
                 </div>
             </div>
+            <div onClick={() => {
+                        const newCount = clickCount + 1;
+                        setClickCount(newCount);
+                        if (newCount === 7) {
+                          navigate('/xp-slots');
+                          setClickCount(0);
+                          window.scrollTo({
+                            top: 0
+                          })
+                        }
+                    }}
+                    style={{ marginTop: '20px', textAlign: 'right', opacity: '35%' }}
+                    >
+                        🥚
+                    </div>
         </footer>
     );
 };
