@@ -1,16 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    PointElement,
+    LineElement,
+} from 'chart.js';
+import { Bar, Pie, Line } from 'react-chartjs-2';
 import api from '../../utils/api';
 
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    PointElement,
+    LineElement
+);
+
 const Analytics = () => {
-    const [stats, setStats] = useState({
-        totalUsers: 0,
-        activeUsers: 0,
-        totalXP: 0,
-        averageLevel: 0,
-        completionRate: 0,
-        topicStats: []
-    });
+    const [analytics, setAnalytics] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchAnalytics();
@@ -18,136 +37,217 @@ const Analytics = () => {
 
     const fetchAnalytics = async () => {
         try {
-            const [usersRes, topicsRes] = await Promise.all([
-                api.get('/admin/users'),
-                api.get('/admin/topics')
-            ]);
-
-            const users = usersRes.data.filter(u => u.role === 'employee');
-            const totalXP = users.reduce((sum, u) => sum + (u.xp || 0), 0);
-            const avgLevel = users.length > 0 ? (users.reduce((sum, u) => sum + (u.level || 1), 0) / users.length).toFixed(1) : 1;
-
-            const topicStats = topicsRes.data.map(topic => {
-                const completedCount = users.filter(user => user.completedTopics?.some(ct => ct.topicId?.toString() === topic._id.toString() && ct.mandatoryCompleted)).length;
-                return {
-                    title: topic.title,
-                    completed: completedCount,
-                    percentage: users.length > 0 ? ((completedCount / users.length) * 100).toFixed(1) : 0
-                };
-            });
-
-            setStats({
-                totalUsers: users.length,
-                activeUsers: users.filter(u => (u.xp || 0) > 0).length,
-                totalXP,
-                averageLevel: avgLevel,
-                completionRate: topicStats.length > 0 
-                  ? (topicStats.reduce((sum, t) => sum + parseFloat(t.percentage), 0) / topicStats.length).toFixed(1)
-                  : 0,
-                  topicStats
-            });
+            const response = await api.get('/admin/analytics');
+            setAnalytics(response.data);
         } catch (error) {
-            console.error('Error fetching analytics:', error);
+            console.error('Error fetching analytics: ', error);
+        } finally {
+            setLoading(false);
         }
     };
 
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+                <div className="loading neon-text">Loading Analytics...</div>
+            </div>
+        );
+    }
+
+    const topTopicsData = {
+        labels: analytics?.topTopics?.slice(0, 10).map(t => t.title.length > 20 ? t.title.substring(0,20) + '...' : t.title) || [],
+        datasets: [
+            {
+                label: 'Completions',
+                data: analytics?.topTopics?.slice(0, 10).map(t => t.completions) || [],
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 2,
+            },
+        ],
+    };
+
+    const topUsersXPData = {
+        labels: analytics?.topUsers?.slice(0,10).map(u => u.username) || [],
+        datasets: [
+            {
+                label: 'Total XP',
+                data: analytics?.topUsers?.slice(0, 10).map(u => u.xp) || [],
+                backgroundColor: 'rgba(249, 115, 22, 0.8)',
+                borderColor: 'rgba(249, 115, 22, 1)',
+                borderWidth: 2,
+            },
+        ],
+    };
+
+    const completionDistributionData = {
+        labels: ['High Performers (70%+)', 'Medium (40-69%)', 'Low(<40%)'],
+        datasets: [
+            {
+                data: [
+                    analytics?.topUsers?.filter(u => (u.completedTopics / 28) * 100 >= 70).length || 0,
+                    analytics?.topUsers?.filter(u => {
+                        const pct = (u.completedTopics / 28) * 100;
+                        return pct >= 40 && pct < 70;
+                    }).length || 0,
+                    analytics?.topUsers?.filter(u => (u.completedTopics / 28) * 100 < 40).length || 0,
+                ],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(249, 115, 22, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                ],
+                borderColor: [
+                    'rgba(16, 185, 129, 1)',
+                    'rgba(249, 115, 22, 1)',
+                    'rgba(239, 68, 68, 1)',
+                ],
+                borderWidth: 2,
+            },
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+            },
+        },
+    };
+
+    const pieOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+            },
+        },
+    };
+
     return (
-        <div style = {{ padding: '40px' }}>
-            <motion.h1
-                    initial={{ y: -50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="neon-text"
-                    style={{ 
-                      fontSize: '28px', 
-                      marginBottom: '40px',
-                      textAlign: 'center',
-                      color: 'var(--orange-accent)'
-                    }}
-                  >
-                    ANALYTICS
-                  </motion.h1>
+        <div className="retro-container" style={{ paddingTop: '40px' }}>
+            <h1 style={{ fontSize: '28px', color: 'var(--primary-navy)', marginBottom: '40px' }}>
+                Analytics
+            </h1>
 
-            {/* Stats Cards */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '20px',
-                marginBottom: '30px'
-            }}>
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="retro-card"
-                  style={{ textAlign: 'center' }}>
+            {/* Overview Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="retro-card"
+                    style={{ textAlign: 'center' }}
+                >
                     <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-                        Total Users
+                        AVG COMPLETION RATE
                     </div>
-                    <div style={{ fontSize: '36px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>
-                        {stats.totalUsers}
+                    <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--success-green)' }}>
+                        {analytics?.avgCompletionRate || 0}%
                     </div>
-                  </motion.div>
+                </motion.div>
 
-                  <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                     className="retro-card"
-                    style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>Active Users</div>
-                        <div style={{ fontSize: '36px', color: 'var(--success-green)', fontWeight: 'bold' }}>{stats.activeUsers}</div>
-                    </motion.div>
-
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="retro-card"
-                      style={{ textAlign: 'center' }}>
-                        <div style = {{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>Total XP</div>
-                        <div style = {{ fontSize: '36px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>{stats.totalXP}</div>
-                      </motion.div>
-
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="retro-card"
-                        style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>AVG Level</div>
-                            <div style={{ fontSize: '36px', color: 'var(--secondary-pink)', fontWeight: 'bold' }}>{stats.averageLevel}</div>
-                        </motion.div>
-            </div>
-
-            {/* Topic completion stats */}
-            <div className="retro-card">
-                <h3 style={{ fontSize: '14px', marginBottom: '20px', color: 'var(--secondary-pink)'}}>
-                    Topic Completion Rates
-                </h3>
-                {stats.topicStats.map((topic, index) => (
-                    <div key={index} style={{ marginBottom: '20px' }}>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            marginBottom: '8px',
-                            fontSize: '11px'
-                        }}>
-                            <span>{topic.title}</span>
-                            <span style = {{ fontWeight: 'bold', color: 'var(--bright-blue)' }}>
-                                {topic.completed}/{stats.totalUsers}
-                                ({topic.percentage}%)
-                            </span>
-                        </div>
-                        <div style={{ width: '100%', height: '20px', background: 'var(--bg-dark)', border: '2px solid var(--border-color)' }}>
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${topic.percentage}%`}}
-                              transition={{ duration: 1, delay: index * 0.1 }}
-                              style={{ height: '100%', background: 'var(--bright-blue)' }}
-                            />
-                        </div>
+                    style={{ textAlign: 'center' }}
+                >
+                    <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+                        AVG XP PER USER
                     </div>
-                ))}
+                    <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
+                        {analytics?.avgXpPerUser || 0}
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="retro-card"
+                    style={{ textAlign: 'center' }}
+                >
+                    <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+                        AVG LEVEL
+                    </div>
+                    <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--orange-accent)' }}>
+                        {analytics?.avgLevel || 0}
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="retro-card"
+                    style={{ textAlign: 'center' }}
+                >
+                    <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+                        TOTAL BADGES
+                    </div>
+                    <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--secondary-pink)' }}>
+                        {analytics?.totalBadges || 0}
+                    </div>
+                </motion.div>
             </div>
+
+            {/* Charts Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: '30px', marginBottom: '40px' }}>
+                {/* Top Topics Chart */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="retro-card"
+                >
+                    <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+                        TOP TOPICS BY COMPLETION
+                    </h3>
+                    <div style={{ height: '400px' }}>
+                        <Bar data = {topTopicsData} options={chartOptions} />
+                    </div>
+                </motion.div>
+
+                {/* Top Users XP Chart */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="retro-card"
+                >
+                    <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+                        Top Learners by XP
+                    </h3>
+                    <div style={{ height: '400px' }}>
+                        <Bar data = {topUsersXPData} options={chartOptions} />
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Completion Distribution Chart */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="retro-card"
+                style={{ maxWidth: '600px', margin: '0 auto' }}
+            >
+                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
+                    User Performance Distribution
+                </h3>
+                <div style={{ height: '400px' }}>
+                    <Pie data={completionDistributionData} options={pieOptions} />
+                </div>
+            </motion.div>
         </div>
     );
 };
