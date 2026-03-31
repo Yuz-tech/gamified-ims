@@ -73,7 +73,7 @@ router.post('/register', async (req, res) => {
       email,
       password, // Will be hashed by pre-save hook
       role: 'employee',
-      isApproved: true, // ✅ Auto-approve
+      isApproved: true,
       level: 1,
       xp: 0,
       badges: [],
@@ -89,7 +89,7 @@ router.post('/register', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // ✅ FIX: Create session with expiresAt
+    // Create session with expiresAt
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
 
@@ -108,7 +108,7 @@ router.post('/register', async (req, res) => {
 
     await session.save();
 
-    console.log('✅ User registered and logged in:', username);
+    console.log('User registered and logged in:', username);
 
     // Return user data + token (auto-login)
     res.status(201).json({
@@ -129,7 +129,7 @@ router.post('/register', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Registration error:', error);
+    console.error('Registration error:', error);
     res.status(500).json({ 
       message: 'Registration failed. Try again.', 
       error: error.message 
@@ -386,6 +386,57 @@ router.delete('/sessions/:sessionId', authenticateToken, async (req, res) => {
     res.json({ message: 'Session revoked successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+router.post('/award-xp', authenticateToken, async (req, res) => {
+  try {
+    const { xp, reason } = req.body;
+
+    if (!xp || xp <= 0) {
+      return res.status(400).json({ message: 'Invalid XP amount' });
+    }
+
+    // Limit to prevent abuse
+    if (xp > 500) {
+      return res.status(400).json({ message: 'XP amount too high'});
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found'});
+    }
+
+    const oldLevel = user.level;
+    user.xp += xp;
+
+    const { calculateLevel } = await import('../utils/levelSystem.js');
+    const newLevel = calculateLevel(user.xp);
+    const leveledUp = newLevel > oldLevel;
+
+    if (leveledUp) {
+      user.level = newLevel;
+    }
+
+    await user.save();
+
+    await logActivity(user._id, 'xp_awarded', {
+      xpAwarded: xp,
+      reason: reason || 'Unknown',
+      newXP: user.xp,
+      leveledUp,
+      newLevel: user.level
+    }, req);
+
+    res.json({
+      xpAwarded: xp,
+      newxP: user.xp,
+      leveledUp,
+      newLevel: user.level
+    });
+  } catch (error) {
+    console.error('Error awarding XP: ', error);
+    res.status(500).json({ message: 'Server error'});
   }
 });
 

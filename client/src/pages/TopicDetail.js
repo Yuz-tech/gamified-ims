@@ -34,6 +34,51 @@ const TopicDetail = () => {
     }
   };
 
+  // const fetchNextTopic = async () => {
+  //   try {
+  //     const topicsResponse = await api.get('/topics');
+  //     const allTopics = topicsResponse.data;
+
+  //     const incompleteTopic = allTopics.find(t => !user.completedTopics?.some(ct => ct.topicId === t._id) && t._id !== topicId && t.isActive);
+
+  //     if (incompleteTopic) {
+  //       setNextTopic(incompleteTopic);
+  //     } else {
+  //       setNextTopic(null);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching next topic: ', error);
+  //   }
+  // };
+
+  // {nextTopic ? (
+  //   <div style={{ marginBottom: '20px' }}>
+  //     <div style={{ fontSize: '12px', marginBottom: '15px', color: 'var(--text-medium)' }}>
+  //       Continue Learning:
+  //     </div>
+  //     <button onClick={() => navigate(`/topics/${nextTopic._id}`)}
+  //       className='retro-btn' style={{ width: '100%', marginBottom: '10px'}}>
+  //         NEXT: {nextTopic.title}
+  //       </button>
+  //   </div>
+  // ) : (
+  //   <div style={{
+  //     marginBottom: '20px',
+  //     padding: '20px',
+  //     background: 'rgba(16, 185, 129, 0.1)',
+  //     border: '2px solid var(--success-green)',
+  //     fontSize: '12px',
+  //     color: 'var(--success-green)',
+  //     fontWeight: 'bold'
+  //   }}>
+  //     Congratulations! You've completed ALL topics!
+  //   </div>
+  // )}
+
+  <button onClick={() => navigate('/topics')} className='retro-btn secondary' style={{ width: '100%' }}>
+    Back to Topics
+  </button>
+
   const handleStartMandatory = () => {
     if (!materialsConfirmed && !topic.mandatoryCompleted) {
       alert('Please confirm that you have reviewed the training materials.');

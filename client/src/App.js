@@ -19,6 +19,7 @@ import AdminTopics from './pages/admin/Topics';
 import ActivityLogs from './pages/admin/ActivityLogs';
 import Analytics from './pages/admin/Analytics';
 import YearlyReset from './pages/admin/YearlyReset';
+import XPSlots from './pages/XPSlots';
 import './styles/retro.css';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -177,6 +178,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
                 <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/xp-slots"
+          element={
+            <ProtectedRoute>
+              <XPSlots />
             </ProtectedRoute>
           }
         />

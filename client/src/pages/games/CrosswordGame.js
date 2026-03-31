@@ -87,6 +87,27 @@ const CrosswordGame = ({ game }) => {
     );
   }
 
+  if (!game || !game.questions || game.questions.length === 0) {
+    return (
+      <div className="retro-container" style={{ paddingTop: '40px' }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="retro-card"
+          style={{ textAlign: 'center', padding: '60px' }}
+        >
+          <h2 style={{ fontSize: '24px', color:'var(--error-red)', marginBottom: '20px'}}>Game Data Error</h2>
+          <p style={{ fontSize: '12px', marginBottom: '30px' }}>
+            This game is ahh.
+          </p>
+          <button onClick={() => navigate('/games')} className="retro-btn">
+            Back to Games
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>

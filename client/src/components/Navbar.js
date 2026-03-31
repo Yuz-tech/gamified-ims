@@ -11,6 +11,8 @@ const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [clickCount, setClickCount] = useState(0);
+
   useEffect(() => {
     setShowDropdown(false);
     setMobileMenuOpen(false);
@@ -55,15 +57,28 @@ const Navbar = () => {
           e.target.style.display = 'none';
         }}
         />
-        <h1 style={{
-          fontSize: '16px',
-          color: 'var(--primary-navy)',
-          margin: 0,
-          fontWeight: 'bold',
-          letterSpacing: '1px'
-        }}>
-          IMS Awareness Training
-        </h1>
+
+        <div onClick={() => {
+          const newCount = clickCount + 1;
+          setClickCount(newCount);
+          if (newCount === 7) {
+            navigate('/xp-slots');
+            setClickCount(0);
+          }
+        }}
+        style={{ cursor: 'pointer'}}>
+          <h1 style={{
+            fontSize: '16px',
+            color: 'var(--primary-navy)',
+            margin: 0,
+            fontWeight: 'bold',
+            letterSpacing: '1px'
+          }}>
+            IMS Awareness Training
+          </h1>
+        </div>
+
+        
       </div>
 
       {/* Desktop Navigation */}

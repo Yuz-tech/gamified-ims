@@ -1,1 +1,4 @@
-add new seedData
+1. Create new seedData covering all topics
+2. Games still not working (map error on some games)
+3. Present current TopicDetail.js and show revamp
+4. Clicking on navbar 7 times does not go to xp-slots
