@@ -27,12 +27,12 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
-      'http://192.168.232.247:3000',
-      'http://192.168.232.247:5000',
-      'http://192.168.232.247:5173',
-      'http://192.168.232.247:27017',
+      'http://192.168.86.2:3000',
+      'http://192.168.86.2:5000',
+      'http://192.168.86.2:5173',
+      'http://192.168.86.2:27017',
       process.env.FRONTEND_URL,
-      '192.168.232.247:3000'
+      '192.168.86.2:3000'
     ].filter(Boolean);
 
     if (allowedOrigins.includes(origin)) {

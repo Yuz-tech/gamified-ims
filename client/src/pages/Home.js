@@ -82,7 +82,7 @@ const Home = () => {
 };
 
   const handleFinishTraining = () => {
-    window.open('Your_Google_Form_URL_Here', '_blank');
+    window.open('https://docs.google.com/forms/d/e/1FAIpQLSdzI6F5B7FNQJg3jUjUXgp-DUtAqY704-VdR9pPDQfe5PR5iw/viewform', '_blank');
   };
 
   if(loading) {
