@@ -1190,3 +1190,481 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
+Fix 1: Install Missing Chart.js Dependencies
+bashcd client
+npm install chart.js react-chartjs-2
+If that doesn't work, try:
+bashcd client
+npm install --legacy-peer-deps chart.js react-chartjs-2
+
+Fix 2: Add Completion Form Link Editor in Admin
+Step 1: Create System Settings Model
+File: server/models/SystemSettings.js (CREATE NEW)
+javascriptimport mongoose from 'mongoose';
+
+const systemSettingsSchema = new mongoose.Schema({
+  settingKey: {
+    type: String,
+    required: true,
+    unique: true,
+    enum: ['completion_form_url']
+  },
+  settingValue: {
+    type: String,
+    required: true
+  },
+  lastUpdatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  lastUpdatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true
+});
+
+export default mongoose.model('SystemSettings', systemSettingsSchema);
+
+Step 2: Add Settings Routes
+File: server/routes/admin.js (ADD SETTINGS ENDPOINTS)
+javascript// Add this import at the top
+import SystemSettings from '../models/SystemSettings.js';
+
+// ... existing code ...
+
+// Get system settings
+router.get('/settings', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    let settings = await SystemSettings.findOne({ settingKey: 'completion_form_url' });
+    
+    // Create default if doesn't exist
+    if (!settings) {
+      settings = new SystemSettings({
+        settingKey: 'completion_form_url',
+        settingValue: 'https://forms.gle/your-form-id',
+        lastUpdatedBy: req.user._id
+      });
+      await settings.save();
+    }
+
+    res.json(settings);
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update system settings
+router.put('/settings', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { completionFormUrl } = req.body;
+
+    if (!completionFormUrl) {
+      return res.status(400).json({ message: 'Completion form URL is required' });
+    }
+
+    // Validate URL format
+    try {
+      new URL(completionFormUrl);
+    } catch (error) {
+      return res.status(400).json({ message: 'Invalid URL format' });
+    }
+
+    let settings = await SystemSettings.findOne({ settingKey: 'completion_form_url' });
+
+    if (settings) {
+      settings.settingValue = completionFormUrl;
+      settings.lastUpdatedBy = req.user._id;
+      settings.lastUpdatedAt = new Date();
+    } else {
+      settings = new SystemSettings({
+        settingKey: 'completion_form_url',
+        settingValue: completionFormUrl,
+        lastUpdatedBy: req.user._id
+      });
+    }
+
+    await settings.save();
+
+    // Log activity
+    await logActivity(req.user._id, 'settings_updated', {
+      setting: 'completion_form_url',
+      newValue: completionFormUrl
+    }, req);
+
+    res.json({
+      message: 'Settings updated successfully',
+      settings
+    });
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+Step 3: Create Settings Page in Admin
+File: client/src/pages/admin/Settings.js (CREATE NEW)
+javascriptimport React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+
+const Settings = () => {
+  const [completionFormUrl, setCompletionFormUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await api.get('/admin/settings');
+      setCompletionFormUrl(response.data.settingValue || '');
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      setError('Failed to load settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setSaving(true);
+
+    // Validate URL
+    try {
+      new URL(completionFormUrl);
+    } catch (err) {
+      setError('Please enter a valid URL (must start with http:// or https://)');
+      setSaving(false);
+      return;
+    }
+
+    try {
+      await api.put('/admin/settings', { completionFormUrl });
+      setSuccess('✅ Settings saved successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestLink = () => {
+    if (completionFormUrl) {
+      window.open(completionFormUrl, '_blank');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING SETTINGS...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <h1 style={{ fontSize: '28px', color: 'var(--primary-navy)', marginBottom: '40px' }}>
+        ⚙️ SYSTEM SETTINGS
+      </h1>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ maxWidth: '800px' }}
+      >
+        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '30px' }}>
+          COMPLETION FORM CONFIGURATION
+        </h3>
+
+        <form onSubmit={handleSave}>
+          <div style={{ marginBottom: '30px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '10px',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              color: 'var(--text-dark)'
+            }}>
+              COMPLETION FORM URL
+            </label>
+            <p style={{
+              fontSize: '10px',
+              color: 'var(--text-medium)',
+              marginBottom: '15px',
+              lineHeight: '1.6'
+            }}>
+              This link appears on the home page when users complete all topics. Typically a Google Form or survey link.
+            </p>
+            <input
+              type="url"
+              className="retro-input"
+              value={completionFormUrl}
+              onChange={(e) => setCompletionFormUrl(e.target.value)}
+              placeholder="https://forms.gle/your-form-id-here"
+              required
+              style={{ marginBottom: '15px' }}
+            />
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={handleTestLink}
+                className="retro-btn secondary"
+                style={{ flex: 1, fontSize: '11px' }}
+                disabled={!completionFormUrl}
+              >
+                🔗 TEST LINK
+              </button>
+              <button
+                type="submit"
+                className="retro-btn"
+                style={{ flex: 1, fontSize: '11px' }}
+                disabled={saving}
+              >
+                {saving ? '💾 SAVING...' : '💾 SAVE CHANGES'}
+              </button>
+            </div>
+          </div>
+
+          {/* Success Message */}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                padding: '15px',
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '2px solid var(--success-green)',
+                color: 'var(--success-green)',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                marginBottom: '20px'
+              }}
+            >
+              {success}
+            </motion.div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                padding: '15px',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '2px solid var(--error-red)',
+                color: 'var(--error-red)',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                marginBottom: '20px'
+              }}
+            >
+              {error}
+            </motion.div>
+          )}
+        </form>
+
+        {/* Info Box */}
+        <div style={{
+          padding: '20px',
+          background: 'rgba(59, 130, 246, 0.05)',
+          border: '2px solid var(--bright-blue)',
+          marginTop: '30px'
+        }}>
+          <h4 style={{ fontSize: '11px', color: 'var(--bright-blue)', marginBottom: '10px', fontWeight: 'bold' }}>
+            💡 HOW TO CREATE A GOOGLE FORM LINK
+          </h4>
+          <ol style={{ fontSize: '10px', lineHeight: '1.8', paddingLeft: '20px', color: 'var(--text-medium)' }}>
+            <li>Go to <a href="https://forms.google.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--bright-blue)' }}>forms.google.com</a></li>
+            <li>Create a new form or open an existing one</li>
+            <li>Click the "Send" button (top right)</li>
+            <li>Click the link icon (🔗)</li>
+            <li>Click "Shorten URL" checkbox</li>
+            <li>Copy the shortened URL (e.g., https://forms.gle/abc123)</li>
+            <li>Paste it in the field above</li>
+          </ol>
+        </div>
+
+        {/* Preview */}
+        {completionFormUrl && (
+          <div style={{
+            padding: '20px',
+            background: 'var(--bg-light)',
+            border: '2px solid var(--border-color)',
+            marginTop: '30px'
+          }}>
+            <h4 style={{ fontSize: '11px', marginBottom: '15px', fontWeight: 'bold' }}>
+              📱 PREVIEW (How it appears to users)
+            </h4>
+            <div style={{
+              padding: '15px',
+              background: 'white',
+              border: '3px solid var(--success-green)'
+            }}>
+              <div style={{ fontSize: '10px', color: 'var(--success-green)', marginBottom: '10px', fontWeight: 'bold' }}>
+                🎉 ALL TOPICS COMPLETED!
+              </div>
+              <p style={{ fontSize: '9px', marginBottom: '15px', lineHeight: '1.6' }}>
+                Congratulations! You've completed all training topics. Please fill out the completion form below:
+              </p>
+              
+                href={completionFormUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 15px',
+                  background: 'var(--success-green)',
+                  color: 'white',
+                  textDecoration: 'none',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  border: '2px solid var(--success-green)',
+                  cursor: 'pointer'
+                }}
+              >
+                📝 FILL OUT COMPLETION FORM
+              </a>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
+export default Settings;
+
+Step 4: Add Settings to Admin Navigation
+File: client/src/App.js (ADD SETTINGS IMPORT AND ROUTE)
+javascript// Add import at top
+import Settings from './pages/admin/Settings';
+
+// ... existing code ...
+
+// Add route in admin section (after other admin routes)
+<Route
+  path="/admin/settings"
+  element={
+    <ProtectedRoute adminOnly={true}>
+      <AdminLayout>
+        <Settings />
+      </AdminLayout>
+    </ProtectedRoute>
+  }
+/>
+
+Step 5: Add Settings Link to Admin Navigation
+File: client/src/App.js (UPDATE ADMIN LAYOUT NAVIGATION)
+Find the AdminLayout navigation section and add:
+javascript<NavLink to="/admin/settings" style={({ isActive }) => ({ textDecoration: 'none' })}>
+  {({ isActive }) => (
+    <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+      SETTINGS
+    </button>
+  )}
+</NavLink>
+
+Step 6: Update Home Page to Use Dynamic Completion Form URL
+File: client/src/pages/Home.js (UPDATE COMPLETION FORM SECTION)
+javascriptimport React, { useState, useEffect } from 'react';
+// ... other imports ...
+import api from '../utils/api';
+
+const Home = () => {
+  const { user } = useAuth();
+  // ... existing state ...
+  const [completionFormUrl, setCompletionFormUrl] = useState('');
+
+  useEffect(() => {
+    // ... existing useEffect code ...
+    fetchCompletionFormUrl();
+  }, [user]);
+
+  const fetchCompletionFormUrl = async () => {
+    try {
+      const response = await api.get('/admin/settings');
+      setCompletionFormUrl(response.data.settingValue);
+    } catch (error) {
+      console.error('Error fetching completion form URL:', error);
+      // Fallback to default
+      setCompletionFormUrl('https://forms.gle/your-form-id');
+    }
+  };
+
+  // ... rest of component ...
+
+  // Find the completion form section and update it:
+  {allTopicsCompleted && completionFormUrl && (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="retro-card"
+      style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'var(--success-green)', marginTop: '30px' }}
+    >
+      <h3 style={{ fontSize: '14px', color: 'var(--success-green)', marginBottom: '20px' }}>
+        🎉 ALL TOPICS COMPLETED!
+      </h3>
+      <p style={{ fontSize: '11px', marginBottom: '20px', lineHeight: '1.6' }}>
+        Congratulations! You've completed all training topics. Please fill out the completion form below:
+      </p>
+      
+        href={completionFormUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="retro-btn"
+        style={{ display: 'inline-block', textDecoration: 'none', width: '100%', textAlign: 'center' }}
+      >
+        📝 FILL OUT COMPLETION FORM
+      </a>
+    </motion.div>
+  )}
+
+Step 7: Make Settings Endpoint Public (for Home Page)
+File: server/routes/admin.js (ADD PUBLIC SETTINGS ROUTE)
+javascript// Add this BEFORE the authenticateToken middleware (make it public)
+router.get('/settings/public', async (req, res) => {
+  try {
+    let settings = await SystemSettings.findOne({ settingKey: 'completion_form_url' });
+    
+    if (!settings) {
+      settings = {
+        settingValue: 'https://forms.gle/your-form-id'
+      };
+    }
+
+    res.json(settings);
+  } catch (error) {
+    console.error('Error fetching public settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+Step 8: Update Home.js to Use Public Endpoint
+File: client/src/pages/Home.js (UPDATE FETCH FUNCTION)
+javascriptconst fetchCompletionFormUrl = async () => {
+  try {
+    const response = await api.get('/admin/settings/public');
+    setCompletionFormUrl(response.data.settingValue);
+  } catch (error) {
+    console.error('Error fetching completion form URL:', error);
+    // Fallback to default
+    setCompletionFormUrl('https://forms.gle/your-form-id');
+  }
+};
+
