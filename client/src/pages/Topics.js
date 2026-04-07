@@ -82,21 +82,21 @@ const Topics = () => {
         className="retro-card"
         style={{ marginBottom: '30px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, var(--bg-light) 100%)' }}
       >
-        <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          Reward System
+        <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
+          REWARD SYSTEM
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
           <div style={{ padding: '15px', border: '2px solid var(--orange-accent)', background: 'rgba(249, 115, 22, 0.05)' }}>
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>MANDATORY QUESTION</div>
-            <div style={{ fontSize: '24px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>100 XP + Badge</div>
+            <div style={{ fontSize: '24px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>100XP ? 🏆</div>
           </div>
           <div style={{ padding: '15px', border: '2px solid var(--bright-blue)', background: 'rgba(59, 130, 246, 0.05)' }}>
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>BONUS QUESTIONS</div>
-            <div style={{ fontSize: '24px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>50 XP EACH</div>
+            <div style={{ fontSize: '24px', color: 'var(--bright-blue)', fontWeight: 'bold' }}>50XP++</div>
           </div>
           <div style={{ padding: '15px', border: '2px solid var(--success-green)', background: 'rgba(16, 185, 129, 0.05)' }}>
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>TOTAL POSSIBLE</div>
-            <div style={{ fontSize: '24px', color: 'var(--success-green)', fontWeight: 'bold' }}>100-300 XP</div>
+            <div style={{ fontSize: '24px', color: 'var(--success-green)', fontWeight: 'bold' }}>100-300XP</div>
           </div>
         </div>
       </motion.div>
@@ -138,7 +138,7 @@ const Topics = () => {
             </select>
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--text-medium)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--text-medium)'}}>
           <div>Showing {filteredTopics.length} of {topics.length} topics</div>
           {(searchTerm || filterStatus !== 'all') && (
             <button onClick={handleClearFilters} className="retro-btn secondary" style={{ fontSize: '9px', padding: '5px 10px' }}>
@@ -195,16 +195,16 @@ const Topics = () => {
               {topic.mandatoryCompleted ? (
                 <div style={{
                   padding: '10px',
-                  background: topic.bonusCompleted 
-                    ? 'var(--success-green)' 
-                    : 'rgba(241, 249, 0, 0.81)',
-                  color: topic.bonusCompleted ? 'white' : 'var(--success-green)',
-                  fontSize: '10px',
+                  background: 'rgba(25, 149, 0, 0.81)',
+                  color: 'white',
+                  fontSize: '12px',
                   fontWeight: 'bold',
                   marginBottom: '15px',
                   border: `2px solid var(--success-green)`
                 }}>
-                  {topic.bonusCompleted ? 'COMPLETED' : 'PASSED'}
+                  {/* {topic.bonusCompleted ? 'COMPLETED' : 'PASSED'} */}
+                  {/* This was the previous way, and honestly, it was better */}
+                  COMPLETED
                 </div>
               ) : (
                 <div style={{
@@ -226,7 +226,7 @@ const Topics = () => {
                 style={{
                   width: '100%',
                   background: topic.mandatoryCompleted 
-                    ? (topic.bonusCompleted ? 'var(--success-green)' : 'var(--bright-blue)')
+                    ? (topic.bonusCompleted ? '#eeff00' : 'var(--bright-blue)')
                     : 'var(--orange-accent)',
                   fontSize: '11px',
                   padding: '12px'
@@ -237,7 +237,7 @@ const Topics = () => {
                 }}
               >
                 {topic.mandatoryCompleted 
-                  ? (topic.bonusCompleted ? 'View Topic' : 'Continue')
+                  ? (topic.bonusCompleted ? 'Review Topic' : 'Continue')
                   : 'Start Topic'}
               </button>
             </motion.div>

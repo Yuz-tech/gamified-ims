@@ -25,7 +25,7 @@ const Footer = () => {
                             ABOUT
                         </h4>
                         <p style={{ fontSize: '10px', color: '#55e8f2', lineHeight: '1.6' }}>
-                            IMS Awareness Training for Advanced World Solutions, Inc.
+                            IMS Awareness Training for Advanced World Solutions | Systems, Inc.
                         </p>
                     </div>
 
@@ -44,9 +44,13 @@ const Footer = () => {
                     {/* Contact */}
                     <div>
                         <h4 style={{ fontSize: '12px', color: '#FFFFFF', marginBottom: '15px' }}>
-                            CONTACT
+                            CONTACTS
                         </h4>
-                        <a href="https://www.awsys-i.com/en/home.php" style={{ fontSize: '10px', color: '#55e8f2', lineHeight: '1.6' }}>Offical Site</a>
+                        <p style={{ fontSize: '10px', color: '#55e8f2', lineHeight: '1.6' }}>qec.common@awsys-i.com</p>
+                        <br />
+                        <a href="https://www.awsys-i.com/en/home.php" style={{ fontSize: '10px', color: '#55e8f2', lineHeight: '1.6' }}>AWS Website</a>
+                        <br />
+                        <a href="https://sites.google.com/awsys-i.com/ims-portal/home" style={{ fontSize: '10px', color: '#55e8f2', lineHeight: '1.6' }}>IMS Portal</a>
                     </div>
                 </div>
 
