@@ -8,53 +8,94 @@ const XPSlots = () => {
     const navigate = useNavigate();
     const { user, updateUser } = useAuth();
     const [spinning, setSpinning] = useState(false);
-    const [slots, setSlots] = useState(['🎮', '🎮', '🎮']);
+    const [slots, setSlots] = useState(['❓', '❓', '❓']);
+    const [revealedSlots, setRevealedSlots] = useState([false, false, false]);
     const [result, setResult] = useState(null);
     const [canSpin, setCanSpin] = useState(true);
     const [cooldown, setCooldown] = useState(0);
     const [totalWins, setTotalWins] = useState(0);
     const [totalSpins, setTotalSpins] = useState(0);
+    const [longCooldownActive, setLongCooldownActive] = useState(false);
+    const [longCooldownRemaining, setLongCooldownRemaining] = useState(0);
 
-    const symbols = ['🎮', '🏆', '⭐', '💎', '🔥', '👑', '🎯'];
+    const symbols = ['👽', '🤖','🎮','🌟','👾','⭕','💩','💎'];
     const prizes = {
-        '🎮🎮🎮': { xp: 10, name: 'Triple Game' },
-        '🏆🏆🏆': { xp: 50, name: 'Triple Trophy' },
-        '⭐⭐⭐': { xp: 75, name: 'Triple Star' },
-        '💎💎💎': { xp: 100, name: 'Triple Diamond' },
-        '🔥🔥🔥': { xp: 150, name: 'Triple Fire' },
-        '👑👑👑': { xp: 200, name: 'Triple Crown' },
-        '🎯🎯🎯': { xp: 500, name: 'JACKPOT!' },
+        '💩💩💩': {xp: 1, name: 'Just Leave'},
+        '👽👽👽': {xp: 1, name: 'Nice Try'},
+        '🤖🤖🤖': {xp: 1, name: 'Warning'},
+        '⭕⭕⭕': {xp: 1, name: 'Average'},
+        '🌟🌟🌟': {xp: 1, name: 'Gambler'},
+        '🎮🎮🎮': {xp: 1, name: 'Fated'},
+        '💎💎💎': {xp: 1, name: 'PALDO!'},
     };
+
+    useEffect(() => {
+        loadStoredData();
+    }, []);
 
     useEffect(() => {
         let timer;
         if (cooldown > 0) {
             timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
-        } else {
+        } else if (!longCooldownActive) {
             setCanSpin(true);
         }
         return () => clearTimeout(timer);
-    }, [cooldown]);
+    }, [cooldown, longCooldownActive]);
+
+    useEffect(() => {
+        let timer;
+        if (longCooldownRemaining > 0) {
+            timer = setTimeout(() => setLongCooldownRemaining(longCooldownRemaining - 1), 1000);
+        } else if (longCooldownActive) {
+            setLongCooldownActive(false);
+            setCanSpin(true);
+
+            localStorage.removeItem('xpSlots_longCooldown');
+        }
+        return () => clearTimeout(timer);
+    }, [longCooldownRemaining, longCooldownActive]);
+
+    const loadStoredData = () => {
+        const storedSpins = parseInt(localStorage.getItem('xpSlots_totalSpins') || '0');
+        const storedWins = parseInt(localStorage.getItem('xpSlots_totalWins') || 0);
+        setTotalSpins(storedSpins);
+        setTotalWins(storedWins);
+
+        const longCooldownEnd = localStorage.getItem('xpSlots_longCooldown');
+        if (longCooldownEnd) {
+            const endTime = parseInt(longCooldownEnd);
+            const now = Date.now();
+            if (now < endTime) {
+                const remaining = Math.ceil((endTime - now) / 1000);
+
+                setLongCooldownRemaining(remaining);
+                setLongCooldownActive(true);
+                setCanSpin(false);
+            } else {
+                localStorage.removeItem('xpSlots_longCooldown');
+            }
+        }
+    };
 
     const spin = async () => {
-        if (!canSpin || spinning) return;
+        if (!canSpin || spinning || longCooldownActive) return;
 
         setSpinning(true);
         setResult(null);
         setCanSpin(false);
-        setTotalSpins(totalSpins + 1);
+        setRevealedSlots([false, false, false]);
+        const newTotalSpins = totalSpins + 1;
+        setTotalSpins(newTotalSpins);
 
-        const spinDuration = 2000;
-        const spinInterval = 100;
-        const iterations = spinDuration / spinInterval;
+        localStorage.setItem('xpSlots_totalSpins', newTotalSpins.toString());
 
-        for (let i=0; i<iterations; i++) {
-            setSlots([
-                symbols[Math.floor(Math.random() * symbols.length)],
-                symbols[Math.floor(Math.random() * symbols.length)],
-                symbols[Math.floor(Math.random() * symbols.length)]
-            ]);
-            await new Promise(resolve => setTimeout(resolve, spinInterval));
+        if (newTotalSpins % 100 === 0) {
+            const cooldownEnd = Date.now() + (360 * 1000);
+
+            localStorage.setItem('xpSlots_longCooldown', cooldownEnd.toString());
+            setLongCooldownActive(true);
+            setLongCooldownRemaining(360);
         }
 
         const finalSlots = [
@@ -62,6 +103,15 @@ const XPSlots = () => {
             symbols[Math.floor(Math.random() * symbols.length)],
             symbols[Math.floor(Math.random() * symbols.length)]
         ];
+
+        await animateSlot(0, finalSlots[0]);
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        await animateSlot(1, finalSlots[1]);
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        await animateSlot(2, finalSlots[2]);
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         setSlots(finalSlots);
         setSpinning(false);
@@ -75,10 +125,14 @@ const XPSlots = () => {
                 xp: prize.xp,
                 name: prize.name
             });
-            setTotalWins(totalWins + 1);
+
+            const newTotalWins = totalWins + 1;
+            setTotalWins(newTotalWins);
+
+            localStorage.setItem('xpSlots_totalWins', newTotalWins.toString());
 
             try {
-                await api.post('/auth/award-xp', { xp: prize.xp, reason: `XP Slots: ${prize.name}`});
+                await api.post('/auth/award-xp', {xp: prize.xp, reason: `XP Slots: ${prize.name}`});
                 const userResponse = await api.get('/auth/me');
                 updateUser(userResponse.data);
             } catch (error) {
@@ -91,16 +145,46 @@ const XPSlots = () => {
             });
         }
 
-        if (totalSpins > 10) {
-            setCooldown(360);
-        } else {
-            setCooldown(1);
+        if (!longCooldownActive) {
+            setCooldown(10);
         }
-        
+    };
+
+    const animateSlot = async (index, finalSymbol) => {
+        const spinDuration = 1000;
+        const spinInterval = 100;
+        const iterations = spinDuration / spinInterval;
+
+        for (let i=0; i<iterations; i++) {
+            setSlots(prev => {
+                const newSlots = [...prev];
+                newSlots[index] = symbols[Math.floor(Math.random() * symbols.length)];
+                return newSlots;
+            });
+            await new Promise(resolve => setTimeout(resolve, spinInterval));
+        }
+
+        setSlots(prev => {
+            const newSlots = [...prev];
+            newSlots[index] = finalSymbol;
+            return newSlots;
+        });
+
+        setRevealedSlots(prev => {
+            const newRevealed = [...prev];
+            newRevealed[index] = true;
+            return newRevealed;
+        });
+    };
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}: ${secs.toString().padStart(2, '0')}`;
     };
 
     return (
-        <div className="retro-container" style={{ paddingTop: '40px', minHeight: '100vh' }}>
+        <div className="retro-container" style={{ paddingTop: '40px', minHeight: '100vh'}}>
             <div className="scanlines"></div>
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -119,50 +203,66 @@ const XPSlots = () => {
                         }}
                         transition={{ repeat: Infinity, duration: 2 }}
                         className="neon-text"
-                        style={{ fontSize: '48px', marginBottom: '10px', color: 'var(--bright-blue'}}
+                        style={{ fontSize: '48px', marginBottom: '10px', color: 'var(--bright-blue)'}}
                     >
-                        XP SLOTS
+                        XP Slots
                     </motion.h1>
                     <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
-                        Match 3 symbols to win XP!
+                        Hello Player, I see you found the easter egg ദ്ദി(˵ •̀ ᴗ - ˵ ) ✧
                     </p>
-                    <div style={{ fontSize: '20px', color: 'var(--text-light)', marginTop: '10px' }}>
-                        🤫 You found the Easter Egg! <br /> Spins: {totalSpins} | Wins: {totalWins}
+                    <div style={{ fontSize: '10px', color: 'var(--text-light)', marginTop: '10px' }}>
+                        Spins: {totalSpins} | Wins: {totalWins}
                     </div>
+                    {totalSpins > 0 && totalSpins % 100 === 0 && longCooldownActive && (
+                        <div style={{
+                            marginTop: '15px',
+                            padding: '10px',
+                            background: 'rgba(239, 68, 68, 0.2)',
+                            border: '2px solid var(--error-red)',
+                            fontSize: '11px',
+                            color: 'var(--error-red)',
+                            fontWeight: 'bold'
+                        }}>
+                            100 Spins Reached! 6-minute cooldown activated!
+                        </div>
+                    )}
                 </div>
 
-                {/* Slot Machine */}
+                {/* Machine */}
                 <motion.div
                     className="retro-card"
                     style={{
                         padding: '40px',
-                        background: 'linear-gradient(135deg, var(--primary-navy) 0%, #1e3a8a 100%)',
+                        background: 'linear-gradient(135deg, var(--primary-navy) 0%, #le3a8a 100%',
                         border: '5px solid var(--bright-blue)',
                         boxShadow: '0 0 30px rgba(59, 130, 246, 0.5)'
-                    }}
-                >
-                    {/* Slots Display */}
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr 1fr',
-                        gap: '20px',
-                        marginBottom: '40px'
                     }}>
-                        {slots.map((symbol, index) => (
-                            <motion.div
-                                key={index}
-                                animate={spinning ? {
-                                    y: [0, -10, 0],
-                                    rotate: [0, 360, 0]
+                        {/* Slots */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr 1fr',
+                            gap: '20px',
+                            marginBottom: '40px'
+                        }}>
+                            {slots.map((symbol, index) => (
+                                <motion.div
+                                    key={index}
+                                    animate={spinning && !revealedSlots[index] ? {
+                                        y: [0, -10, 0],
+                                        rotate: [0, 360, 0]
+                                    } : 
+                                revealedSlots[index] ? {
+                                    scale: [1, 1.2, 1]
                                 } : {}}
-                                transition={spinning ? {
+                                transition={spinning && !revealedSlots[index] ? {
                                     repeat: Infinity,
-                                    duration: 0.3,
-                                    delay: index * 0.1
+                                    duration: 0.3
+                                } : revealedSlots[index] ? {
+                                    duration: 0.5
                                 } : {}}
                                 style={{
                                     background: 'white',
-                                    border: '5px solid var(--orange-accent)',
+                                    border: `5px solid ${revealedSlots[index] ? 'var(--success-green)' : 'var(--orange-accent)'}`,
                                     borderRadius: '20px',
                                     padding: '30px',
                                     textAlign: 'center',
@@ -171,111 +271,107 @@ const XPSlots = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    boxShadow: spinning ? '0 0 20px rgba(249, 115, 22, 0.8)' : 'none'
+                                    boxShadow: spinning && !revealedSlots[index] ? '0 0 20px rgba(249, 115, 22, 0.8)' : revealedSlots[index] ? '0 0 20px rgba(16, 185, 129, 0.8)' : 'none'
                                 }}
                             >
                                 {symbol}
                             </motion.div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
 
-                    {/* Spin Button */}
-                    <motion.button
-                        whileHover={canSpin ? { scale: 1.05 } : {}}
-                        whileTap={canSpin ? { scale: 0.95 } : {}}
-                        onClick={spin}
-                        disabled={!canSpin || spinning}
-                        className="retro-btn"
-                        style={{
-                            width: '100%',
-                            fontSize: '24px',
-                            padding: '20px',
-                            background: canSpin ? 'var(--success-green)' : 'var(--text-medium)',
-                            opacity: canSpin ? 1 : 0.5,
-                            cursor: canSpin ? 'pointer' : 'not-allowed'
-                        }}
-                    >
-                        {spinning ? 'Spinning...' : cooldown > 0 ? `Cooldown: ${cooldown}s` : 'Spin!'}
-                    </motion.button>
-
-                    {/* Result Display */}
-                    <AnimatePresence>
-                        {result && (
-                            <motion.div 
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0, opacity: 0 }}
-                                style={{
-                                    marginTop: '30px',
-                                    padding: '30px',
-                                    background: result.win ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                                    border: `3px solid ${result.win ? 'var(--success-green)' : 'var(--error-red)'}`,
-                                    borderRadius: '10px',
-                                    textAlign: 'center'
-                                }}
-                            >
-                                <div style={{ fontSize: '72px', marginBottom: '20px' }}>
-                                    {result.win ? '🎉' : '😢'}
-                                </div>
-                                <div style={{
-                                    fontSize: '24px',
-                                    color: result.win ? 'var(--success-green)' : 'var(--error-red)',
-                                    fontWeight: 'bold',
-                                    marginBottom: '10px'
-                                }}>
-                                    {result.win ? result.name : 'Try Again!'}
-                                </div>
-                                {result.win && (
-                                    <div style={{
-                                        fontSize: '48px',
-                                        color: 'var(--success-green)',
-                                        fontWeight: 'bold'
-                                    }}>
-                                        +{result.xp} XP
-                                    </div>
-                                )}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
-
-                {/* Prize Table */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="retro-card"
-                    style={{ marginTop: '30px' }}
-                >
-                    <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-                        Prize Table
-                    </h3>
-                    <div style={{ display: 'grid', gap: '10px' }}>
-                        {Object.entries(prizes).map(([key, prize]) => (
-                            <div key={key} style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: '10px 15px',
-                                background: 'var(--bg-light)',
-                                border: '2px solid var(--border-color)',
-                                fontSize: '12px'
+                        {/* Spin Button */}
+                        <motion.button
+                            whileHover={canSpin && !longCooldownActive ? { scale: 1.05 } : {}}
+                            whileTap={canSpin && !longCooldownActive ? { scale: 0.95 } : {}}
+                            onClick={spin}
+                            disabled={!canSpin || spinning || longCooldownActive}
+                            className="retro-btn"
+                            style={{
+                                width: '100%',
+                                fontSize: '24px',
+                                padding: '20px',
+                                background: canSpin && !longCooldownActive ? 'var(--success-green)' : 'var(--text-medium)',
+                                opacity: canSpin && !longCooldownActive ? 1 : 0.5,
+                                cursor: canSpin && !longCooldownActive ? 'pointer' : 'not-allowed'
                             }}>
-                                <div style={{ fontSize: '24px' }}>{key}</div>
-                                <div>
-                                    <strong>{prize.name}</strong> - {prize.xp} XP
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </motion.div>
+                                {spinning ? 'Spinning...' : longCooldownActive ? `Long Cooldown: ${formatTime(longCooldownRemaining)}` : cooldown > 0 ? `Cooldown: ${cooldown}s` : 'SPIN!'}
+                            </motion.button>
 
-                {/* Back Button */}
-                <button onClick={() => navigate('/')} className="retro-btn secondary" style={{ width: '100%', marginTop: '30px'}}>
-                    Back to Home
-                </button>
+                            {/* Results */}
+                            <AnimatePresence>
+                                {result && (
+                                    <motion.div
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        exit={{ scale: 0, opacity: 0 }}
+                                        style={{
+                                            marginTop: '30px',
+                                            padding: '30px',
+                                            background: result.win ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                                            border: `3px solid ${result.win ? 'var(--success-green)' : 'var(--error-red)'}`,
+                                            borderRadius: '10px',
+                                            textAlign: 'center'
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '72px', marginBottom: '20px' }}>
+                                            {result.win ? '٩(ˊᗜˋ*)و ♡' : '🫵🤣'}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '24px',
+                                            color: result.win ? 'var(--success-green)' : 'var(--error-red)',
+                                            fontWeight: 'bold',
+                                            marginBottom: '10px'
+                                        }}>
+                                            {result.win ? result.name : 'Try Again!'}
+                                        </div>
+                                        {result.win && (
+                                            <div style={{
+                                                fontSize: '48px',
+                                                color: 'var(--success-green)',
+                                                fontWeight: 'bold'
+                                            }}>
+                                                +{result.xp} XP
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                    </motion.div>
+
+                    {/* Prize table */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="retro-card"
+                        style={{ marginTop: '30px' }}>
+                            <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '20px'}}>
+                                Prize Table
+                            </h3>
+                            <div style={{ display: 'grid', gap: '10px' }}>
+                                {Object.entries(prizes).map(([key, prize]) => (
+                                    <div key={key} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '10px 15px',
+                                        background: 'var(--bg-light)',
+                                        border: '2px solid var(--border-color)',
+                                        fontSize: '12px'
+                                    }}>
+                                        <div style={{ fontSize: '24px' }}>{key}</div>
+                                        <div>
+                                            <strong>{prize.name}</strong> - {prize.xp} XP
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                        {/* Back Button */}
+                            <button onClick={() => navigate('/')} className="retro-btn secondary" style={{ width: '100%', marginTop: '30px' }}>
+                                Back to Home
+                            </button>
             </motion.div>
-            
         </div>
     );
 };
