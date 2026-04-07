@@ -1,1 +1,14 @@
 1. compare and show working topicdetail.js
+
+2. Create survey feedback form page for user testing -> put link in footer
+
+1. How would you rate your overall experience with the gamified IMS Awareness Training?
+2. Does the system meet your expectations?
+3. How easy or difficult was it to complete a training topic?
+4. What, if anything, was the most challenging part of using the web app?
+5. Did you encounter any broken links, errors, or incorrect output? If yes, list them down.
+6. How Visually appealing did you find in the design (retro theme)?
+7. Which feature did you like the most?
+8. Which feature did you like the least?
+9. Which features or improvements would you like to see?
+10. Comments/Suggestions

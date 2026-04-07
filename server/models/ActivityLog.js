@@ -19,7 +19,8 @@ const activityLogSchema = new mongoose.Schema({
       'badge_earned',
       'topic_completed',
       'profile_updated',
-      'password_reset_by_admin'
+      'password_reset_by_admin',
+      'xp_awarded'
     ]
   },
   details: {

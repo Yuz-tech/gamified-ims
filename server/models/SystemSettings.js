@@ -1,18 +1,26 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const systemSettingsSchema = new mongoose.Schema({
-    completionFormUrl: {
+    settingKey: {
         type: String,
-        default: 'https://forms.google.com/'
+        required: true,
+        unique: true,
+        enum: ['completion_form_url']
     },
-    updatedBy: {
+    settingValue: {
+        type: String,
+        required: true
+    },
+    lastUpdatedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    updatedAt: {
+    lastUpdatedAt: {
         type: Date,
         default: Date.now
     }
+}, {
+    timestamps: true
 });
 
 export default mongoose.model('SystemSettings', systemSettingsSchema);

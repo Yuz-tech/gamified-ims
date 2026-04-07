@@ -333,42 +333,133 @@ router.post('/reset-user-password/:userId', authenticateToken, isAdmin, async (r
   }
 });
 
+router.get('/analytics', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const users = await User.find({ role: 'employee' }).select('username xp level completedTopics badges');
+    const topics = await Topic.find().select('title');
+
+    const totalUsers = users.length;
+    const totalBadges = users.reduce((sum, user) => sum + (user.badges?.length || 0), 0);
+    const avgXpPerUser = totalUsers > 0 ? Math.round(users.reduce((sum, user) => sum + user.xp, 0) / totalUsers) : 0;
+    const avgLevel = totalUsers > 0 ? Math.round(users.reduce((sum, user) => sum + user.level, 0) / totalUsers) : 0;
+
+    const totalTopicsCompleted = users.reduce((sum, user) => sum + (user.completedTopics?.length || 0), 0);
+    const avgCompletionRate = totalUsers > 0 && topics.length > 0 ? Math.round((totalTopicsCompleted / (totalUsers * topics.length)) * 100) : 0;
+
+    const topicCompletions = {};
+    topics.forEach(topic => {
+      topicCompletions[topic._id] = {
+        title: topic.title,
+        completions: 0
+      };
+    });
+
+    users.forEach(user => {
+      user.completedTopics?.forEach(ct => {
+        if (topicCompletions[ct.topicId]) {
+          topicCompletions[ct.topicId].completions++;
+        }
+      });
+    });
+
+    const topTopics = Object.values(topicCompletions)
+      .sort((a, b) => b.completions - a.completions)
+      .slice(0, 10);
+
+      const topUsers = users
+        .map(user => ({
+          username: user.username,
+          xp: user.xp,
+          level: user.level,
+          completedTopics: user.completedTopics?.length || 0
+        }))
+        .sort((a, b) => b.xp - a.xp)
+        .slice(0, 10);
+
+      res.json({
+        totalUsers,
+        totalBadges,
+        avgXpPerUser,
+        avgLevel,
+        avgCompletionRate,
+        topTopics,
+        topUsers
+      });
+  } catch (error) {
+    console.error('Analytics error: ', error);
+    res.status(500).json({ message: 'Server error', error: error.message});
+  }
+});
+
+// Get system settings
 router.get('/settings', authenticateToken, isAdmin, async (req, res) => {
   try {
-    let settings = await SystemSettings.findOne();
-
-    if(!settings) {
-      settings = new SystemSettings();
+    let settings = await SystemSettings.findOne({ settingKey: 'completion_form_url' });
+    
+    // Create default if doesn't exist
+    if (!settings) {
+      settings = new SystemSettings({
+        settingKey: 'completion_form_url',
+        settingValue: 'https://forms.gle/your-form-id',
+        lastUpdatedBy: req.user._id
+      });
       await settings.save();
     }
 
     res.json(settings);
   } catch (error) {
-    console.error('Error fetching settings: ', error);
+    console.error('Error fetching settings:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-router.put('/settings', authenticateToken, isAdmin, async (req,res) => {
+// Update system settings
+router.put('/settings', authenticateToken, isAdmin, async (req, res) => {
   try {
     const { completionFormUrl } = req.body;
 
-    let settings = await SystemSettings.findOne();
-
-    if (!settings) {
-      settings = new SystemSettings();
+    if (!completionFormUrl) {
+      return res.status(400).json({ message: 'Completion form URL is required' });
     }
 
-    settings.completionFormUrl = completionFormUrl;
-    settings.updatedBy = req.user._id;
-    settings.updatedAt = new Date();
+    // Validate URL format
+    try {
+      new URL(completionFormUrl);
+    } catch (error) {
+      return res.status(400).json({ message: 'Invalid URL format' });
+    }
+
+    let settings = await SystemSettings.findOne({ settingKey: 'completion_form_url' });
+
+    if (settings) {
+      settings.settingValue = completionFormUrl;
+      settings.lastUpdatedBy = req.user._id;
+      settings.lastUpdatedAt = new Date();
+    } else {
+      settings = new SystemSettings({
+        settingKey: 'completion_form_url',
+        settingValue: completionFormUrl,
+        lastUpdatedBy: req.user._id
+      });
+    }
 
     await settings.save();
 
-    res.json(settings);
+    // Log activity
+    await logActivity(req.user._id, 'settings_updated', {
+      setting: 'completion_form_url',
+      newValue: completionFormUrl
+    }, req);
+
+    res.json({
+      message: 'Settings updated successfully',
+      settings
+    });
   } catch (error) {
+    console.error('Error updating settings:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 export default router;
