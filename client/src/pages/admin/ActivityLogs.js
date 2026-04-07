@@ -15,7 +15,6 @@ const ActivityLogs = () => {
   const actionTypes = [
     'login',
     'logout',
-    'logout_all_devices',
     'password_change',
     'video_watched',
     'quiz_started',
@@ -23,8 +22,8 @@ const ActivityLogs = () => {
     'badge_earned',
     'topic_completed',
     'profile_updated',
-    'account_request',
-    'account_approved'
+    'password_reset_by_admin',
+    'xp_awarded'
   ];
 
   useEffect(() => {

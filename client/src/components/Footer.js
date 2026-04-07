@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Footer = () => {
     const navigate = useNavigate();
@@ -73,7 +73,7 @@ const Footer = () => {
                         const newCount = clickCount + 1;
                         setClickCount(newCount);
                         if (newCount === 7) {
-                          navigate('/xp-slots');
+                          navigate('/驚き');
                           setClickCount(0);
                           window.scrollTo({
                             top: 0

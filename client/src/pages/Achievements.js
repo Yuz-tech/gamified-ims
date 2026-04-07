@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { getImageUrl } from '../utils/getImageUrl';
 
 const Achievements = () => {
-  const { user } = useAuth();
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
 

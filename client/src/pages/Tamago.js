@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
-const XPSlots = () => {
+const Tamago = () => {
     const navigate = useNavigate();
-    const { user, updateUser } = useAuth();
+    const { updateUser } = useAuth();
     const [spinning, setSpinning] = useState(false);
     const [slots, setSlots] = useState(['❓', '❓', '❓']);
     const [revealedSlots, setRevealedSlots] = useState([false, false, false]);
@@ -20,13 +20,13 @@ const XPSlots = () => {
 
     const symbols = ['👽', '🤖','🎮','🌟','👾','⭕','💩','💎'];
     const prizes = {
-        '💩💩💩': {xp: 1, name: 'Just Leave'},
-        '👽👽👽': {xp: 1, name: 'Nice Try'},
-        '🤖🤖🤖': {xp: 1, name: 'Warning'},
-        '⭕⭕⭕': {xp: 1, name: 'Average'},
-        '🌟🌟🌟': {xp: 1, name: 'Gambler'},
-        '🎮🎮🎮': {xp: 1, name: 'Fated'},
-        '💎💎💎': {xp: 1, name: 'PALDO!'},
+        '💩💩💩': {xp: 1, name: 'You won!...but at what cost'},
+        '👽👽👽': {xp: 50, name: "Congrats! That's like 1 bonus question"},
+        '🤖🤖🤖': {xp: 100, name: 'You won! Just remember that there is more to life than playing slots'},
+        '⭕⭕⭕': {xp: 150, name: 'Wow you actually won, never thought that would happen honestly'},
+        '🌟🌟🌟': {xp: 200, name: 'You are indeed lucky! Now go touch grass'},
+        '🎮🎮🎮': {xp: 250, name: 'Congrats on the win. Might as well stop at this point.'},
+        '💎💎💎': {xp: 500, name: '🦾 PALDO!!'},
     };
 
     useEffect(() => {
@@ -36,7 +36,7 @@ const XPSlots = () => {
     useEffect(() => {
         let timer;
         if (cooldown > 0) {
-            timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+            timer = setTimeout(() => setCooldown(cooldown - 1), 300);
         } else if (!longCooldownActive) {
             setCanSpin(true);
         }
@@ -105,10 +105,10 @@ const XPSlots = () => {
         ];
 
         await animateSlot(0, finalSlots[0]);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         await animateSlot(1, finalSlots[1]);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         await animateSlot(2, finalSlots[2]);
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -132,7 +132,7 @@ const XPSlots = () => {
             localStorage.setItem('xpSlots_totalWins', newTotalWins.toString());
 
             try {
-                await api.post('/auth/award-xp', {xp: prize.xp, reason: `XP Slots: ${prize.name}`});
+                await api.post('/auth/award-xp', {xp: prize.xp, reason: 'Easter egg found'});
                 const userResponse = await api.get('/auth/me');
                 updateUser(userResponse.data);
             } catch (error) {
@@ -146,7 +146,7 @@ const XPSlots = () => {
         }
 
         if (!longCooldownActive) {
-            setCooldown(10);
+            setCooldown(7);
         }
     };
 
@@ -208,7 +208,9 @@ const XPSlots = () => {
                         XP Slots
                     </motion.h1>
                     <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
-                        Hello Player, I see you found the easter egg ദ്ദി(˵ •̀ ᴗ - ˵ ) ✧
+                        Hello Player, I see you found the easter egg ᕙ(  •̀ ᗜ •́  )ᕗ
+                        <br />
+                        Be a good person and gatekeep it.
                     </p>
                     <div style={{ fontSize: '10px', color: 'var(--text-light)', marginTop: '10px' }}>
                         Spins: {totalSpins} | Wins: {totalWins}
@@ -294,7 +296,7 @@ const XPSlots = () => {
                                 opacity: canSpin && !longCooldownActive ? 1 : 0.5,
                                 cursor: canSpin && !longCooldownActive ? 'pointer' : 'not-allowed'
                             }}>
-                                {spinning ? 'Spinning...' : longCooldownActive ? `Long Cooldown: ${formatTime(longCooldownRemaining)}` : cooldown > 0 ? `Cooldown: ${cooldown}s` : 'SPIN!'}
+                                {spinning ? 'Spinning...' : longCooldownActive ? `Long Cooldown: ${formatTime(longCooldownRemaining)}` : cooldown > 0 ? `Cooldown: ${cooldown}` : 'SPIN!'}
                             </motion.button>
 
                             {/* Results */}
@@ -314,7 +316,7 @@ const XPSlots = () => {
                                         }}
                                     >
                                         <div style={{ fontSize: '72px', marginBottom: '20px' }}>
-                                            {result.win ? '٩(ˊᗜˋ*)و ♡' : '🫵🤣'}
+                                            {result.win ? '⁶🤷🏻‍♀️⁷' : '🫵🤣'}
                                         </div>
                                         <div style={{
                                             fontSize: '24px',
@@ -361,7 +363,7 @@ const XPSlots = () => {
                                     }}>
                                         <div style={{ fontSize: '24px' }}>{key}</div>
                                         <div>
-                                            <strong>{prize.name}</strong> - {prize.xp} XP
+                                            {prize.xp} XP
                                         </div>
                                     </div>
                                 ))}
@@ -372,8 +374,11 @@ const XPSlots = () => {
                                 Back to Home
                             </button>
             </motion.div>
+            <div style={{ paddingTop: '50px', textAlign: 'center', fontSize: '28px'}}>
+                Proverbs 13:11 ˗ˏˋ ✞ ˎˊ˗  ᡣ𐭩
+            </div>
         </div>
     );
 };
 
-export default XPSlots;
+export default Tamago;

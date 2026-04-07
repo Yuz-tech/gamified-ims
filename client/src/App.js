@@ -19,7 +19,7 @@ import AdminTopics from './pages/admin/Topics';
 import ActivityLogs from './pages/admin/ActivityLogs';
 import Analytics from './pages/admin/Analytics';
 import YearlyReset from './pages/admin/YearlyReset';
-import XPSlots from './pages/XPSlots';
+import Tamago from './pages/Tamago';
 import './styles/retro.css';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -183,10 +183,10 @@ const AppRoutes = () => {
         />
 
         <Route
-          path="/xp-slots"
+          path="/驚き"
           element={
             <ProtectedRoute>
-              <XPSlots />
+              <Tamago />
             </ProtectedRoute>
           }
         />

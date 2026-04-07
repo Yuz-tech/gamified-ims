@@ -17,10 +17,6 @@ const Login = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmail] = useState('');
-  const [setResetSent] = useState(false);
-
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
