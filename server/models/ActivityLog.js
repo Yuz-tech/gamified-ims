@@ -18,7 +18,8 @@ const activityLogSchema = new mongoose.Schema({
       'quiz_completed',
       'badge_earned',
       'topic_completed',
-      'profile_updated'
+      'profile_updated',
+      'password_reset_by_admin'
     ]
   },
   details: {

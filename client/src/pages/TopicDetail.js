@@ -78,14 +78,14 @@ const TopicDetail = () => {
         // Show success for n seconds
         setTimeout(() => {
           setCurrentStage(null);
-        }, 10000);
+        }, 7500);
       } else {
         // Failed - show error then reset
         setTimeout(() => {
           setCurrentStage(null);
           setSelectedAnswer(null);
           setMandatoryResult(null);
-        }, 10000);
+        }, 7500);
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting answer');
@@ -111,8 +111,8 @@ const TopicDetail = () => {
 
       // Show results for 5 seconds then return home
       setTimeout(() => {
-        navigate('/');
-      }, 5000);
+        navigate('/topics');
+      }, 6000);
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting bonus');
     }
@@ -373,11 +373,11 @@ const TopicDetail = () => {
 
               <div style={{ textAlign: 'center', padding: '20px' }}>
                 <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
-                  Continue with the next training topic.
+                  Continue with the other training topics.
                 </div>
 
                 <button onClick={() => navigate('/topics')} className="retro-btn" style={{ width: '100%' }}>
-                  VIEW TOPICS
+                  TOPICS PAGE
                 </button>
               </div>
             </motion.div>
@@ -462,7 +462,7 @@ const TopicDetail = () => {
         >
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <div style={{ fontSize: '72px', marginBottom: '20px' }}>
-              {mandatoryResult.correctAnswer ? '🎉' : '❌'}
+              {mandatoryResult.correctAnswer ? '৻(  •̀ ᗜ •́  ৻)' : '🫵🤣'}
             </div>
             <div style={{
               fontSize: '24px',
@@ -590,7 +590,7 @@ const TopicDetail = () => {
             style={{ width: '100%' }}
             disabled={Object.keys(bonusAnswers).length < 4}
           >
-            ✓ SUBMIT BONUS
+            SUBMIT
           </button>
         </motion.div>
       )}
@@ -603,7 +603,7 @@ const TopicDetail = () => {
           className="retro-card"
         >
           <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div style={{ fontSize: '72px', marginBottom: '20px' }}>Bonus Questions Done!</div>
+            <div style={{ fontSize: '62px', marginBottom: '20px' }}>Bonus Questions Done!</div>
             <div style={{ fontSize: '24px', color: 'var(--success-green)', marginBottom: '20px', fontWeight: 'bold' }}>
               Your Score:
             </div>
