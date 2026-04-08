@@ -90,16 +90,15 @@ const Topics = () => {
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>MANDATORY QUESTION</div>
             <div style={{ fontSize: '24px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>
               100XP + 
-              <div>
               <img src='./Qbadge.png' alt="Badge" style={{
-                width: '10px',
-                height: '10px'
+                width: '100%',
+                height: 'auto',
+                display: 'block'
               }}
               onError={(e) => {
                 e.target.style.display='none';
               }}
               />
-              </div>
               
             </div>
           </div>
