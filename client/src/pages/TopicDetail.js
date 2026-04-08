@@ -39,14 +39,13 @@ const TopicDetail = () => {
     }
   };
 
-  // ADD ENTIRE FUNCTION
   const fetchNextTopic = async () => {
     try {
       // Fetch all topics
       const topicsResponse = await api.get('/topics');
       const allTopics = topicsResponse.data;
 
-      // Find first incomplete topic (not in user's completedTopics) that's not current topic
+      // Find first incomplete topic
       const incompleteTopic = allTopics.find(t => 
         !user.completedTopics?.some(ct => ct.topicId === t._id) && 
         t._id !== topicId && 
@@ -401,12 +400,13 @@ const TopicDetail = () => {
                 {nextTopic ? (
                   <>
                     <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
-                      Continue with the next incomplete topic:
+                      Continue training:
                     </div>
                     <button 
                       onClick={() => navigate(`/topics/${nextTopic._id}`)} 
                       className="retro-btn" 
                       style={{ width: '100%', marginBottom: '10px' }}
+                      disabled
                     >
                       {nextTopic.title}
                     </button>
@@ -415,7 +415,7 @@ const TopicDetail = () => {
                       className="retro-btn secondary" 
                       style={{ width: '100%', fontSize: '10px' }}
                     >
-                      OR VIEW ALL TOPICS
+                      VIEW ALL TOPICS
                     </button>
                   </>
                 ) : (

@@ -88,7 +88,20 @@ const Topics = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
           <div style={{ padding: '15px', border: '2px solid var(--orange-accent)', background: 'rgba(249, 115, 22, 0.05)' }}>
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>MANDATORY QUESTION</div>
-            <div style={{ fontSize: '24px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>100XP ? 🏆</div>
+            <div style={{ fontSize: '24px', color: 'var(--orange-accent)', fontWeight: 'bold' }}>
+              100XP + 
+              <div>
+              <img src='./Qbadge.png' alt="Badge" style={{
+                width: '10px',
+                height: '10px'
+              }}
+              onError={(e) => {
+                e.target.style.display='none';
+              }}
+              />
+              </div>
+              
+            </div>
           </div>
           <div style={{ padding: '15px', border: '2px solid var(--bright-blue)', background: 'rgba(59, 130, 246, 0.05)' }}>
             <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>BONUS QUESTIONS</div>

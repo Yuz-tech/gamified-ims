@@ -116,21 +116,6 @@ const Home = () => {
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <div className="scanlines"></div>
 
-      {/* Welcome Header */}
-      <motion.div
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        style={{ marginBottom: '40px', textAlign: 'center' }}
-      >
-        <h1 className="neon-text" style={{ fontSize: '32px', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-          <strong style = {{ fontSize: '52px'}}>こんにちは</strong>
-          , {user?.username}!
-        </h1>
-        <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
-          Ready to Train?
-        </p>
-      </motion.div>
-
       {/* Finish Training Button */}
       {allTopicsCompleted && completionFormUrl && (
         <motion.div
@@ -158,6 +143,29 @@ const Home = () => {
               </a>
           </motion.div>
       )}
+
+      {/* Welcome Header */}
+      <motion.div
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        style={{ marginBottom: '40px', textAlign: 'center' }}
+      >
+        <h1 className="neon-text" style={{ fontSize: '32px', marginBottom: '10px', color: 'var(--primary-navy)' }}>
+          <strong style = {{ fontSize: '52px'}}>こんにちは</strong>
+          , {user?.username}!
+        </h1>
+        <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
+          Ready to Train?
+        </p>
+        <br />
+        <button className='retro-btn' style={{ width: '80px', height: '80px', background: '#ff0000', borderRadius: '70%', fontSize: '35px', color: 'white', padding: '12px' }} onClick={(e) => {
+          e.stopPropagation();
+          navigate('/topics');
+        }}>
+          始
+        </button>
+
+      </motion.div>
 
       {/* Stats */}
       <div style = {{
