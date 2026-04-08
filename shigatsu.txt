@@ -5,12 +5,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
 import { getImageUrl } from '../utils/getImageUrl';
-import { useAuth } from '../context/AuthContext'; // ✅ ADD THIS
+import { useAuth } from '../context/AuthContext'; 
 
 const TopicDetail = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth(); // ✅ ADD THIS
+  const { user } = useAuth(); 
   
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,11 +20,11 @@ const TopicDetail = () => {
   const [mandatoryResult, setMandatoryResult] = useState(null);
   const [bonusResult, setBonusResult] = useState(null);
   const [materialsConfirmed, setMaterialsConfirmed] = useState(false);
-  const [nextTopic, setNextTopic] = useState(null); // ✅ ADD THIS
+  const [nextTopic, setNextTopic] = useState(null);
 
   useEffect(() => {
     fetchTopic();
-    fetchNextTopic(); // ✅ ADD THIS
+    fetchNextTopic(); 
   }, [topicId]);
 
   const fetchTopic = async () => {
@@ -41,7 +41,7 @@ const TopicDetail = () => {
     }
   };
 
-  // ✅ ADD THIS ENTIRE FUNCTION
+  // ✅ ADD ENTIRE FUNCTION
   const fetchNextTopic = async () => {
     try {
       // Fetch all topics
@@ -388,7 +388,7 @@ const TopicDetail = () => {
             </>
           )}
 
-          {/* ✅ UPDATED NEXT TOPIC SECTION - ONLY THIS CHANGED */}
+          {/* UPDATED NEXT TOPIC SECTION - ONLY THIS CHANGED */}
           {topic.mandatoryCompleted && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -410,7 +410,7 @@ const TopicDetail = () => {
                       className="retro-btn" 
                       style={{ width: '100%', marginBottom: '10px' }}
                     >
-                      ➡️ {nextTopic.title}
+                      {nextTopic.title}
                     </button>
                     <button 
                       onClick={() => navigate('/topics')} 
@@ -432,7 +432,7 @@ const TopicDetail = () => {
                       color: 'var(--success-green)',
                       fontWeight: 'bold'
                     }}>
-                      🎉 Congratulations! You've completed ALL topics!
+                       Congratulations! You've completed ALL topics!
                     </div>
                     <button 
                       onClick={() => navigate('/topics')} 
@@ -587,7 +587,7 @@ const TopicDetail = () => {
           className="retro-card"
         >
           <h3 style={{ fontSize: '14px', color: 'var(--bright-blue)', marginBottom: '20px' }}>
-            💎 BONUS QUESTIONS (50 XP Each)
+            💎BONUS QUESTIONS (50 XP Each)
           </h3>
 
           {topic.questions.slice(1).map((question, qIndex) => (

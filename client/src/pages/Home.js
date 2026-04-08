@@ -31,10 +31,23 @@ const Home = () => {
   const [userBadges, setUserBadges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [allTopicsCompleted, setAllTopicsCompleted] = useState(false);
+  const [completionFormUrl, setCompletionFormUrl] = useState('');
 
   useEffect(() => {
     fetchData();
-  }, []);
+    fetchCompletionFormUrl();
+  }, [user]);
+
+  const fetchCompletionFormUrl = async () => {
+    try {
+      const response = await api.get('/admin/settings/public');
+
+      setCompletionFormUrl(response.data.settingValue);
+    } catch (error) {
+      console.error('Error fetching form URL: ', error);
+      setCompletionFormUrl('https://forms.gle/your-form-id');
+    }
+  };
 
  const fetchData = async () => {
   try {    
@@ -117,6 +130,32 @@ const Home = () => {
           Ready to Train?
         </p>
       </motion.div>
+
+      {/* Finish Training Button */}
+      {allTopicsCompleted && completionFormUrl && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className='retro-card'
+          style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'var(--success-green)', marginTop: '30px', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '20px', color: 'var(--success-green)', marginBottom: '20px' }}>
+              TRAINING COMPLETED!
+            </h3>
+            <p style={{ fontSize: '11px', marginBottom: '20px', lineHeight: '1.6' }}>
+              You have completed the IMS Awareness Training and got all badges! 
+              <br />
+              Please fill out the completion form.
+            </p>
+
+            <a href={completionFormUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className='retro-btn'
+              style={{ display: 'inline-block', textDecoration: 'none', width: '100%', textAlign: 'center', backgroundColor: '#36f805' }}>
+                Fill out completion form
+              </a>
+          </motion.div>
+      )}
 
       {/* Stats */}
       <div style = {{
@@ -218,50 +257,6 @@ const Home = () => {
         </motion.div>
       </div>
 
-      {/* Finish Training Button */}
-      {allTopicsCompleted ? (
-        <motion.div
-          initial = {{ scale: 0.9, opacity: 0 }}
-          animate = {{ scale: 1, opacity: 1 }}
-          className="retro-card"
-          style = {{
-            marginBottom: '40px',
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, var(--success-green) 0%, #059669 100%)',
-            border: '3px solid #047857'
-          }}>
-            <div style = {{ fontSize: '18px', color: 'white', marginBottom: '15px', fontWeight: 'bold' }}>
-              Congratulations!
-            </div>
-            <p style = {{ fontSize: '13px', color: 'white', marginBottom: '20px', opacity: 0.9 }}>
-              You completed all training topics! Click below to submit your completion form.
-            </p>
-            <button onClick={handleFinishTraining}
-              className="retro-btn"
-              style={{
-                background: 'white',
-                color: 'var(--success-green)',
-                border: '3px solid white'
-              }}>
-                Submit Completion Form
-              </button>
-          </motion.div>
-      ) : (
-        <motion.div 
-          initial = {{ scale: 0.9, opacity: 0 }}
-          animate = {{ scale: 1, opacity: 1 }}
-          className="retro-card"
-          style={{ marginBottom: '40px', textAlign: 'center', opacity: 0.6, cursor: 'not-allowed' }}
-        >
-          <h3 style = {{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-            COMPLETION FORM 
-          </h3>
-          <p style = {{ fontSize: '10px', color: 'var(--text-light)' }}>
-            To Unlock this, you must finish all topics.
-          </p>
-        </motion.div>
-      )}
-
       {/* Badge Gallery */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -282,7 +277,7 @@ const Home = () => {
           }}>
             {userBadges.slice(0, 6).map((badge, index) => {
               const imageUrl = badge.badgeImage?.startsWith('/uploads/')
-              ? `http://localhost:5000${badge.badgeImage}`
+              ? `http://192.168.232.247:5000${badge.badgeImage}`
               : badge.badgeImage
 
               return (

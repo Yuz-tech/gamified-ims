@@ -23,6 +23,7 @@ const ActivityLogs = () => {
     'topic_completed',
     'profile_updated',
     'password_reset_by_admin',
+    'settings_updated',
     'xp_awarded'
   ];
 

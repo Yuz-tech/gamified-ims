@@ -20,6 +20,7 @@ import ActivityLogs from './pages/admin/ActivityLogs';
 import Analytics from './pages/admin/Analytics';
 import YearlyReset from './pages/admin/YearlyReset';
 import Tamago from './pages/Tamago';
+import Settings from './pages/admin/Settings';
 import './styles/retro.css';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -97,6 +98,14 @@ const AdminLayout = ({ children }) => {
           {({ isActive }) => (
             <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
               RESET
+            </button>
+          )}
+        </NavLink>
+
+        <NavLink to="/admin/settings" style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              SETTINGS
             </button>
           )}
         </NavLink>
@@ -251,8 +260,17 @@ const AppRoutes = () => {
               </AdminLayout>
             </ProtectedRoute>
           }
-        />        
-        
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminLayout>
+                <Settings />
+              </AdminLayout>
+            </ProtectedRoute>
+          } 
+        />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <ProtectedRoute>

@@ -1,4 +1,4 @@
-Testing Types We'll Cover
+
 TypeFocusTime InvestmentToolsWhite-BoxCode structure, logic30%Jest, Code reviewBlack-BoxFunctionality, UI/UX40%Manual testingIntegrationComponent interaction15%Jest + SupertestSystemEnd-to-end workflows10%Manual + SeleniumPerformanceSpeed, load handling3%Lighthouse, k6SecurityVulnerabilities2%OWASP checklist
 
 Pre-Testing Setup

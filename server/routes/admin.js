@@ -10,6 +10,22 @@ import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
 
+router.get('/settings/public', async (req, res) => {
+  try {
+    let settings = await SystemSettings.findOne({ settingKey: 'completion_form_url' });
+    if (!settings) {
+      settings = {
+        settingValue: 'https://forms.gle/form-id'
+      };
+    }
+
+    res.json(settings);
+  } catch (error) {
+    console.error('Error fetching public settings: ', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.use(authenticateToken, isAdmin);
 
 // ===== USER MANAGEMENT =====
