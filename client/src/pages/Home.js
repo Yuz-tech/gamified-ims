@@ -138,7 +138,9 @@ const Home = () => {
           animate={{ opacity: 1, scale: 1 }}
           className='retro-card'
           style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'var(--success-green)', marginTop: '30px', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '20px', color: 'var(--success-green)', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '20px', color: 'var(--success-green)', marginBottom: '20px', lineHeight: '52px' }}>
+              ദ്ദി ˉ͈̀꒳ˉ͈́ )✧
+              <br />
               TRAINING COMPLETED!
             </h3>
             <p style={{ fontSize: '11px', marginBottom: '20px', lineHeight: '1.6' }}>

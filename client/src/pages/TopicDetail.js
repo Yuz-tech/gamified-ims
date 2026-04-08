@@ -3,10 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
 import { getImageUrl } from '../utils/getImageUrl';
+import { useAuth } from '../context/AuthContext'; 
 
 const TopicDetail = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth(); 
+  
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentStage, setCurrentStage] = useState(null); 
@@ -15,9 +18,11 @@ const TopicDetail = () => {
   const [mandatoryResult, setMandatoryResult] = useState(null);
   const [bonusResult, setBonusResult] = useState(null);
   const [materialsConfirmed, setMaterialsConfirmed] = useState(false);
+  const [nextTopic, setNextTopic] = useState(null);
 
   useEffect(() => {
     fetchTopic();
+    fetchNextTopic(); 
   }, [topicId]);
 
   const fetchTopic = async () => {
@@ -34,9 +39,30 @@ const TopicDetail = () => {
     }
   };
 
-  <button onClick={() => navigate('/topics')} className='retro-btn secondary' style={{ width: '100%' }}>
-    Back to Topics
-  </button>
+  // ADD ENTIRE FUNCTION
+  const fetchNextTopic = async () => {
+    try {
+      // Fetch all topics
+      const topicsResponse = await api.get('/topics');
+      const allTopics = topicsResponse.data;
+
+      // Find first incomplete topic (not in user's completedTopics) that's not current topic
+      const incompleteTopic = allTopics.find(t => 
+        !user.completedTopics?.some(ct => ct.topicId === t._id) && 
+        t._id !== topicId && 
+        t.isActive
+      );
+
+      if (incompleteTopic) {
+        setNextTopic(incompleteTopic);
+      } else {
+        // All topics completed
+        setNextTopic(null);
+      }
+    } catch (error) {
+      console.error('Error fetching next topic:', error);
+    }
+  };
 
   const handleStartMandatory = () => {
     if (!materialsConfirmed && !topic.mandatoryCompleted) {
@@ -203,8 +229,8 @@ const TopicDetail = () => {
               <label style={{ display: 'block', marginBottom: '10px', fontSize: '10px', fontWeight: 'bold' }}>
                 IMS Reference Manual
               </label>
-              <a
-                href={topic.documentUrl}
+              
+              <a href={topic.documentUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="retro-btn"
@@ -267,7 +293,7 @@ const TopicDetail = () => {
                   onChange={(e) => setMaterialsConfirmed(e.target.checked)}
                   style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                 />
-                <span style = {{ lineHeight: '18px' }}>
+                <span style={{ lineHeight: '18px' }}>
                   <strong>I confirm that I have reviewed the training materials.</strong>
                 </span>
               </label>
@@ -360,7 +386,7 @@ const TopicDetail = () => {
             </>
           )}
 
-          {/* Next Topic */}
+          {/* UPDATED NEXT TOPIC SECTION  */}
           {topic.mandatoryCompleted && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -372,13 +398,49 @@ const TopicDetail = () => {
               </h3>
 
               <div style={{ textAlign: 'center', padding: '20px' }}>
-                <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
-                  Continue with the other training topics.
-                </div>
-
-                <button onClick={() => navigate('/topics')} className="retro-btn" style={{ width: '100%' }}>
-                  TOPICS PAGE
-                </button>
+                {nextTopic ? (
+                  <>
+                    <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
+                      Continue with the next incomplete topic:
+                    </div>
+                    <button 
+                      onClick={() => navigate(`/topics/${nextTopic._id}`)} 
+                      className="retro-btn" 
+                      style={{ width: '100%', marginBottom: '10px' }}
+                    >
+                      {nextTopic.title}
+                    </button>
+                    <button 
+                      onClick={() => navigate('/topics')} 
+                      className="retro-btn secondary" 
+                      style={{ width: '100%', fontSize: '10px' }}
+                    >
+                      OR VIEW ALL TOPICS
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ 
+                      fontSize: '12px', 
+                      marginBottom: '20px', 
+                      lineHeight: '1.6',
+                      padding: '15px',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      border: '2px solid var(--success-green)',
+                      color: 'var(--success-green)',
+                      fontWeight: 'bold'
+                    }}>
+                       Congratulations! You've completed ALL topics!
+                    </div>
+                    <button 
+                      onClick={() => navigate('/topics')} 
+                      className="retro-btn" 
+                      style={{ width: '100%' }}
+                    >
+                      VIEW ALL TOPICS
+                    </button>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
@@ -494,6 +556,8 @@ const TopicDetail = () => {
                 )}
                 <div style={{ marginTop: '15px', fontSize: '12px', lineHeight: '2.0'}}>
                     Remember that you can still take the bonus questions for more XP.
+                    <br />
+                    Redirecting you back...
                   </div>
               </div>
             ) : (
@@ -506,11 +570,6 @@ const TopicDetail = () => {
                 <div style={{ marginBottom: '10px', lineHeight: '18px' }}>
                   <strong>It looks like you didn't review the training materials.</strong>
                 </div>
-                {/* {mandatoryResult.explanation && (
-                  <div style={{ marginTop: '10px', fontSize: '10px', lineHeight: '1.6' }}>
-                    {mandatoryResult.explanation}
-                  </div>
-                )} */}
                   <div style={{ marginTop: '15px', fontSize: '12px', lineHeight: '2.0'}}>
                     Redirecting you back...
                   </div>
@@ -528,7 +587,7 @@ const TopicDetail = () => {
           className="retro-card"
         >
           <h3 style={{ fontSize: '14px', color: 'var(--bright-blue)', marginBottom: '20px' }}>
-            💎 BONUS QUESTIONS (50 XP Each)
+            BONUS QUESTIONS (50 XP Each)
           </h3>
 
           {topic.questions.slice(1).map((question, qIndex) => (
