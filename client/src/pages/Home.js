@@ -142,9 +142,9 @@ const Home = () => {
               TRAINING COMPLETED!
             </h3>
             <p style={{ fontSize: '11px', marginBottom: '20px', lineHeight: '1.6' }}>
-              You have completed the IMS Awareness Training and got all badges! 
+              You have completed the IMS Awareness Training and collected all badges! 
               <br />
-              Please fill out the completion form.
+              Don't forget to fill out the completion form.
             </p>
 
             <a href={completionFormUrl}

@@ -68,7 +68,7 @@ const Settings = () => {
     return (
         <div className="retro-container" style={{ paddingTop: '40px' }}>
             <h1 style={{ fontSize: '28px', color: 'var(--primary-navy)', marginBottom: '40px' }}>
-                Settings
+                COMPLETION FORM
             </h1>
 
             <motion.div
