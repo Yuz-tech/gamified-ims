@@ -6,7 +6,7 @@ show badge
 
 Homepage 
 -> Ready to Train -> Button -> Training tab
--> "?Button -> show user manual or instructions
+-> "?" Button -> show user manual or instructions
 
 let ISO 9001 and 27001 be the first topics/ at the top of topics tab/ always first in order/ priority
 
@@ -25,3 +25,4 @@ Additional: Add a progress bar for each badge
 This way, when the yearly reset happens, xp and levels are retained, topic progress gets reset, badges will stay the same along with badgeCount 
 
 Instead of alerts when confirming -> change to modals
+
