@@ -52,7 +52,7 @@ const TopicDetail = () => {
         const isCurrentTopic = t._id === topicId;
         const isActive = t.isActive;
 
-        return !isCompleted && !isCurrentTopic && isActive;
+        return !isCompleted && !isCurrentTopic && !isActive;
       });
 
       if (incompleteTopic) {
@@ -95,12 +95,6 @@ const TopicDetail = () => {
       setBonusResult(null);
       setBonusAnswers({});
       setMaterialsConfirmed(false);
-
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-
     }
   };
 
@@ -124,13 +118,13 @@ const TopicDetail = () => {
         // Show success for n seconds
         setTimeout(() => {
           setCurrentStage(null);
-        }, 7500);
+        }, 4000);
       } else {
         setTimeout(() => {
           setCurrentStage(null);
           setSelectedAnswer(null);
           setMandatoryResult(null);
-        }, 7500);
+        }, 4000);
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting answer');
@@ -156,7 +150,7 @@ const TopicDetail = () => {
       // Show results for n seconds then return home
       setTimeout(() => {
         navigate('/topics');
-      }, 6000);
+      }, 4000);
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting bonus');
     }

@@ -1,3 +1,2 @@
-1. show routes/topics.js (sumbit mandatory)
-3. show full working src/pages/topicDetail.js
+
 4. Not a single game is working
