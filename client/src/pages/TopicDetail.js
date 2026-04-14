@@ -23,7 +23,7 @@ const TopicDetail = () => {
   useEffect(() => {
     fetchTopic();
     fetchNextTopic(); 
-  }, [topicId]);
+  }, [topicId, user?.completedTopics?.length]);
 
   const fetchTopic = async () => {
     try {
@@ -41,25 +41,27 @@ const TopicDetail = () => {
 
   const fetchNextTopic = async () => {
     try {
-      // Fetch all topics
       const topicsResponse = await api.get('/topics');
       const allTopics = topicsResponse.data;
 
-      // Find first incomplete topic
-      const incompleteTopic = allTopics.find(t => 
-        !user.completedTopics?.some(ct => ct.topicId === t._id) && 
-        t._id !== topicId && 
-        t.isActive
-      );
+      const userResponse = await api.get('/auth/me');
+      const currentUser = userResponse.data;
+
+      const incompleteTopic = allTopics.find(t => {
+        const isCompleted = currentUser.completedTopics?.some(ct => ct.topicId === t._id);
+        const isCurrentTopic = t._id === topicId;
+        const isActive = t.isActive;
+
+        return !isCompleted && !isCurrentTopic && isActive;
+      });
 
       if (incompleteTopic) {
         setNextTopic(incompleteTopic);
       } else {
-        // All topics completed
         setNextTopic(null);
       }
     } catch (error) {
-      console.error('Error fetching next topic:', error);
+      console.error('Error fetching next topic: ', error);
     }
   };
 
@@ -83,6 +85,19 @@ const TopicDetail = () => {
     setCurrentStage('review');
   };
 
+  const handleNextTopicClick = async () => {
+    if (nextTopic) {
+      navigate(`/topics/${nextTopic._id}`);
+
+      setCurrentStage(null);
+      setSelectedAnswer(null);
+      setMandatoryResult(null);
+      setBonusResult(null);
+      setBonusAnswers({});
+      setMaterialsConfirmed(false);
+    }
+  };
+
   const handleSubmitMandatory = async () => {
     if (selectedAnswer === null) {
       alert('Please select an answer.');
@@ -97,15 +112,14 @@ const TopicDetail = () => {
       setMandatoryResult(response.data);
 
       if (response.data.passed && response.data.correctAnswer) {
-        // Passed - refresh topic data
         await fetchTopic();
+        await fetchNextTopic();
         
         // Show success for n seconds
         setTimeout(() => {
           setCurrentStage(null);
         }, 7500);
       } else {
-        // Failed - show error then reset
         setTimeout(() => {
           setCurrentStage(null);
           setSelectedAnswer(null);
@@ -130,11 +144,10 @@ const TopicDetail = () => {
       });
 
       setBonusResult(response.data);
-      
-      // Refresh topic
       await fetchTopic();
+      await fetchNextTopic();
 
-      // Show results for 5 seconds then return home
+      // Show results for n seconds then return home
       setTimeout(() => {
         navigate('/topics');
       }, 6000);
@@ -403,10 +416,15 @@ const TopicDetail = () => {
                       Continue training:
                     </div>
                     <button 
-                      onClick={() => navigate(`/topics/${nextTopic._id}`)} 
+                      onClick={() => navigate(`/topics/${nextTopic._id}`, 
+                        setMaterialsConfirmed(false),
+                        window.scrollTo({
+                          top: 0,
+                          behavior: 'smooth'
+                        })
+                      )} 
                       className="retro-btn" 
                       style={{ width: '100%', marginBottom: '10px' }}
-                      disabled
                     >
                       {nextTopic.title}
                     </button>
