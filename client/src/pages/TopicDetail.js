@@ -73,6 +73,9 @@ const TopicDetail = () => {
     setCurrentStage('mandatory');
     setSelectedAnswer(null);
     setMandatoryResult(null);
+    window.scrollTo({
+      top: 0
+    });
   };
 
   const handleStartBonus = () => {
@@ -118,13 +121,13 @@ const TopicDetail = () => {
         // Show success for n seconds
         setTimeout(() => {
           setCurrentStage(null);
-        }, 4000);
+        }, 6000);
       } else {
         setTimeout(() => {
           setCurrentStage(null);
           setSelectedAnswer(null);
           setMandatoryResult(null);
-        }, 4000);
+        }, 6000);
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting answer');
@@ -150,7 +153,7 @@ const TopicDetail = () => {
       // Show results for n seconds then return home
       setTimeout(() => {
         navigate('/topics');
-      }, 4000);
+      }, 6000);
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting bonus');
     }
