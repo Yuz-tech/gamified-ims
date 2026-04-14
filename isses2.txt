@@ -1,3 +1,11 @@
-Provide new seedData using the exported mongodb file. Retain the reference links and badges
+1. Provide a new seedData using the exported mongodb file. Retain the reference links and badges
 
-Not a single game is working
+2. Not a single game is working (atleast make one crossword game work) or we just redo the entire games module
+
+3. add titles to player levels
+for example:
+level 1 players: Noob
+level 10 players: Elite
+level 15 players: Cultured
+level 20 players: Fated
+level 25+ players: IMS Prime
