@@ -124,7 +124,7 @@ const Home = () => {
           className='retro-card'
           style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'var(--success-green)', marginTop: '30px', textAlign: 'center' }}>
             <h3 style={{ fontSize: '20px', color: 'var(--success-green)', marginBottom: '20px', lineHeight: '52px' }}>
-              ദ്ദി ˉ͈̀꒳ˉ͈́ )✧
+              .✦ ݁˖⋆✴︎˚｡⋆.✦ ݁˖
               <br />
               TRAINING COMPLETED!
             </h3>
@@ -154,8 +154,8 @@ const Home = () => {
           <strong style = {{ fontSize: '52px'}}>こんにちは</strong>
           , {user?.username}!
         </h1>
-        <p style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
-          Ready to Train?
+        <p style={{ fontSize: '15px', color: 'var(--text-light)' }}>
+          Press the button below to start training
         </p>
         <br />
 
@@ -164,13 +164,6 @@ const Home = () => {
           navigate('/topics');
         }}>
           始
-        </button>
-
-        <button className='retro-btn' style={{ width: '80px', height: '80px', background: '#ff0033', borderRadius: '70%', fontSize: '35px', color: 'white', padding: '12px' }} onClick={(e) => {
-          e.stopPropagation();
-          navigate('/user-manual');
-        }}>
-          ❓
         </button>
 
       </motion.div>
@@ -284,7 +277,7 @@ const Home = () => {
         style={{ marginBottom: '40px' }}
       >
         <h3 style = {{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          Your Recent Badges
+          Recently acquired badges
         </h3>
 
         {userBadges.length > 0 ? (
@@ -309,7 +302,8 @@ const Home = () => {
                     width: '80px',
                     height: '80px',
                     margin: '0 auto 10px',
-                    border: '3px solid var(--orange-accent)',
+                    border: '3px solid',
+                    borderColor: '',
                     borderRadius: '55px',
                     display: 'flex',
                     alignItems: 'center',

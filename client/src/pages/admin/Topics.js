@@ -257,7 +257,7 @@ const Topics = () => {
                   color: 'var(--orange-accent)'
                 }}
               >
-                USER MANAGEMENT
+                TOPIC MANAGEMENT
               </motion.h1>
         <button onClick = {() => setShowForm(!showForm)} className="retro-btn" style={{ backgroundColor: '#e7fb07'}}>
             {showForm ? 'Cancel' : '+ ADD NEW TOPIC'}

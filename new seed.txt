@@ -7,12 +7,12 @@ dotenv.config();
 const topicsData = [
   // ========== PRIORITY TOPICS (1-2) ==========
   {
-    title: 'ISO 9001 Quality Management System',
+    title: 'ISO 9001',
     description: 'Understanding the ISO 9001 standard for quality management systems and its requirements for organizations.',
-    priority: 1, // ✅ FIRST PRIORITY
+    priority: 1, 
     documentUrl: 'https://drive.google.com/file/d/1EjqPyM5xMl3qTn6Zp8bRwVcKdLfNgOhA/view',
-    videoUrl: 'https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz123456/preview',
-    badgeName: 'ISO 9001 Expert',
+    videoUrl: 'https://drive.google.com/file/d/1YCSSdoBZeaBXdPF36QUdZJiu1d5lHJC0/view?usp=sharing',
+    badgeName: 'The Standard Setter',
     badgeImage: '/uploads/badges/iso9001.png',
     questions: [
       {
@@ -81,7 +81,7 @@ const topicsData = [
   {
     title: 'ISO 27001 Information Security Management System',
     description: 'Learn about ISO 27001 standards for information security management and protecting sensitive company information.',
-    priority: 2, // ✅ SECOND PRIORITY
+    priority: 2, 
     documentUrl: 'https://drive.google.com/file/d/1FkrQzN6yOm4pTo7Aq9cSxWdLeGhPiRjB/view',
     videoUrl: 'https://drive.google.com/file/d/1BbDdEeGgHhJjKkLlMmNnOoPpQqRrSsTt/preview',
     badgeName: 'ISO 27001 Security Champion',

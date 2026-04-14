@@ -64,6 +64,12 @@ const Navbar = () => {
         }}>
           IMS Awareness Training
         </h1>
+        <button className='retro-btn secondary' style={{ width: '30px', height: '30px', borderRadius: '40%', fontSize: '15px', color: 'white', padding: '0px' }} onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/user-manual');
+                  }}>
+                    ❓
+        </button>
       </div>
 
       {/* Desktop Navigation */}

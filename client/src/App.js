@@ -23,6 +23,7 @@ import Tamago from './pages/Tamago';
 import Settings from './pages/admin/Settings';
 import UserManual from './pages/UserManual';
 import './styles/retro.css';
+import ScrollTop from "./components/ScrollTop";
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
@@ -124,6 +125,7 @@ const AppRoutes = () => {
   return (
     <Router>
       {user && <Navbar />}
+      <ScrollTop />
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
         <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />

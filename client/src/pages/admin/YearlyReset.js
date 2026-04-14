@@ -72,57 +72,6 @@ const YearlyReset = () => {
                 YEARLY RESET
               </motion.h1>
 
-              {/* Current Stats */}
-              {stats && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="retro-card"
-                  style={{ marginBottom: '30px' }}>
-                    <h3 style={{ fontSize: '14px', color: 'var(--bright-blue)', marginBottom: '20px' }}>
-                        Current Stats
-                    </h3>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px' }}>
-                        <div style={{ textAlign: 'center', padding: '15px', background: 'var(--bg-light)', border: '2px solid var(--border-color)' }}>
-                            <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
-                                {stats.totalEmployees}
-                            </div>
-                            <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginTop: '5px' }}>
-                                Total Employees
-                            </div>
-                        </div>
-
-                        <div style={{ textAlign: 'center', padding: '15px', background: 'var(--bg-light)', border: '2px solid var(--border-color)' }}>
-                            <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--success-green)' }}>
-                                {stats.totalTopicsCompleted}
-                            </div>
-                            <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginTop: '5px' }}>
-                                Total Topics Completed
-                            </div>
-                        </div>
-
-                        <div style={{ textAlign: 'center', padding: '15px', background: 'var(--bg-light)', border: '2px solid var(--border-color)' }}>
-                            <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--orange-accent)' }}>
-                                {stats.totalBadgesEarned}
-                            </div>
-                            <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginTop: '5px' }}>
-                                Total Badges Earned
-                            </div>
-                        </div>
-
-                        <div style={{ textAlign: 'center', padding: '15px', background: 'var(--bg-light)', border: '2px solid var(--border-color)' }}>
-                            <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--secondary-pink)' }}>
-                                {stats.employeesWithTopics}
-                            </div>
-                            <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginTop: '5px' }}>
-                                Employees with Progress
-                            </div>
-                        </div>
-                    </div>
-                  </motion.div>
-              )}
-
               {/* Warning Box */}
               <motion.div
                 initial={{ opacity: 0 }}

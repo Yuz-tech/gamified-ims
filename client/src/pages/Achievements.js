@@ -1,46 +1,88 @@
 import React, { useState, useEffect } from "react";
-import { motion } from 'framer-motion';
-import api from '../utils/api';
-import { getImageUrl } from '../utils/getImageUrl';
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
+import { getImageUrl } from "../utils/getImageUrl";
 
 const Achievements = () => {
-  const [topics, setTopics] = useState([]);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [allTopics, setAllTopics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    fetchData();
+    fetchAllTopics();
   }, []);
 
-  const fetchData = async () => {
+  const fetchAllTopics = async () => {
     try {
-      const topicRes = await api.get('/topics');
-      const userRes = await api.get('/auth/me');
-
-      const earnedBadgeTopicIds = (userRes.data.badges || []).map(b => b.topicId?.toString());
-
-      const topicsWithBadges = topicRes.data.map(topic => ({
-        ...topic, earned: earnedBadgeTopicIds.includes(topic._id.toString())
-      }));
-
-      setTopics(topicsWithBadges);
+      const response = await api.get('/topics');
+      setAllTopics(response.data);
     } catch (error) {
-      console.error('Error fetching achievements:', error);
+      console.error('Error fetching topics: ', error);
     } finally {
       setLoading(false);
     }
   };
 
-  if(loading) {
+  const getBadgeBorderColor = (count) => {
+    if (count >=5 ) return '#9333ea';
+    if (count === 4) return '#06b6d4';
+    if (count === 3) return '#f5930b';
+    if (count === 2) return '#94a3b8';
+    return '#d1d5db';
+  };
+
+  const getBadgeBorderName = (count) => {
+    if (count >=5 ) return 'ULTRA';
+    if (count === 4) return 'PLATINUM';
+    if (count === 3) return 'GOLD';
+    if (count === 2) return 'SILVER';
+    return 'BRONZE';
+  };
+
+  const badges = allTopics.map(topic => {
+    const userBadge = user?.badges?.find(b => b.topicId === topic._id);
+    const isEarned = !!userBadge;
+    const badgeCount = userBadge?.badgeCount || 0;
+    const isCompleted = user?.completedTopics?.some(ct => ct.topicId === topic._id);
+
+    return {
+      topicId: topic._id,
+      name: topic.badgeName,
+      image: topic.badgeImage,
+      description: topic.description,
+      isEarned,
+      badgeCount,
+      isCompleted,
+      earnedAt: userBadge?.earnedAt,
+      borderColor: getBadgeBorderColor(badgeCount),
+      borderName: getBadgeBorderName(badgeCount)
+    };
+  });
+
+  const filteredBadges = badges.filter(badge => {
+    if (filter === 'earned') return badge.isEarned;
+    if (filter === 'locked') return !badge.isEarned;
+    return true;
+  });
+
+  const earnedCount = badges.filter(b => b.isEarned).length;
+  const totalCount = badges.length;
+  const completionPercentage = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
+
+  const completedTopicsCount = user?.completedTopics?.length || 0;
+  const topicProgressPercentage = totalCount > 0 ? Math.round((completedTopicsCount / totalCount) * 100) : 0;
+
+  if (loading) {
     return (
-      <div style = {{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div className="loading neon-text">Loading...</div>
       </div>
     );
   }
-
-  const earnedCount = topics.filter(t => t.earned).length;
-  const totalCount = topics.length;
-  const progress = totalCount > 0 ? (earnedCount / totalCount) * 100 : 0;
 
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
@@ -50,155 +92,240 @@ const Achievements = () => {
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="neon-text"
-        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
-      >
-        Achievements
-      </motion.h1>
+        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)'}}>
+          Achievements
+        </motion.h1>
 
-      {/* Progress Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ marginBottom: '40px', textAlign: 'center' }}
-      >
-        <h3 style = {{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          Your Progress
-        </h3>
+        {/* Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="retro-card"
+          style={{ marginBottom: '30px' }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+                Badges Earned
+              </div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
+                {earnedCount} / {totalCount}
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+                COMPLETION
+              </div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--success-green)' }}>
+                {completionPercentage}%
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+                CURRENT PROGRESS
+              </div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--orange-accent)'}}>
+                {completedTopicsCount} / {totalCount}
+              </div>
+            </div>
+          </div>
 
-        <div style={{ fontSize: '48px', color: 'var(--bright-blue)', marginBottom: '20px', fontWeight: 'bold' }}>
-          {earnedCount} / {totalCount}
-        </div>
-
-        <div style = {{
-          width: '100%',
-          height: '30px',
-          background: 'var(--bg-dark)',
-          border: '3px solid var(--primary-navy)',
-          position: 'relative',
-          overflow: 'hidden',
-          marginBottom: '10px'
-        }}>
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-            style={{
-              height: '100%',
-              background: 'linear-gradient(90deg, var(--success-green), var(--bright-blue))'
-            }}
-          />
-        </div>
-
-        <div style = {{ fontSize: '12px', color: 'var(--text-medium)' }}>
-          {Math.round(progress)}% Complete
-        </div>
-      </motion.div>
-
-      {/* Badges */}
-      <div style = {{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-        gap: '30px'
-      }}>
-        {topics.map((topic, index) => {
-          const imageUrl = topic.badgeImage?.startsWith('/uploads/')
-            ? <img src={getImageUrl(topic.badgeImage)} alt={topic.badgeName}
-                          style={{
-                            maxWidth: '90%',
-                            maxHeight: '90%',
-                            objectFit: 'cover'
-                          }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.parentElement.innerHTML += '<div style="font-size: 48px;">🏆</div>';
-                          }}
-                        />
-            : topic.badgeImage;
-            
-            return (
+          {/* Progress bar */}
+          <div>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '8px' }}>
+              Training Progress
+            </div>
+            <div style={{
+              width: '100%',
+              height: '20px',
+              background: 'var(--bg-medium)',
+              border: '2px solid var(--border-color)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
               <motion.div
-                key={topic._id}
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: index * 0.1, type: 'spring' }}
-                className="retro-card"
+                initial={{ width: 0 }}
+                animate={{ width: `${topicProgressPercentage}%`}}
+                transition={{ duration: 1, ease: 'easeOut'}}
                 style={{
-                  textAlign: 'center',
-                  opacity: topic.earned ? 1 : 0.4,
-                  filter: topic.earned ? 'none' : 'grayscale(100%)',
-                  position: 'relative'
+                  height: '100%',
+                  background: 'linear-gradient(90deg, var(--success-green), var(--bright-blue))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
+                <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'white' }}>
+                  {topicProgressPercentage}%
+                </span>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
 
-                <div style = {{
-                  width: '120px',
-                  height: '120px',
-                  margin: '0 auto 15px',
-                  border: `4px solid ${topic.earned ? 'var(--bg-dark)' : 'var(--border-color)'}`,
+        {/* Filter */}
+        <motion.div
+          initial={{ opacit: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="retro-card"
+          style={{ marginBottom: '30px' }}
+        >
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button onClick={() => setFilter('all')} className={filter === 'all' ? 'retro-btn' : 'retro-btn secondary'} style={{ fontSize: '11px', padding: '10px 20px' }}>
+              ALL ({totalCount})
+            </button>
+            <button onClick={() => setFilter('earned')} className={filter === 'earned' ? 'retro-btn' : 'retro-btn secondary'} style={{ fontSize: '11px', padding: '10px 20px'}}>
+              EARNED ({earnedCount})
+            </button>
+            <button onClick={() => setFilter('locked')} className={filter === 'locked' ? 'retro-btn' : 'retro-btn secondary'} style={{ fontSize: '11px', padding: '10px 20px' }}>
+              LOCKED ({totalCount - earnedCount})
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Badges Card */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+          {filteredBadges.map((badge, index) => (
+            <motion.div
+              key={badge.topicId}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.05 }}
+              className="retro-card"
+              style={{
+                textAlign: 'center',
+                cursor: 'pointer',
+                opacity: badge.isEarned ? 1 : 0.5,
+                position: 'relative',
+                border: `4px solid ${badge.borderColor}`,
+                background: badge.isEarned ? 'white' : 'var(--bg-light)'
+              }}
+              onClick={() => navigate(`/topics/${badge.topicId}`)}
+            >
+              {/* Badge count indicator */}
+              {badge.badgeCount > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  right: '-10px',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: badge.borderColor,
+                  border: '3px solid white',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: topic.earned ? 'var(--bg-lightest)' : 'var(--bg-medium)',
-                  boxShadow: topic.earned ? '3px 3px 0 var(--primary-navy)' : 'none',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  borderRadius: '50%'
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  zIndex: 10,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                 }}>
-                  {topic.earned ? (
-                    imageUrl ? (
-                      <>
-                        <img src={getImageUrl(topic.badgeImage)} alt={topic.badgeName}
-                          style={{
-                            width: '120px',
-                            height: '120px',
-                            objectFit: 'cover'
-                          }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.parentElement.innerHTML += '<div style="font-size: 48px;">🏆</div>';
-                          }}
-                        />
-                        <div style = {{
-                          position: 'absolute',
-                          top: '-50%',
-                          left: '-50%',
-                          width: '200%',
-                          height: '200%',
-                          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
-                          animation: 'shine 3s infinite',
-                          pointerEvents: 'none'
-                        }} />
-                      </>
-                    ) : (
-                      <div style = {{ fontSize: '48px' }}>🏆</div>
-                    )
-                  ) : (
-                    <div style = {{ fontSize: '48px', color: 'var(--text-lighter)' }}>🔒</div>
-                  )}
+                  {badge.badgeCount}
                 </div>
+              )}
 
-                <h4 style={{ 
-                  fontSize: '12px',
-                  color: topic.earned ? 'var(--primary-navy)' : 'var(--text-light)',
+              {/* Badge Image */}
+              <div style={{
+                width: '120px',
+                height: '120px',
+                margin: '20px auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative'
+              }}>
+                {badge.isEarned ? (
+                  <img src={getImageUrl(badge.image)}
+                    alt={badge.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain'
+                    }}
+                    onError={(e) => {
+                      e.target.src = '/uploads/badges/default.png';
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'var(--bg-medium)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '48px',
+                    color: 'var(--text-light)'
+                  }}>
+                    🔒︎
+                  </div>
+                )}
+              </div>
+
+              {/* BadgeName */}
+              <h3 style={{
+                fontSize: '15px',
+                fontWeight: 'bold',
+                color: badge.isEarned ? 'var(--text-medium)' : 'var(--text-light)',
+                marginBottom: '10px',
+                minHeight: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0 10px'
+              }}>
+                {badge.name}
+              </h3>
+
+              {/* Badge Tier */}
+              {badge.badgeCount > 0 && (
+                <div style={{
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  color: badge.borderColor,
                   marginBottom: '10px',
-                  fontWeight: 'bold'
+                  textTransform: 'uppercase'
                 }}>
-                  {topic.badgeName || topic.title}
-                </h4>
-              </motion.div>
-            );
-        })}
-      </div>
+                  {badge.borderName} TIER
+                </div>
+              )}
 
-      <style>
-        {`
-        @keyframes shine {
-          0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-          100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-        `}
-      </style>
+              {/* Progress Bar */}
+              <div style={{ padding: '0 15px', marginBottom: '15px' }}>
+                <div style={{
+                  width: '100%',
+                  height: '8px',
+                  background: 'var(--bg-medium)',
+                  border: '2px solid var(--border-color)',
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: badge.isCompleted ? '100%' : '0%',
+                    height: '100%',
+                    background: badge.borderColor,
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div style={{
+                fontSize: '9px',
+                color: badge.isEarned ? 'var(--success-green)' : 'var(--text-light)',
+                fontWeight: 'bold',
+                marginBottom: '10px'
+              }}>
+                {badge.isEarned ? (badge.isCompleted ? 'Completed' : 'RETAKE AVAILABLE') : 'LOCKED'}
+              </div>
+            </motion.div>
+          ))}
+        </div>
     </div>
   );
 };
