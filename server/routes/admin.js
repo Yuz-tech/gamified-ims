@@ -289,7 +289,8 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
     const result = await User.updateMany({ role: 'employee' }, 
       {
         $set: {
-          completedTopics: []
+          completedTopics: [],
+          badges: []
         }
       }
     );

@@ -12,7 +12,9 @@ router.use(authenticateToken);
 // Get all active topics
 router.get('/', async (req, res) => {
   try {
-    const topics = await Topic.find({ isActive: true });
+    const topics = await Topic.find({ isActive: true })
+      .select('title description documentUrl videoUrl badgeName badgeImage questions priority')
+      .sort({ priority: 1, title: 1 });
     
     const user = await User.findById(req.user._id);
     
@@ -32,11 +34,6 @@ router.get('/', async (req, res) => {
           isMandatory: q.isMandatory
         }))
       };
-    });
-
-    // Sort in JavaScript after mapping (newest first by createdAt)
-    topicsWithStatus.sort((a, b) => {
-      return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
     res.json(topicsWithStatus);

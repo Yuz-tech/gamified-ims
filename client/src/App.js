@@ -21,6 +21,7 @@ import Analytics from './pages/admin/Analytics';
 import YearlyReset from './pages/admin/YearlyReset';
 import Tamago from './pages/Tamago';
 import Settings from './pages/admin/Settings';
+import UserManual from './pages/UserManual';
 import './styles/retro.css';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -196,6 +197,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <Tamago />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/user-manual"
+          element={
+            <ProtectedRoute>
+              <UserManual />
             </ProtectedRoute>
           }
         />

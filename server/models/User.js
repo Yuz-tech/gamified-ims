@@ -78,6 +78,11 @@ const userSchema = new mongoose.Schema({
     earnedAt: {
       type: Date,
       default: Date.now
+    },
+    badgeCount: {
+      type: Number,
+      default: 1,
+      min: 1
     }
   }]
 }, {

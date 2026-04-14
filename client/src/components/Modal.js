@@ -1,0 +1,83 @@
+import React from "react";
+import { motion, AnimatePresence } from 'framer-motion';
+
+const Modal = ({ isOpen, onClose, onConfirm, title, message, type = 'confirm' }) => {
+    if (!isOpen) return null;
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999,
+                    padding: '20px'
+                }}
+                onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="retro-card"
+                        style={{
+                            maxWidth: '500px',
+                            width: '100%',
+                            padding: '30px',
+                            background: 'white',
+                            border: '4px solid var(--primary-navy)'
+                        }}
+                    >
+                        <h3 style={{
+                            fontSize: '18px',
+                            color: 'var(--primary-navy)',
+                            marginBottom: '20px',
+                            fontWeight: 'bold'
+                        }}>
+                            {title}
+                        </h3>
+
+                        <p style={{
+                            fontSize: '12px',
+                            lineHeight: '1.6',
+                            marginBottom: '30px',
+                            color: 'var(--text-dark)'
+                        }}>
+                            {message}
+                        </p>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            {type === 'confirm' && (
+                                <>
+                                    <button onClick={onConfirm} className="retro-btn" style={{ flex: 1 }}>
+                                        Confirm
+                                    </button>
+                                    <button onClick={onClose} className="retro-btn secondary" style={{ flex: 1 }}>
+                                        Cancel
+                                    </button>
+                                </>
+                            )}
+                            {type === 'alert' && (
+                                <button onClick={onClose} className="retro-btn" style={{ width: '100%' }}>
+                                    OK
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                </motion.div>
+        </AnimatePresence>
+    );
+};
+
+export default Modal;

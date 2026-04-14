@@ -95,6 +95,12 @@ const TopicDetail = () => {
       setBonusResult(null);
       setBonusAnswers({});
       setMaterialsConfirmed(false);
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
     }
   };
 
@@ -416,13 +422,7 @@ const TopicDetail = () => {
                       Continue training:
                     </div>
                     <button 
-                      onClick={() => navigate(`/topics/${nextTopic._id}`, 
-                        setMaterialsConfirmed(false),
-                        window.scrollTo({
-                          top: 0,
-                          behavior: 'smooth'
-                        })
-                      )} 
+                      onClick={handleNextTopicClick} 
                       className="retro-btn" 
                       style={{ width: '100%', marginBottom: '10px' }}
                     >

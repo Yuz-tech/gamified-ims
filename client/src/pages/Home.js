@@ -158,11 +158,19 @@ const Home = () => {
           Ready to Train?
         </p>
         <br />
-        <button className='retro-btn' style={{ width: '80px', height: '80px', background: '#ff0000', borderRadius: '70%', fontSize: '35px', color: 'white', padding: '12px' }} onClick={(e) => {
+
+        <button className='retro-btn' style={{ width: '80px', height: '80px', background: '#24a600', borderRadius: '70%', fontSize: '35px', color: 'white', padding: '12px' }} onClick={(e) => {
           e.stopPropagation();
           navigate('/topics');
         }}>
           始
+        </button>
+
+        <button className='retro-btn' style={{ width: '80px', height: '80px', background: '#ff0033', borderRadius: '70%', fontSize: '35px', color: 'white', padding: '12px' }} onClick={(e) => {
+          e.stopPropagation();
+          navigate('/user-manual');
+        }}>
+          ❓
         </button>
 
       </motion.div>
@@ -286,9 +294,7 @@ const Home = () => {
             gap: '20px'
           }}>
             {userBadges.slice(0, 6).map((badge, index) => {
-              const imageUrl = badge.badgeImage?.startsWith('/uploads/')
-              ? `http://192.168.232.247:5000${badge.badgeImage}`
-              : badge.badgeImage
+              const imageUrl = badge.badgeImage?.startsWith('/uploads/');
 
               return (
                 <motion.div
@@ -315,7 +321,7 @@ const Home = () => {
                   }}>
                     {imageUrl ? (
                       <>
-                        <img src = {imageUrl} alt={badge.badgeName} style={{
+                        <img src = {getImageUrl(badge.badgeImage)} alt={badge.badgeName} style={{
                           maxWidth: '90%', maxHeight: '90%', objectFit: 'contain'
                         }}
                         onError={(e) => {
