@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
 import api from '../utils/api';
 import { getImageUrl } from '../utils/getImageUrl';
+import { getLevelTitle, getLevelTitleColor } from "../utils/levelTitles";
 
 const Players = () => {
     const [players, setPlayers] = useState([]);
@@ -44,20 +45,6 @@ const Players = () => {
         }
 
         setFilteredPlayers(filtered);
-    };
-
-    const getRankColor = (rank) => {
-        if (rank === 1) return 'var(--orange-accent)';
-        if (rank === 2) return 'var(--text-medium)';
-        if (rank === 3) return '#CD7F32';
-        return 'var(--text-medium)';
-    };
-
-    const getRankIcon = (rank) => {
-        if (rank === 1) return 'Ancient';
-        if (rank === 2) return 'Vanquisher';
-        if (rank === 3) return 'Marauder';
-        return `#${rank}`;
     };
 
     if (loading) {
@@ -113,8 +100,8 @@ const Players = () => {
                           className="retro-card"
                           style={{
                             textAlign: 'center',
-                            border: '3px solid #C0C0C0',
-                            background: 'linear gradient(135deg, rgba(192, 192, 192, 0.1) 0%, var(--bg-light) 100%',
+                            border: '3px solid var(--orange-accent)',
+                            background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, var(--bg-light) 100%',
                             marginTop: '20px'
                           }}
                         >
@@ -331,8 +318,8 @@ const Players = () => {
                                             background: index % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.02)'
                                           }}
                                         >
-                                            <td style={{ padding: '15px 10px', fontSize: '14px', fontWeight: 'bold', color: getRankColor(index + 1) }}>
-                                                {getRankIcon(indexOfFirstPlayer + index + 1)}
+                                            <td style={{ padding: '15px 10px', fontSize: '14px', fontWeight: 'bold'  }}>
+                                                {getLevelTitle(player.level)}
                                             </td>
                                             <td style={{ padding: '15px 10px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
