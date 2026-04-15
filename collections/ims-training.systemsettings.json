@@ -1,0 +1,20 @@
+[{
+  "_id": {
+    "$oid": "69d5a9639e1154ddf114a46f"
+  },
+  "settingKey": "completion_form_url",
+  "settingValue": "https://sites.google.com/awsys-i.com/ims-portal/ims-resources/ims-training-section/ims-awareness",
+  "lastUpdatedBy": {
+    "$oid": "69bbb56ec40a44e6cd983f89"
+  },
+  "lastUpdatedAt": {
+    "$date": "2026-04-08T01:05:42.408Z"
+  },
+  "createdAt": {
+    "$date": "2026-04-08T01:03:31.352Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-08T01:05:42.408Z"
+  },
+  "__v": 0
+}]

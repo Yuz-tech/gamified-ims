@@ -1,0 +1,2744 @@
+[{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983edd"
+  },
+  "title": "ISO 9001",
+  "description": "Learn the fundamentals of ISO 9001 and quality management principles.",
+  "documentUrl": "https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view",
+  "videoUrl": "https://drive.google.com/file/d/1YCSSdoBZeaBXdPF36QUdZJiu1d5lHJC0/view?usp=sharing",
+  "badgeImage": "/uploads/badges/iso9001.png",
+  "badgeName": "The Standard Setter",
+  "badgeDescription": "Mastered ISO 9001 Quality Management",
+  "questions": [
+    {
+      "question": "What is the primary focus of ISO 9001?",
+      "options": [
+        "Information Security",
+        "Environmental protection",
+        "Quality management",
+        "Health and safety"
+      ],
+      "correctAnswer": 2,
+      "explanation": "ISO 9001 focuses on quality management systems to ensure consistent customer satisfaction.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ede"
+      }
+    },
+    {
+      "question": "What does PDCA stand for?",
+      "options": [
+        "Plan-Desing-Create-Approve",
+        "Prepare-Deploy-Control-Assess",
+        "Process-Document-Certify-Audit",
+        "Plan-Do-Check-Act"
+      ],
+      "correctAnswer": 3,
+      "explanation": "PDCA (Plan-Do-Check-Act) is the continuous improvement cycle in ISO 9001.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983edf"
+      }
+    },
+    {
+      "question": "Which is a key principle of ISO 9001?",
+      "options": [
+        "Customer focus",
+        "Profit maximization",
+        "Market dominance",
+        "Cost reduction"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Customer focus is one of the seven quality management principles.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ee0"
+      }
+    },
+    {
+      "question": "What is the purpose of internal audits?",
+      "options": [
+        "To determine non-compliant employees",
+        "To ensure compliance with policies and procedures",
+        "To satisfy auditors",
+        "To make final management decisions"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Internal audits verify QMS compliance and identify improvement opportunities.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ee1"
+      }
+    },
+    {
+      "question": "What does continual improvement mean?",
+      "options": [
+        "Regular revision of policies",
+        "Continuous change in people",
+        "Ongoing efforts to enhance processes",
+        "Annual changes in work environment"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Continual improvement is recurring activity to enhance performance.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ee2"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.448Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 1
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983ee3"
+  },
+  "title": "ISO 27001",
+  "description": "Understand ISO 27001 standards for protecting sensitive information.",
+  "documentUrl": "https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view",
+  "videoUrl": "https://drive.google.com/file/d/1AZZdQfRFbqVFwG6qshj_eWhxw_2ZzZ_u/view?usp=sharing",
+  "badgeImage": "/uploads/badges/iso 27001.png",
+  "badgeName": "Information Warden",
+  "badgeDescription": "Completed ISO 27001 Training",
+  "questions": [
+    {
+      "question": "What is the main purpose of ISO 27001?",
+      "options": [
+        "Establish and maintain an ISMS",
+        "Improve product quality",
+        "Manage environmental impacts",
+        "Ensure workplace safety"
+      ],
+      "correctAnswer": 0,
+      "explanation": "ISO 27001 provides a framework for Information Security Management Systems.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ee4"
+      }
+    },
+    {
+      "question": "What are the three pillars of information security?",
+      "options": [
+        "Confidentiality, Integrity, Availability",
+        "Privacy, Security, Safety",
+        "Authentication, Authorization, Accounting",
+        "Prevention, Detection, Response"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The CIA triad is the foundation of information security.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ee5"
+      }
+    },
+    {
+      "question": "What is risk assessment in ISO 27001?",
+      "options": [
+        "Identifying and evaluating security risks",
+        "Financial audit",
+        "Customer survey",
+        "Performance review"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Risk assessment identifies threats, vulnerabilities, and determines appropriate controls.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ee6"
+      }
+    },
+    {
+      "question": "What is an information asset?",
+      "options": [
+        "Anything of value requiring protection",
+        "Only hardware",
+        "Only software",
+        "Only financial resources"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Information assets include data, hardware, software, people, and facilities.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ee7"
+      }
+    },
+    {
+      "question": "How often should ISMS be reviewed?",
+      "options": [
+        "At planned intervals",
+        "Only when incidents occur",
+        "Every five years",
+        "Never"
+      ],
+      "correctAnswer": 0,
+      "explanation": "ISO 27001 requires management reviews at planned intervals.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ee8"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.450Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 2
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983ee9"
+  },
+  "title": "Quality and Information Security Integration",
+  "description": "Learn how quality management and information security work together.",
+  "documentUrl": "https://docs.google.com/document/d/13GfB0MJY0kYVRzOVdxqEbDNn4-DpvFGLAe3qbzngMno/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1Gdl4WrlAr6ggWDTaBFp8em3tvHeaC8aw/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915787022-682440122.png",
+  "badgeName": "統合",
+  "badgeDescription": "Mastered Integrated Management Systems",
+  "questions": [
+    {
+      "question": "Why integrate ISO 9001 and ISO 27001?",
+      "options": [
+        "Streamline processes and reduce duplication",
+        "Make system complex",
+        "Satisfy regulations only",
+        "Create more documents"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Integration creates synergies and improves efficiency.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983eea"
+      }
+    },
+    {
+      "question": "What is common to both standards?",
+      "options": [
+        "Risk-based thinking and continual improvement",
+        "Product manufacturing",
+        "Environmental management",
+        "Health protocols"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Both standards share risk-based thinking and PDCA cycle.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983eeb"
+      }
+    },
+    {
+      "question": "How are data quality and security related?",
+      "options": [
+        "Poor quality affects security and vice versa",
+        "Completely unrelated",
+        "Quality only matters for marketing",
+        "Security is only passwords"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Data quality and security are interconnected and interdependent.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983eec"
+      }
+    },
+    {
+      "question": "Who is responsible for quality and security?",
+      "options": [
+        "Everyone in the organization",
+        "Only IT department",
+        "Only quality managers",
+        "Only top management"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Quality and security are everyone's responsibility.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983eed"
+      }
+    },
+    {
+      "question": "What is a benefit of documented procedures?",
+      "options": [
+        "Consistency, traceability, reduced errors",
+        "More paperwork",
+        "Slower processes",
+        "Less flexibility"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Documented procedures ensure consistency and reduce errors.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983eee"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.451Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983eef"
+  },
+  "title": "Internet Acceptable Use Policy",
+  "description": "Understand acceptable use guidelines for internet access at work.",
+  "documentUrl": "https://docs.google.com/document/d/1zXO1DQ3YDgOrOFcoqSzys5zclC2ox1FO7v9Xlrt3LEA/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1VLbnRBGJGSno-oXpXIazENT2k0zPtJIb/view?usp=sharing",
+  "badgeImage": "/uploads/badges/internet acceptable use.png",
+  "badgeName": "Chivalrous Net Surfer",
+  "badgeDescription": "Mastered Internet Use Guidelines",
+  "questions": [
+    {
+      "question": "What is the purpose of Internet Acceptable Use Policy?",
+      "options": [
+        "Define acceptable use and protect resources",
+        "Prevent all internet use",
+        "Monitor personal emails",
+        "Block social media"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The policy establishes guidelines for safe and appropriate internet use.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef0"
+      }
+    },
+    {
+      "question": "Which is typically acceptable internet use?",
+      "options": [
+        "Work-related research",
+        "Downloading pirated software",
+        "Gambling websites",
+        "Sharing confidential info on social media"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Acceptable use includes legitimate business activities.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef1"
+      }
+    },
+    {
+      "question": "Why avoid suspicious links?",
+      "options": [
+        "May contain malware or phishing",
+        "Wastes bandwidth",
+        "Slows computer",
+        "Company monitors clicks"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Suspicious links are common vectors for cyber attacks.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef2"
+      }
+    },
+    {
+      "question": "What if you accidentally access restricted content?",
+      "options": [
+        "Close immediately and report to IT",
+        "Continue browsing",
+        "Share with colleagues",
+        "Hide browsing history"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Transparency protects you and the organization.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef3"
+      }
+    },
+    {
+      "question": "Is brief personal internet use allowed?",
+      "options": [
+        "Only if permitted by policy",
+        "Yes, always",
+        "No, never",
+        "Only if nobody knows"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Personal use must align with company policy.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef4"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.451Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983ef5"
+  },
+  "title": "Anti-Malware Policy",
+  "description": "Learn about malware protection and prevention measures.",
+  "documentUrl": "https://docs.google.com/document/d/1gcxOMPvc7vCKgBHit4RP1bNiVTprD2hdrWYfC8zARmM/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1gOhIw7EuxQtrq2XNegq87VShgxcvgriC/view?usp=sharing",
+  "badgeImage": "/uploads/badges/anti malware badge.png",
+  "badgeName": "Malware Vanquisher",
+  "badgeDescription": "Completed Anti-Malware Training",
+  "questions": [
+    {
+      "question": "What is malware?",
+      "options": [
+        "Malicious software designed to harm systems",
+        "Broken hardware",
+        "Slow internet",
+        "Old software"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Malware is software intentionally designed to cause damage.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef6"
+      }
+    },
+    {
+      "question": "Which is a type of malware?",
+      "options": [
+        "Ransomware",
+        "Firewall",
+        "Antivirus",
+        "Encryption"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Ransomware encrypts data and demands payment.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef7"
+      }
+    },
+    {
+      "question": "How often should antivirus definitions update?",
+      "options": [
+        "Daily or automatically",
+        "Monthly",
+        "Yearly",
+        "Never"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Daily updates protect against new threats.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef8"
+      }
+    },
+    {
+      "question": "What should you do if antivirus detects malware?",
+      "options": [
+        "Follow prompts and report to IT",
+        "Ignore it",
+        "Delete antivirus",
+        "Restart computer"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Follow antivirus prompts and notify IT immediately.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983ef9"
+      }
+    },
+    {
+      "question": "Can malware spread through email?",
+      "options": [
+        "Yes, through attachments and links",
+        "No, email is safe",
+        "Only on mobile",
+        "Only on old computers"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Email is a common malware delivery method.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983efa"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.451Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983efb"
+  },
+  "title": "Access Control Policy",
+  "description": "Understand access control principles and user permissions.",
+  "documentUrl": "https://docs.google.com/document/d/1QCVAxgvSKq5cz1RMH9SiU1Jpt-OZjDuGswx1gK3_NgU/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/15uacYOudaxH476A_x8Fks_yNTKie41wa/view?usp=sharing",
+  "badgeImage": "/uploads/badges/access control badge.png",
+  "badgeName": "Control Commander",
+  "badgeDescription": "Mastered Access Control Principles",
+  "questions": [
+    {
+      "question": "What is the principle of least privilege?",
+      "options": [
+        "Users get only access they need",
+        "Everyone gets full access",
+        "Managers get all access",
+        "No one gets access"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Least privilege minimizes security risks by limiting access.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983efc"
+      }
+    },
+    {
+      "question": "What is multi-factor authentication?",
+      "options": [
+        "Multiple verification methods",
+        "Strong password only",
+        "Biometric only",
+        "Security questions only"
+      ],
+      "correctAnswer": 0,
+      "explanation": "MFA requires two or more verification factors.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983efd"
+      }
+    },
+    {
+      "question": "Should you share your credentials?",
+      "options": [
+        "Never, even with colleagues",
+        "Yes, with teammates",
+        "Yes, with managers",
+        "Yes, in emergencies"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Credentials are personal and must never be shared.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983efe"
+      }
+    },
+    {
+      "question": "When should access rights be reviewed?",
+      "options": [
+        "Regularly and when roles change",
+        "Only when hired",
+        "Only when fired",
+        "Never"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Regular reviews ensure appropriate access levels.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983eff"
+      }
+    },
+    {
+      "question": "What is role-based access control?",
+      "options": [
+        "Access based on job role",
+        "Everyone gets same access",
+        "Random access assignment",
+        "No access control"
+      ],
+      "correctAnswer": 0,
+      "explanation": "RBAC grants access based on organizational roles.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f00"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.451Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f01"
+  },
+  "title": "Network Access Policy",
+  "description": "Learn about secure network access and connection guidelines.",
+  "documentUrl": "https://docs.google.com/document/d/1soaIX11RWkl0-4Q1zNJCtvNUfUNSnPyLEtufkApwd84/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1_H_HSbvS-HyDACs23SqR1V-jmqOSI49b/view?usp=sharing",
+  "badgeImage": "/uploads/badges/network access.png",
+  "badgeName": "Network Marauder",
+  "badgeDescription": "Network Access Policy",
+  "questions": [
+    {
+      "question": "Why is network segmentation important?",
+      "options": [
+        "To decrease security posture",
+        "To reduce performance optimization",
+        "To contain network threats",
+        "To limit network speed"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Segmentation contains breaches and limits lateral movement.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f02"
+      }
+    },
+    {
+      "question": "Is public WiFi safe for work?",
+      "options": [
+        "No, use VPN if necessary",
+        "Yes, always safe",
+        "Yes, if password-protected",
+        "Only at airports"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Public WiFi is insecure; use VPN for protection.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f03"
+      }
+    },
+    {
+      "question": "What is a VPN?",
+      "options": [
+        "Virtual Public Network",
+        "Virtual Private Network ",
+        "Virtual Protected Network",
+        "Visual Practice for Networks"
+      ],
+      "correctAnswer": 1,
+      "explanation": "VPN encrypts traffic over untrusted networks.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f04"
+      }
+    },
+    {
+      "question": "Should you connect personal devices to company network?",
+      "options": [
+        "Only smartphones",
+        "Yes",
+        "Never",
+        "Only if approved and compliant"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Personal devices must meet security requirements.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f05"
+      }
+    },
+    {
+      "question": "What is a firewall?",
+      "options": [
+        "An embedded software used for blocking unwanted apps",
+        "An application that mitigates threats",
+        "A form of antivirus that can be controlled",
+        "Network security system controlling traffic"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Firewalls monitor and control network traffic.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f06"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f07"
+  },
+  "title": "Data Protection & Privacy Policy",
+  "description": "Understand data protection principles and privacy regulations.",
+  "documentUrl": "https://docs.google.com/document/d/1xPpSApfzHsmRaRy7x6SbdaA-k8fVM94nvrCCmYsHWac/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1T0N0Qi6RpIxP7sqiXuAj4I161aPBVILu/view?usp=sharing",
+  "badgeImage": "/uploads/badges/data protection and privacy.png",
+  "badgeName": "\"...I see you\"",
+  "badgeDescription": "Data Protection & Privacy",
+  "questions": [
+    {
+      "question": "What is personal data?",
+      "options": [
+        "Company-based data on an individual",
+        "Information identifying an individual",
+        "Public information identifying a person",
+        "Any information about you that cannot be shared"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Personal data is any information relating to an identifiable person.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f08"
+      }
+    },
+    {
+      "question": "What is GDPR?",
+      "options": [
+        "General Data Protection Regulation",
+        "Global Data Privacy Rules",
+        "Government Data Protection Rights",
+        "General Document Protection Rules"
+      ],
+      "correctAnswer": 0,
+      "explanation": "GDPR is EU regulation protecting personal data.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f09"
+      }
+    },
+    {
+      "question": "What is data minimization?",
+      "options": [
+        "Collect data based on given resources",
+        "Collect limited data for a limited time",
+        "Removal of unnecessary data for performance",
+        "Collect only necessary data"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Data minimization limits collection to what is needed.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f0a"
+      }
+    },
+    {
+      "question": "Can you share customer data freely?",
+      "options": [
+        "No, only with authorization",
+        "Yes, especially when authorized",
+        "Yes, with partners",
+        "Yes, if encrypted"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Customer data requires proper authorization and controls.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f0b"
+      }
+    },
+    {
+      "question": "What is a data breach?",
+      "options": [
+        "A DDOS attack",
+        "Unauthorized access to data",
+        "Loss of data over time",
+        "Missing important information"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Data breach is unauthorized access, disclosure, or loss.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f0c"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f0d"
+  },
+  "title": "Cryptographic Control Policy",
+  "description": "Learn about encryption and cryptographic controls.",
+  "documentUrl": "https://docs.google.com/document/d/1f4aKPdCk2P_Ppmxnjv-UjACkj1lLCptxXwFInGZmweI/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1b9YzUuqFY6QfA3Y9BTNFSKCdqVVCE8EI/view?usp=sharing",
+  "badgeImage": "/uploads/badges/cryptographic control.png",
+  "badgeName": "Cipher Marauder",
+  "badgeDescription": "Completed Cryptography Training",
+  "questions": [
+    {
+      "question": "What is encryption?",
+      "options": [
+        "Compressing data to reduce size",
+        "Changing data content",
+        "Converting data to unreadable format",
+        "Copying data to unreadable format"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Encryption protects data by making it unreadable without the key.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f0e"
+      }
+    },
+    {
+      "question": "When should data be encrypted?",
+      "options": [
+        "In transit and at rest",
+        "Only in transit",
+        "Only at rest",
+        "Never"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Encryption protects data both during transmission and storage.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f0f"
+      }
+    },
+    {
+      "question": "What is a cryptographic key?",
+      "options": [
+        "A string of characters used to encrypt/decrypt data",
+        "A program to decipher encrypted data",
+        "An application used for encrypting user info",
+        "A security protocol for safekeeping data"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Cryptographic keys are secrets used in encryption algorithms.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f10"
+      }
+    },
+    {
+      "question": "Should encryption keys be shared?",
+      "options": [
+        "No",
+        "Yes, but with caution",
+        "Yes",
+        "Yes, it is not illegal to do so"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Keys must be protected and never shared insecurely.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f11"
+      }
+    },
+    {
+      "question": "What is SSL/TLS?",
+      "options": [
+        "Protocols for secure web communication",
+        "Protocols for secure internet surfing",
+        "Protocols for secure upload/download",
+        "Protocols for secure network sharing"
+      ],
+      "correctAnswer": 0,
+      "explanation": "SSL/TLS encrypts web traffic (HTTPS).",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f12"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f13"
+  },
+  "title": "Cloud Service Policy",
+  "description": "Understand cloud service usage and security requirements.",
+  "documentUrl": "https://docs.google.com/document/d/1oV2mTrDpQTi-KOzarUGJRkN8fSszSGXPQ7T9ZzkQhZ4/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1UqjSg01oELSdh9cDF58Gq8N0RnKZVT9s/view?usp=sharing",
+  "badgeImage": "/uploads/badges/cloud service.png",
+  "badgeName": "Cloud Maestro",
+  "badgeDescription": "Cloud Service Policy",
+  "questions": [
+    {
+      "question": "What is cloud computing?",
+      "options": [
+        "Online storage subscription",
+        "Software as a service",
+        "Computing services over the internet",
+        "An advanced computing method for fast network communication"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Cloud computing delivers services via internet.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f14"
+      }
+    },
+    {
+      "question": "Can you use any cloud service for work?",
+      "options": [
+        "No, only approved services",
+        "Yes, any service",
+        "Yes, free services",
+        "Only personal services"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Only approved cloud services meet security requirements.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f15"
+      }
+    },
+    {
+      "question": "What is Shadow IT?",
+      "options": [
+        "Unauthorized IT systems or services",
+        "Dark web",
+        "Black hat hackers",
+        "Backup systems"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Shadow IT is unapproved technology use that creates risks.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f16"
+      }
+    },
+    {
+      "question": "Who is responsible for cloud data security?",
+      "options": [
+        "Shared between provider and organization",
+        "Only provider",
+        "Only organization",
+        "No one"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Cloud security is a shared responsibility model.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f17"
+      }
+    },
+    {
+      "question": "Should company data be stored in personal cloud accounts?",
+      "options": [
+        "No, use approved business accounts",
+        "Yes, if convenient",
+        "Yes, if encrypted",
+        "Yes, if free"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Company data requires approved business-grade cloud services.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f18"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f19"
+  },
+  "title": "Data Leak Prevention",
+  "description": "Learn how to prevent unauthorized data disclosure.",
+  "documentUrl": "https://docs.google.com/document/d/1765EeQAiKv2xrb0oZA1jrlswgiy4BC9oPKMsxu2Ttbs/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1u_SGDRUZu6gBYKwm9pOpi9mwskWE3b7G/view?usp=sharing",
+  "badgeImage": "/uploads/badges/data leak prevention.png",
+  "badgeName": "The DLP Specialist",
+  "badgeDescription": "Data Leak Prevention",
+  "questions": [
+    {
+      "question": "What is the primary purpose of Data Leak Prevention?",
+      "options": [
+        "Preventing unauthorized access",
+        "Preventing exposure of sensitive information",
+        "Creating strategies to block unauthorized transmission",
+        "To monitor user access in handling data"
+      ],
+      "correctAnswer": 1,
+      "explanation": "DLP prevents sensitive data from leaving the organization.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f1a"
+      }
+    },
+    {
+      "question": "Which is a data leak risk?",
+      "options": [
+        "Sending confidential files using personal emails",
+        "Using unauthorized software",
+        "Connecting external devices to the network",
+        "Taking photos of the office environment"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Personal email is an unauthorized channel for company data.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f1b"
+      }
+    },
+    {
+      "question": "What should you do before emailing sensitive data?",
+      "options": [
+        "CC the manager",
+        "Notify the recipient and share decryption keys",
+        "Verify the recipient and encrypt when needed",
+        "Use BCC and send within company grounds"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Always verify recipients and protect sensitive data.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f1c"
+      }
+    },
+    {
+      "question": "Are screenshots of confidential data allowed?",
+      "options": [
+        "Only if authorized and necessary",
+        "Yes, always",
+        "No, never",
+        "Only on phone"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Screenshots must follow same confidentiality rules.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f1d"
+      }
+    },
+    {
+      "question": "What is data classification?",
+      "options": [
+        "Labeling data by size",
+        "Labeling data by order",
+        "Labeling data by property",
+        "Labeling data by sensitivity"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Classification determines appropriate handling controls.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f1e"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f1f"
+  },
+  "title": "Secure Coding Policy",
+  "description": "Understand secure software development practices.",
+  "documentUrl": "https://docs.google.com/document/d/1kjpCF1-76-O04wM5Js-P2-I8lsnv1RFZPgZK1P76cKc/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/19XeCHPKN7EcqA23no2haUVCWyrvwruMx/view?usp=sharing",
+  "badgeImage": "/uploads/badges/secure coding.png",
+  "badgeName": "THE BUG BLOCKER",
+  "badgeDescription": "Completed Secure Coding Training",
+  "questions": [
+    {
+      "question": "What is secure coding?",
+      "options": [
+        "Writing software with encrypting capabilities",
+        "Writing software for security applications",
+        "Writing software resistant to vulnerabilities",
+        "Writing software within proper access"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Secure coding prevents security vulnerabilities in software.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f20"
+      }
+    },
+    {
+      "question": "What is an injection attack?",
+      "options": [
+        "Inserting malicious code to allow entry",
+        "Using emulated decryption keys",
+        "Inserting external drives to gain unauthorized access",
+        "A form of ethical hacking"
+      ],
+      "correctAnswer": 0,
+      "explanation": "SQL injection exploits poor input validation.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f21"
+      }
+    },
+    {
+      "question": "Should passwords be hardcoded in source code?",
+      "options": [
+        "Yes, when commented",
+        "Yes, for convenience",
+        "No, use secure configuration",
+        "Yes, especially for practical uses"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Hardcoded credentials are a critical security flaw.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f22"
+      }
+    },
+    {
+      "question": "What is input validation?",
+      "options": [
+        "Checking user input for proper format",
+        "Checking incorrect input",
+        "Testing proper input for access",
+        "Checking user input for malicious content"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Input validation prevents injection attacks.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f23"
+      }
+    },
+    {
+      "question": "When should code be reviewed for security?",
+      "options": [
+        "After deployment",
+        "During production",
+        "During development and before deployment",
+        "Security is not part of code reviews"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Security reviews should be integrated throughout development.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f24"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f25"
+  },
+  "title": "Risk Assessment Procedure",
+  "description": "Learn how to identify and assess information security risks.",
+  "documentUrl": "https://docs.google.com/document/d/1djJzd7SUxixEEW-ggnfZrLX9T_r48DVP0JRSC6HsgK0/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1AEIggeiYVxJKFxBIOOsbnSVfm7OdUCLT/view?usp=sharing",
+  "badgeImage": "/uploads/badges/risk assessment.png",
+  "badgeName": "Never fret on a threat",
+  "badgeDescription": "Risk Assessment",
+  "questions": [
+    {
+      "question": "What is risk assessment?",
+      "options": [
+        "Determine factors reducing business value",
+        "The identification and evaluation of threats",
+        "Resolving issues affecting performance",
+        "A form of survey identifying risks"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Risk assessment identifies threats and vulnerabilities.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f26"
+      }
+    },
+    {
+      "question": "What is considered as a threat?",
+      "options": [
+        "Potential cause of unwanted incident",
+        "Network performance issues",
+        "Data backup error",
+        "Non-compliance of a policy"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Threats are potential sources of harm.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f27"
+      }
+    },
+    {
+      "question": "What is a vulnerability?",
+      "options": [
+        "A weakness that can be exploited",
+        "A Security-based control",
+        "A mitigated attack within the network",
+        "An unwanted application "
+      ],
+      "correctAnswer": 0,
+      "explanation": "Vulnerabilities are weaknesses in systems or processes.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f28"
+      }
+    },
+    {
+      "question": "How is risk calculated?",
+      "options": [
+        "Assets + Threats",
+        "Likelihood x Impact",
+        "Threat - Vulnerabilities",
+        "Strength / Weakness"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Risk = Likelihood of occurrence × Impact of consequences.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f29"
+      }
+    },
+    {
+      "question": "What is risk treatment?",
+      "options": [
+        "Acceptance of risk",
+        "Actions to modify risk",
+        "Avoiding risk overall",
+        "Solving previous risks"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Risk treatment includes mitigation, transfer, acceptance, or avoidance.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f2a"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f2b"
+  },
+  "title": "Document Control Awareness",
+  "description": "Understand document management and version control.",
+  "documentUrl": "https://docs.google.com/document/d/1Pa0hT06kDJsHNcwQ7nabn1UANJXVeB27HKW0wxAHf50/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1sbPMicRNYh65oYm4pEnlzTh-eybtGD92/view?usp=sharing",
+  "badgeImage": "/uploads/badges/document control.png",
+  "badgeName": "Paper Trail Tactician",
+  "badgeDescription": "Mastered Document Control",
+  "questions": [
+    {
+      "question": "Why is document control important?",
+      "options": [
+        "To lessen paperwork and use of physical paper",
+        "To adhere to environmental rules",
+        "To control information passed through documents",
+        "To ensure accuracy and compliance"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Document control ensures accuracy, traceability and compliance with the latest authorized version.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f2c"
+      }
+    },
+    {
+      "question": "What is version control?",
+      "options": [
+        "Maintaining change history in documents",
+        "A backup protocol",
+        "Tracking document changes over time",
+        "Source code management"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Version control tracks changes and maintains history.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f2d"
+      }
+    },
+    {
+      "question": "Should you work from local copies of controlled documents?",
+      "options": [
+        "No, use official repository",
+        "Yes, always",
+        "Yes, if convenient",
+        "Only offline"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Local copies may be outdated; use official versions.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f2e"
+      }
+    },
+    {
+      "question": "What is document retention?",
+      "options": [
+        "Keeping documents for a required period",
+        "Deleting documents after a required period",
+        "Archiving documents after a certain period",
+        "Deciding which documents are allowed to be thrown"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Retention ensures documents are kept as legally required.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f2f"
+      }
+    },
+    {
+      "question": "Who can approve controlled documents?",
+      "options": [
+        "Document Author",
+        "Anyone within the author's department",
+        "Authorized personnel only",
+        "Personnel higher than the manager"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Only authorized individuals can approve changes.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f30"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f31"
+  },
+  "title": "Exchange of Information Policy",
+  "description": "Learn secure methods for sharing information.",
+  "documentUrl": "https://docs.google.com/document/d/11YCDVly0Fd7VJqU2LjRvhtMjqzJW_SIeGrwgqgNEkOo/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1_vecTZkEQuJfIHFbIeOi8hfOL5Y1b6WW/view?usp=sharing",
+  "badgeImage": "/uploads/badges/information exchange.png",
+  "badgeName": "Data Drop Disciple",
+  "badgeDescription": "Mastered Secure Information Sharing",
+  "questions": [
+    {
+      "question": "What should you do before sharing sensitive information?",
+      "options": [
+        "Verify recipient authorization",
+        "Let a higher up check the content",
+        "Review the information content",
+        "Make a copy for backup purposes"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Always verify recipients have authorization for sensitive data.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f32"
+      }
+    },
+    {
+      "question": "Which method is secure for sharing confidential files?",
+      "options": [
+        "Cloud link",
+        "Using a personal email",
+        "Encrypted file transfer or secure portal",
+        "Through a local area network"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Use approved secure channels for confidential information.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f33"
+      }
+    },
+    {
+      "question": "Should you discuss confidential matters in public?",
+      "options": [
+        "No, only in secure locations",
+        "Yes, if quiet",
+        "Yes, if necessary",
+        "Only with colleagues"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Public spaces pose eavesdropping and shoulder surfing risks.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f34"
+      }
+    },
+    {
+      "question": "What is an NDA?",
+      "options": [
+        "Non-Disclosure Agreement",
+        "New Data Access",
+        "Network Device Authorization",
+        "No Data Available"
+      ],
+      "correctAnswer": 0,
+      "explanation": "NDAs legally protect confidential information.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f35"
+      }
+    },
+    {
+      "question": "Can you forward confidential emails?",
+      "options": [
+        "Yes, if BCC",
+        "Yes, within company grounds",
+        "Yes, but only within your department",
+        "Only if authorized"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Forwarding requires same authorization as original sharing.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f36"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f37"
+  },
+  "title": "Asset Inventory",
+  "description": "Understand the importance of tracking organizational assets.",
+  "documentUrl": "https://docs.google.com/document/d/1TtzLkJ1ThTA5h0Sby2e1e_kJyJgrs7Sllo9c6lzA9rY/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1ZmEtWZd1u4XsOtvuN7Qg5EPzdwaYWpGo/view?usp=sharing",
+  "badgeImage": "/uploads/badges/asset inventory.png",
+  "badgeName": "Inventory Guardian",
+  "badgeDescription": "Completed Asset Inventory Training",
+  "questions": [
+    {
+      "question": "Why maintain an asset inventory?",
+      "options": [
+        "Track and protect organizational assets",
+        "Create paperwork",
+        "Count equipment",
+        "Insurance only"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Asset inventory enables proper security and management.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f38"
+      }
+    },
+    {
+      "question": "What is an information asset?",
+      "options": [
+        "Hardware, software, data, or services",
+        "Only computers",
+        "Only data",
+        "Only buildings"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Information assets include all resources supporting information processing.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f39"
+      }
+    },
+    {
+      "question": "Should personal devices be in the inventory?",
+      "options": [
+        "Yes, if used for work",
+        "No, never",
+        "Only phones",
+        "Only laptops"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Work-used personal devices (BYOD) require tracking.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f3a"
+      }
+    },
+    {
+      "question": "What is asset classification?",
+      "options": [
+        "Categorizing by value and sensitivity",
+        "Organizing by color",
+        "Sorting by age",
+        "Grouping by size"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Classification determines appropriate protection levels.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f3b"
+      }
+    },
+    {
+      "question": "When should inventory be updated?",
+      "options": [
+        "When assets are added, changed, or removed",
+        "Yearly only",
+        "Never",
+        "When audited"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Inventory must reflect current state of assets.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f3c"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.452Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f3d"
+  },
+  "title": "Email Rules",
+  "description": "Learn proper email usage and security practices.",
+  "documentUrl": "https://docs.google.com/document/d/1fUpuH79f6VGisrEQ2e2uTL_QEO9zqhOXkOxw8xJcoPM/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1o7HKpLzkdU63424paD_wD-SgcqV-N9Oi/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915706676-424447906.png",
+  "badgeName": "Not a phisherman",
+  "badgeDescription": "Mastered Email Security",
+  "questions": [
+    {
+      "question": "What is phishing?",
+      "options": [
+        "Email backup virus",
+        "Spam filter",
+        "Fraudulent emails attempting to steal information",
+        "Newsletter"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Phishing uses deceptive emails to trick victims.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f3e"
+      }
+    },
+    {
+      "question": "How do you identify phishing emails?",
+      "options": [
+        "Suspicious sender, urgency, unexpected attachments",
+        "All emails are phishing",
+        "Only spam is considered as phishing",
+        "Check email length"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Phishing shows red flags like urgency and suspicious links.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f3f"
+      }
+    },
+    {
+      "question": "Should you click links in unexpected emails?",
+      "options": [
+        "Yes, if the company is known",
+        "Yes, always",
+        "No, always verify the sender first",
+        "Only when using personal emails"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Always verify unexpected emails before clicking.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f40"
+      }
+    },
+    {
+      "question": "Is email suitable for highly confidential information?",
+      "options": [
+        "No, use encrypted channels",
+        "Yes, always",
+        "Yes, if internal",
+        "Yes, if password protected"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Standard email is not secure enough for highly confidential data.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f41"
+      }
+    },
+    {
+      "question": "What should you do with suspicious emails?",
+      "options": [
+        "Forward it to colleagues",
+        "Reply to sender",
+        "Report and delete",
+        "Ignore them"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Report phishing attempts to help protect others.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f42"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f43"
+  },
+  "title": "Confidential Information Handling Policy",
+  "description": "Learn how to properly handle confidential information.",
+  "documentUrl": "https://docs.google.com/document/d/1HNsOoFHNNSFJoBJKrHngYYtysXvBduXn3xdqmjcsHf0/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/17FVq8d2KbpJTrA76iOUBQgvJus8ILaMj/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915830298-353442160.png",
+  "badgeName": "The Mute",
+  "badgeDescription": "Mastered Confidential Information Handling",
+  "questions": [
+    {
+      "question": "What is confidential information?",
+      "options": [
+        "Marketing materials",
+        "Public information",
+        "Personal opinions",
+        "Sensitive data requiring protection"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Confidential information requires special protection due to sensitivity.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f44"
+      }
+    },
+    {
+      "question": "Can you discuss confidential projects in public?",
+      "options": [
+        "Yes, but with caution",
+        "No, only in secure locations",
+        "Yes, with colleagues",
+        "Yes, if necessary"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Public discussions risk unauthorized disclosure.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f45"
+      }
+    },
+    {
+      "question": "How should confidential documents be stored?",
+      "options": [
+        "Secured or encrypted storage",
+        "Hard drive with controlled access",
+        "Online storage drives",
+        "Folders that requires admin access"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Confidential documents require physical or electronic protection.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f46"
+      }
+    },
+    {
+      "question": "Should confidential info be taken outside work?",
+      "options": [
+        "No, not at all",
+        "Yes, anytime",
+        "Only if authorized and protected",
+        "Only in briefcase"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Removing confidential information requires approval and safeguards.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f47"
+      }
+    },
+    {
+      "question": "What if you accidentally disclose confidential info?",
+      "options": [
+        "Report immediately to supervisor",
+        "Keep quiet",
+        "Delete evidence",
+        "Blame others"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Immediate reporting enables damage control.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f48"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f49"
+  },
+  "title": "Telework Policy",
+  "description": "Understand secure remote work practices.",
+  "documentUrl": "https://docs.google.com/document/d/1HB41yaLhDtaS-tj81O2XzpIFA9_LViHqCDaqWKseigU/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1zhUqRyUfYVIh1eXg022q6LNacPenrYUJ/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915850627-268301406.png",
+  "badgeName": "The Off-site Bee",
+  "badgeDescription": "Completed Telework Security Training",
+  "questions": [
+    {
+      "question": "What is most important when working remotely?",
+      "options": [
+        "Work faster in different environments",
+        "Maintain same security standards",
+        "Skip security protocols",
+        "Using faster and better personal devices"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Remote work requires same security as office work.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f4a"
+      }
+    },
+    {
+      "question": "Should you use public WiFi for work?",
+      "options": [
+        "No, or use VPN if necessary",
+        "Yes, always",
+        "Yes, if password-protected",
+        "Only for email"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Public WiFi is insecure without VPN protection.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f4b"
+      }
+    },
+    {
+      "question": "How to secure your home workspace?",
+      "options": [
+        "Lock devices, use privacy screens, secure network",
+        "Leave devices unlocked",
+        "Work in public areas",
+        "Share network openly"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Home workspace requires physical and digital security.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f4c"
+      }
+    },
+    {
+      "question": "Can family members use your work computer?",
+      "options": [
+        "Only for browsing",
+        "Yes, anytime",
+        "Yes, if supervised",
+        "No, work devices are for authorized use only"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Work devices must be used only for authorized purposes.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f4d"
+      }
+    },
+    {
+      "question": "What if your work device is lost or stolen?",
+      "options": [
+        "Buy a replacement",
+        "Resolve the issue yourself",
+        "Report immediately",
+        "Search quietly"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Immediate reporting enables remote wipe and damage control.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f4e"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f4f"
+  },
+  "title": "Information Security Incident Policy",
+  "description": "Learn how to identify and report security incidents.",
+  "documentUrl": "https://docs.google.com/document/d/1WNtCD906BoKwUC5-BQjHbyYU4qHVxWPne0Z6I35SsvQ/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1PYXh9-SEXYrwEoo8e79WC0wHRqy2EhX3/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915870707-54042348.png",
+  "badgeName": "The Rapid Reporter",
+  "badgeDescription": "Mastered Incident Response",
+  "questions": [
+    {
+      "question": "What is a security incident?",
+      "options": [
+        "Event compromising quality",
+        "Event preventing updates",
+        "Event compromising security",
+        "Event decreasing business value"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Security incidents are events that breach or threaten security.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f50"
+      }
+    },
+    {
+      "question": "When should you report a suspected incident?",
+      "options": [
+        "Within 72 hours",
+        "Within 24 hours",
+        "Immediately",
+        "Within 3 hours"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Quick reporting enables faster response and limits damage.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f51"
+      }
+    },
+    {
+      "question": "What is NOT a security incident?",
+      "options": [
+        "Unauthorized access",
+        "Malware detected",
+        "Data breach",
+        "Scheduled maintenance"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Scheduled maintenance is planned, not an incident.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f52"
+      }
+    },
+    {
+      "question": "Who should handle security incidents?",
+      "options": [
+        "IT security team",
+        "Any IT employee",
+        "Any department manager",
+        "You can fix it yourself"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Security incidents require specialized response team.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f53"
+      }
+    },
+    {
+      "question": "What should you do if you suspect compromise?",
+      "options": [
+        "Restart your terminal",
+        "Continue working and report it at the end of the day",
+        "Disconnect, report, and preserve evidence",
+        "Delete all files affected immediately"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Proper incident response includes containment and preservation.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f54"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f55"
+  },
+  "title": "Training Policy",
+  "description": "Understand the importance of security awareness training.",
+  "documentUrl": "https://docs.google.com/document/d/1gp6jRPJk4kZtVyBp0wSx9nbqazwQlhtjAcYnQLXGi0o/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1TA_EuAAawhMB7uKucYCfjYCBAvyffYRz/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915896391-827434731.png",
+  "badgeName": "Skill issue",
+  "badgeDescription": "Completed Training Policy",
+  "questions": [
+    {
+      "question": "Why is security training important?",
+      "options": [
+        "To reduce human error",
+        "To avoid buying antivirus software",
+        "To build awareness and reduce risk",
+        "For compliance purposes"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Training empowers employees to protect information.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f56"
+      }
+    },
+    {
+      "question": "How often should security training occur?",
+      "options": [
+        "Yearly training is a good standard",
+        "Once at hire",
+        "Regularly and when changes apply",
+        "Every after incidents occur"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Ongoing training maintains awareness of evolving threats.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f57"
+      }
+    },
+    {
+      "question": "Who needs security training?",
+      "options": [
+        "Managers",
+        "IT staff",
+        "New hires",
+        "All employees"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Everyone plays a role in information security.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f58"
+      }
+    },
+    {
+      "question": "What topics should training cover?",
+      "options": [
+        "Standards, policies, threats, and best practices",
+        "Threat mitigation and preventive actions",
+        "Compliance policies and organizational rules",
+        "Proper resource use and workplace etiquette"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Comprehensive training covers all relevant security topics.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f59"
+      }
+    },
+    {
+      "question": "Is completing training enough?",
+      "options": [
+        "Yes, awareness is good enough for the organization",
+        "Yes, training is enough for compliance purposes",
+        "No, employees must apply knowledge every work day",
+        "No, it needs certification to further test knowledge"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Training effectiveness requires practical application.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f5a"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f5b"
+  },
+  "title": "Secured Area Policy",
+  "description": "Learn about physical security and access controls.",
+  "documentUrl": "https://docs.google.com/document/d/1o5sHW2BP6UaEyiNA7PtJcAhjQW-nvjE3aAOb0buXmek/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1iyXSSf5DyHqvTsHHCtiLGOJIz3KyhYMh/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915917975-722797561.png",
+  "badgeName": "Boundary Bandit",
+  "badgeDescription": "Mastered Secured Area Policy",
+  "questions": [
+    {
+      "question": "What is a secured area?",
+      "options": [
+        "Restricted area requiring biometrics",
+        "Restricted area requiring authorization",
+        "Restricted area requiring ID to enter",
+        "Restricted area requiring higher approval"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Secured areas contain sensitive assets or information.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f5c"
+      }
+    },
+    {
+      "question": "Should you hold doors open for others?",
+      "options": [
+        "Yes, to save time",
+        "Yes, to be polite",
+        "No, everyone must use own access",
+        "Only for visitors"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Tailgating allows unauthorized access; everyone must authenticate.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f5d"
+      }
+    },
+    {
+      "question": "What should you do with your access credentials?",
+      "options": [
+        "Lend to visitors and new hires",
+        "Share with trusted colleagues",
+        "Keep secure and never share",
+        "Leave at desk"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Access badges are personal and must not be shared.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f5e"
+      }
+    },
+    {
+      "question": "How should visitors be handled?",
+      "options": [
+        "Provide temporary credentials",
+        "Free guest access",
+        "Escorted and monitored",
+        "Give access to all areas temporarily"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Visitors require escorting to prevent unauthorized access.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f5f"
+      }
+    },
+    {
+      "question": "What if you find an unlocked secured area?",
+      "options": [
+        "Report immediately",
+        "Lock it yourself",
+        "Ignore it",
+        "Use the opportunity ;)"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Security breaches must be reported for investigation.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f60"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f61"
+  },
+  "title": "Disposal Policy",
+  "description": "Learn proper methods for disposing of sensitive information.",
+  "documentUrl": "https://docs.google.com/document/d/1DhTp46NvExZzsCZluRnu4IWCZ04goHbmLBnKCPCbp_I/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1A9YNEG-fqNMMO1356L9kArnkHZvrvS_U/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915753306-421128591.png",
+  "badgeName": "Thrower",
+  "badgeDescription": "Completed Secure Disposal Training",
+  "questions": [
+    {
+      "question": "Why is secure disposal important?",
+      "options": [
+        "Reduces clutter and make space for more important resources",
+        "Recycles resources to avoid further costs",
+        "Saves storage for future company use",
+        "Prevents data recovery by unauthorized parties"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Improper disposal can lead to data breaches.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f62"
+      }
+    },
+    {
+      "question": "How should confidential papers be disposed?",
+      "options": [
+        "Shredded",
+        "Trash Bin",
+        "Burned",
+        "Torn by hand"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Cross-cut shredding makes document reconstruction impossible.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f63"
+      }
+    },
+    {
+      "question": "How to dispose of old hard drives?",
+      "options": [
+        "Format and Donate to other organizations",
+        "Format and re-sell it to other parties",
+        "Degaussing, physical destruction, or certified wiping",
+        "Keep it and reuse for future storage"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Hard drives require certified data destruction methods.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f64"
+      }
+    },
+    {
+      "question": "Can flash drives be reused after deleting files?",
+      "options": [
+        "No, must be securely wiped or destroyed",
+        "Yes, always safe",
+        "Yes, if formatted",
+        "Yes, if files deleted"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Deleted files can be recovered without secure wiping.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f65"
+      }
+    },
+    {
+      "question": "What about expired IDs?",
+      "options": [
+        "Return to security for destruction",
+        "Keep as souvenir",
+        "Regular trash",
+        "Give to others"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Old badges could be misused for unauthorized access.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f66"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f67"
+  },
+  "title": "Preventive Maintenance",
+  "description": "Understand the importance of system maintenance for security.",
+  "documentUrl": "https://docs.google.com/document/d/1RYn0DqqB6Ox212G6ExjDP36Yg203LaRDuevuwH29tAc/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1XvU-e-K9m3h3e8g3Pmka5NtKRsTM3Hu-/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915958151-947816681.png",
+  "badgeName": "Maintenance Mindset",
+  "badgeDescription": "Completed Preventive Maintenance Training",
+  "questions": [
+    {
+      "question": "Why is preventive maintenance important for security?",
+      "options": [
+        "Prevents failures that cause vulnerabilities",
+        "Keeps equipment clean",
+        "Saves cost by avoiding regular maintenance",
+        "Follows a schedule for security compliance"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Well-maintained systems are more secure and reliable.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f68"
+      }
+    },
+    {
+      "question": "What is patch management?",
+      "options": [
+        "Formatting software ",
+        "Fixing hardware issues",
+        "Installing security updates",
+        "Replacing parts"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Patches fix security vulnerabilities in software.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f69"
+      }
+    },
+    {
+      "question": "How often should systems be updated?",
+      "options": [
+        "Only when an issue arises",
+        "Every 6 months",
+        "Regularly per policy",
+        "Annually"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Regular updates protect against known vulnerabilities.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f6a"
+      }
+    },
+    {
+      "question": "Should you delay security patches?",
+      "options": [
+        "No, install promptly after testing",
+        "Yes, indefinitely",
+        "Yes, if inconvenient",
+        "Only for old systems"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Delays leave systems vulnerable to known exploits.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f6b"
+      }
+    },
+    {
+      "question": "What is vulnerability scanning?",
+      "options": [
+        "Identifying system loopholes",
+        "An example is an antivirus scan",
+        "Regular disk cleanup",
+        "Identifying security weaknesses"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Scanning proactively identifies security issues.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f6c"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f6d"
+  },
+  "title": "Backup Policy",
+  "description": "Learn about data backup and recovery procedures.",
+  "documentUrl": "https://docs.google.com/document/d/1Pq8I2f-eR6HWCQ6v_d6zCBJNgsUXXBb2g4OgiAhFcvw/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/13O41oJv0OmW6kuRhXFzuHQqebTpzTTiR/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915977070-738922353.png",
+  "badgeName": "The Radiant Reserve",
+  "badgeDescription": "Finished training the backup policy",
+  "questions": [
+    {
+      "question": "Why are backups critical?",
+      "options": [
+        "To have extra storage for future use",
+        "To create multiple copies of software",
+        "To enable recovery from data loss",
+        "To have various data access points"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Backups protect against data loss from various causes.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f6e"
+      }
+    },
+    {
+      "question": "What is the 3-2-1 backup rule?",
+      "options": [
+        "3 copies, 2 media types, 1 offsite",
+        "3 backups daily, 2 weekly, 1 monthly",
+        "3 servers, 2 locations, 1 admin",
+        "3 files, 2 folders, 1 drive"
+      ],
+      "correctAnswer": 0,
+      "explanation": "3-2-1 rule ensures backup redundancy and availability.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f6f"
+      }
+    },
+    {
+      "question": "How often should critical data be backed up?",
+      "options": [
+        "Yearly",
+        "Monthly",
+        "Daily or more frequently",
+        "Once in three months"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Critical data requires frequent backups to minimize loss.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f70"
+      }
+    },
+    {
+      "question": "Should backups be tested?",
+      "options": [
+        "Yes, every year",
+        "Yes, every month",
+        "Only once at setup",
+        "Yes, regularly verify restoration"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Untested backups may fail when needed.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f71"
+      }
+    },
+    {
+      "question": "Where should backup media be stored?",
+      "options": [
+        "Secure offsite location",
+        "Next to an admin's terminal",
+        "In same building",
+        "Public cloud only"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Offsite storage protects against site-wide disasters.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f72"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f73"
+  },
+  "title": "Software Regulation Policy",
+  "description": "Understand software licensing and authorized usage.",
+  "documentUrl": "https://docs.google.com/document/d/1dOtKvcNU3uf29uTHAAC6XN08DmJmR2bj2_aqx5fbeS0/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1TOSZZSxlsYurS_AzshwXCtC9HLVXu1By/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915810741-308826273.png",
+  "badgeName": "The Regulator",
+  "badgeDescription": "Finished training the Software Regulation policy",
+  "questions": [
+    {
+      "question": "Why must software be approved before installation?",
+      "options": [
+        "To check for malware exposure",
+        "To exploit any vulnerabilities",
+        "To ensure security, licensing, and compatibility",
+        "For comparison purposes"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Unapproved software poses security and legal risks.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f74"
+      }
+    },
+    {
+      "question": "Is pirated software allowed?",
+      "options": [
+        "No",
+        "Yes, if allowed by your manager",
+        "Yes, if needed",
+        "Only for telework approved setups"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Pirated software is illegal and may contain malware.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f75"
+      }
+    },
+    {
+      "question": "What is software licensing?",
+      "options": [
+        "A user manual ",
+        "Software installation guide",
+        "Legal agreement for software use",
+        "Security guidelines for the software"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Licenses define legal terms for software usage.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f76"
+      }
+    },
+    {
+      "question": "Can you share licensed software with others?",
+      "options": [
+        "Yes, but only with peers",
+        "Yes, within company",
+        "Yes, if installed once",
+        "No, violates license terms"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Each user/device typically requires separate license.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f77"
+      }
+    },
+    {
+      "question": "What is open source software?",
+      "options": [
+        "Software with publicly available code",
+        "Software that anyone can own",
+        "Software rights that can be bought",
+        "Unifinished software that anybody can finish"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Open source allows code inspection and modification.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f78"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f79"
+  },
+  "title": "Time Synchronization",
+  "description": "Learn the importance of accurate time across systems.",
+  "documentUrl": "https://docs.google.com/document/d/1h3TJxsEJE7YhuGij7w_l_xYsAaT1PBypibC2e9nFhwg/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1wtM-FnCx0PQuwk5rDoPC5Bbt-3uCB84x/view?usp=sharing",
+  "badgeImage": "/uploads/badges/time sync.png",
+  "badgeName": "The Sync Sense",
+  "badgeDescription": "Time Synchronization",
+  "questions": [
+    {
+      "question": "Why is time synchronization critical?",
+      "options": [
+        "Aesthetic purposes",
+        "Show correct time",
+        "For logging, troubleshooting, and compliance",
+        "Schedule breaks"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Accurate time is essential for security event correlation.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f7a"
+      }
+    },
+    {
+      "question": "What does NTP stand for?",
+      "options": [
+        "Node Timing Procedure",
+        "New Technology Process",
+        "Network Transfer Protocol",
+        "Network Time Protocol"
+      ],
+      "correctAnswer": 3,
+      "explanation": "NTP synchronizes computer clocks over networks.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f7b"
+      }
+    },
+    {
+      "question": "What happens with unsynchronized clocks?",
+      "options": [
+        "Difficult to correlate security events",
+        "Computers crash",
+        "Internet stops",
+        "Emails delete"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Time discrepancies hinder incident investigation.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f7c"
+      }
+    },
+    {
+      "question": "What is stratum in NTP?",
+      "options": [
+        "Level in time source hierarchy",
+        "Server type",
+        "Security protocol",
+        "Time zone"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Stratum indicates distance from reference clock.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f7d"
+      }
+    },
+    {
+      "question": "How does time sync support security?",
+      "options": [
+        "Encrypts Data",
+        "Enables accurate audit trails",
+        "Blocks access",
+        "Scans viruses"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Accurate timestamps are crucial for forensics and compliance.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f7e"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.453Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+},
+{
+  "_id": {
+    "$oid": "69bbb56dc40a44e6cd983f7f"
+  },
+  "title": "Username & Password Management",
+  "description": "Learn best practices for credential management.",
+  "documentUrl": "https://docs.google.com/document/d/11SIIQ3HmVGQdtGeoqpsHHjKLuidpaecJ6BuNq8IWo1k/edit?usp=sharing",
+  "videoUrl": "https://drive.google.com/file/d/1t7G2hgo-sM8tglkwIBcK_0pN29GOT3fV/view?usp=sharing",
+  "badgeImage": "/uploads/badges/badge-1774915631127-682121355.png",
+  "badgeName": "Credential Craftsman",
+  "badgeDescription": "Mastered Password Management",
+  "questions": [
+    {
+      "question": "What makes a strong password?",
+      "options": [
+        "Includes personal information",
+        "Short and simple",
+        "Long, complex, unique",
+        "Consistent in all applications"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Strong passwords are at least 12 characters with mixed character types.",
+      "isMandatory": true,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f80"
+      }
+    },
+    {
+      "question": "Should you reuse passwords?",
+      "options": [
+        "Yes, it is good practice to do so",
+        "Yes, so it's easier to remember",
+        "No, use unique passwords for each system",
+        "Only for unimportant sites"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Password reuse allows compromise to spread across accounts.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f81"
+      }
+    },
+    {
+      "question": "What is a password manager?",
+      "options": [
+        "A tool to securely store passwords",
+        "A feature to reset passwords",
+        "A security role for handling passwords",
+        "A security policy for passwords"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Password managers encrypt and manage credentials securely.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f82"
+      }
+    },
+    {
+      "question": "How often should passwords be changed?",
+      "options": [
+        "Yearly",
+        "Daily",
+        "Never",
+        "When compromised or per policy"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Regular changes without cause may weaken security through predictable patterns.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f83"
+      }
+    },
+    {
+      "question": "What is multi-factor authentication?",
+      "options": [
+        "Multiple passwords",
+        "Complex password",
+        "Multiple verification methods",
+        "Backup password"
+      ],
+      "correctAnswer": 2,
+      "explanation": "MFA requires something you know, have, and/or are.",
+      "isMandatory": false,
+      "_id": {
+        "$oid": "69bbb56dc40a44e6cd983f84"
+      }
+    }
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-19T08:35:57.454Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:37:11.785Z"
+  },
+  "priority": 999
+}]

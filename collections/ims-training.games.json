@@ -1,0 +1,294 @@
+[{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19de8"
+  },
+  "title": "IMS Basics",
+  "type": "crossword",
+  "difficulty": "easy",
+  "relatedTopics": [],
+  "xpReward": 50,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.877Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.877Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19de9"
+  },
+  "title": "Quality Management",
+  "type": "crossword",
+  "difficulty": "medium",
+  "relatedTopics": [],
+  "xpReward": 75,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.878Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.878Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19dea"
+  },
+  "title": "Document Control",
+  "type": "crossword",
+  "difficulty": "medium",
+  "relatedTopics": [],
+  "xpReward": 75,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.878Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.878Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19deb"
+  },
+  "title": "Risk Management",
+  "type": "crossword",
+  "difficulty": "hard",
+  "relatedTopics": [],
+  "xpReward": 100,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.878Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.878Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19dec"
+  },
+  "title": "Process Improvement",
+  "type": "crossword",
+  "difficulty": "medium",
+  "relatedTopics": [],
+  "xpReward": 75,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.878Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.878Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19ded"
+  },
+  "title": "Compliance Crossword",
+  "type": "crossword",
+  "difficulty": "easy",
+  "relatedTopics": [],
+  "xpReward": 50,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19dee"
+  },
+  "title": "Training & Competence",
+  "type": "crossword",
+  "difficulty": "medium",
+  "relatedTopics": [],
+  "xpReward": 75,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19def"
+  },
+  "title": "Internal Audit",
+  "type": "crossword",
+  "difficulty": "hard",
+  "relatedTopics": [],
+  "xpReward": 100,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19df0"
+  },
+  "title": "IMS Terminology",
+  "type": "word_scramble",
+  "difficulty": "easy",
+  "relatedTopics": [],
+  "xpReward": 50,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19df1"
+  },
+  "title": "Quality Terms",
+  "type": "word_scramble",
+  "difficulty": "medium",
+  "relatedTopics": [],
+  "xpReward": 75,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19df2"
+  },
+  "title": "Documentation fundamentals",
+  "type": "word_scramble",
+  "difficulty": "medium",
+  "relatedTopics": [],
+  "xpReward": 75,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19df3"
+  },
+  "title": "Management",
+  "type": "word_scramble",
+  "difficulty": "hard",
+  "relatedTopics": [],
+  "xpReward": 100,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19df4"
+  },
+  "title": "Risk & Safety",
+  "type": "word_scramble",
+  "difficulty": "medium",
+  "relatedTopics": [],
+  "xpReward": 75,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69c4cd8c074dd0d56af19df5"
+  },
+  "title": "IMS Fundamentals",
+  "type": "quick_quiz",
+  "difficulty": "easy",
+  "relatedTopics": [],
+  "xpReward": 60,
+  "timeLimit": null,
+  "isActive": true,
+  "playCount": 0,
+  "averageScore": 0,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-26T06:09:16.879Z"
+  }
+}]

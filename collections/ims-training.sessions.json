@@ -1,0 +1,210 @@
+[{
+  "_id": {
+    "$oid": "69d5fe699e1154ddf1156ef7"
+  },
+  "userId": {
+    "$oid": "69d59d2718753feb492f6a2c"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ1OWQyNzE4NzUzZmViNDkyZjZhMmMiLCJ1c2VybmFtZSI6Inl1eiIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTc3NTYzMTk3NywiZXhwIjoxNzc2MjM2Nzc3fQ.q8EEna_gYYG35Dt5xX9QqT5p-nqiodf22ikGT5IMGhk",
+  "deviceInfo": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0",
+    "ipAddress": "192.168.232.247",
+    "deviceType": "desktop",
+    "browser": "Chrome",
+    "os": "Windows"
+  },
+  "isActive": false,
+  "expiresAt": {
+    "$date": "2026-04-15T07:06:17.108Z"
+  },
+  "lastActivity": {
+    "$date": "2026-04-14T07:08:58.960Z"
+  },
+  "createdAt": {
+    "$date": "2026-04-08T07:06:17.108Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-14T07:08:58.963Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69d5ff189e1154ddf1157d03"
+  },
+  "userId": {
+    "$oid": "69d4abb336740ccd219a5e74"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ0YWJiMzM2NzQwY2NkMjE5YTVlNzQiLCJ1c2VybmFtZSI6ImFkbWluMSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3NTYzMjE1MiwiZXhwIjoxNzc2MjM2OTUyfQ.NCtb9Zfv1FoNEtSy0GWvDJjT3VaXo3OHDEfLowzN77g",
+  "deviceInfo": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "ipAddress": "192.168.232.247",
+    "deviceType": "desktop",
+    "browser": "Chrome",
+    "os": "Windows"
+  },
+  "isActive": true,
+  "expiresAt": {
+    "$date": "2026-04-15T07:09:12.165Z"
+  },
+  "lastActivity": {
+    "$date": "2026-04-08T08:54:13.437Z"
+  },
+  "createdAt": {
+    "$date": "2026-04-08T07:09:12.166Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-08T08:54:13.438Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69d5ff479e1154ddf1157f36"
+  },
+  "userId": {
+    "$oid": "69d5ff3a9e1154ddf1157ef5"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ1ZmYzYTllMTE1NGRkZjExNTdlZjUiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzc1NjMyMTk5LCJleHAiOjE3NzYyMzY5OTl9.4VKyfmdtu7s6-AEon5IAuZMaba4RCYnNcBzemxvGQP8",
+  "deviceInfo": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "ipAddress": "192.168.232.247",
+    "deviceType": "desktop",
+    "browser": "Chrome",
+    "os": "Windows"
+  },
+  "isActive": true,
+  "expiresAt": {
+    "$date": "2026-04-15T07:09:59.414Z"
+  },
+  "lastActivity": {
+    "$date": "2026-04-08T08:07:57.862Z"
+  },
+  "createdAt": {
+    "$date": "2026-04-08T07:09:59.414Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-08T08:07:57.862Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69dd85868aa65edc78bb05a2"
+  },
+  "userId": {
+    "$oid": "69d5ff3a9e1154ddf1157ef5"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ1ZmYzYTllMTE1NGRkZjExNTdlZjUiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzc2MTI1MzE4LCJleHAiOjE3NzY3MzAxMTh9.UGIaZGg5i13w5e6sY4PD8TYTOq-X0BMC6eaDNBnhV04",
+  "deviceInfo": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "ipAddress": "192.168.232.247",
+    "deviceType": "desktop",
+    "browser": "Chrome",
+    "os": "Windows"
+  },
+  "isActive": true,
+  "expiresAt": {
+    "$date": "2026-04-21T00:08:38.843Z"
+  },
+  "lastActivity": {
+    "$date": "2026-04-15T03:47:00.830Z"
+  },
+  "createdAt": {
+    "$date": "2026-04-14T00:08:38.859Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-15T03:47:00.830Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69dda0a782fac0470d0da49c"
+  },
+  "userId": {
+    "$oid": "69d59d2718753feb492f6a2c"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ1OWQyNzE4NzUzZmViNDkyZjZhMmMiLCJ1c2VybmFtZSI6Inl1eiIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTc3NjEzMjI2MywiZXhwIjoxNzc2NzM3MDYzfQ.WGZ064GiaWXnXFseOgKncqIYTCr1oXKos8J2csYyXYI",
+  "deviceInfo": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "ipAddress": "192.168.232.247",
+    "deviceType": "desktop",
+    "browser": "Chrome",
+    "os": "Windows"
+  },
+  "isActive": true,
+  "expiresAt": {
+    "$date": "2026-04-21T02:04:23.388Z"
+  },
+  "lastActivity": {
+    "$date": "2026-04-15T03:49:59.379Z"
+  },
+  "createdAt": {
+    "$date": "2026-04-14T02:04:23.390Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-15T03:49:59.379Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69dde82d82fac0470d0e5465"
+  },
+  "userId": {
+    "$oid": "69d59ce318753feb492f69e8"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWQ1OWNlMzE4NzUzZmViNDkyZjY5ZTgiLCJ1c2VybmFtZSI6InRlc3RlcjEiLCJyb2xlIjoiZW1wbG95ZWUiLCJpYXQiOjE3NzYxNTA1NzMsImV4cCI6MTc3Njc1NTM3M30.kZiP07RyiTi4p-o1j8mHbTbr3Ovgbk1hTNNRyV4PKe0",
+  "deviceInfo": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0",
+    "ipAddress": "192.168.232.247",
+    "deviceType": "desktop",
+    "browser": "Chrome",
+    "os": "Windows"
+  },
+  "isActive": false,
+  "expiresAt": {
+    "$date": "2026-04-21T07:09:33.089Z"
+  },
+  "lastActivity": {
+    "$date": "2026-04-15T02:33:55.800Z"
+  },
+  "createdAt": {
+    "$date": "2026-04-14T07:09:33.091Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-15T02:33:55.804Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69def927061f8e7bdc7685db"
+  },
+  "userId": {
+    "$oid": "69def927061f8e7bdc7685d9"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OWRlZjkyNzA2MWY4ZTdiZGM3Njg1ZDkiLCJ1c2VybmFtZSI6InRlc3RlcjMiLCJyb2xlIjoiZW1wbG95ZWUiLCJpYXQiOjE3NzYyMjA0NTUsImV4cCI6MTc3NjgyNTI1NX0.6tN356yLSlAmYcLKZSkVsA8Vfj730mzuODluHQW_fkE",
+  "deviceInfo": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0",
+    "ipAddress": "192.168.232.247",
+    "deviceType": "desktop",
+    "browser": "Chrome",
+    "os": "Windows"
+  },
+  "isActive": true,
+  "expiresAt": {
+    "$date": "2026-04-22T02:34:15.552Z"
+  },
+  "lastActivity": {
+    "$date": "2026-04-15T06:47:58.983Z"
+  },
+  "createdAt": {
+    "$date": "2026-04-15T02:34:15.566Z"
+  },
+  "updatedAt": {
+    "$date": "2026-04-15T06:47:58.984Z"
+  },
+  "__v": 0
+}]
