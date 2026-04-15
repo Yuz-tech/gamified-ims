@@ -318,7 +318,7 @@ const Players = () => {
                                             background: index % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.02)'
                                           }}
                                         >
-                                            <td style={{ padding: '15px 10px', fontSize: '14px', fontWeight: 'bold'  }}>
+                                            <td style={{ padding: '15px 10px', fontSize: '14px', fontWeight: 'bold', color: `${getLevelTitleColor(player.level)}` }}>
                                                 {getLevelTitle(player.level)}
                                             </td>
                                             <td style={{ padding: '15px 10px' }}>

@@ -94,10 +94,6 @@ const Home = () => {
   }
 };
 
-  const handleFinishTraining = () => {
-    window.open('Your_Google_Form_URL_Here', '_blank');
-  };
-
   if(loading) {
     return (
       <div style = {{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
@@ -151,7 +147,8 @@ const Home = () => {
         style={{ marginBottom: '40px', textAlign: 'center' }}
       >
         <h1 className="neon-text" style={{ fontSize: '32px', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-          <strong style = {{ fontSize: '52px'}}>こんにちは</strong>
+          {/* <strong style = {{ fontSize: '52px'}}>こんにちは</strong> */}
+          <strong style = {{ fontSize: '52px'}}>Welcome</strong>
           , {user?.username}!
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--text-light)' }}>
