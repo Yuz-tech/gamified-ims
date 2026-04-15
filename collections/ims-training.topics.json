@@ -3,7 +3,7 @@
     "$oid": "69bbb56dc40a44e6cd983edd"
   },
   "title": "ISO 9001",
-  "description": "Learn the fundamentals of ISO 9001 and quality management principles.",
+  "description": "An internationally recognized standard for quality management systems.",
   "documentUrl": "https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view",
   "videoUrl": "https://drive.google.com/file/d/1YCSSdoBZeaBXdPF36QUdZJiu1d5lHJC0/view?usp=sharing",
   "badgeImage": "/uploads/badges/iso9001.png",
@@ -92,7 +92,7 @@
     "$date": "2026-03-19T08:35:57.448Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 1
 },
@@ -101,7 +101,7 @@
     "$oid": "69bbb56dc40a44e6cd983ee3"
   },
   "title": "ISO 27001",
-  "description": "Understand ISO 27001 standards for protecting sensitive information.",
+  "description": "An international standard that provides a framework for information security management systems or ISMS.",
   "documentUrl": "https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view",
   "videoUrl": "https://drive.google.com/file/d/1AZZdQfRFbqVFwG6qshj_eWhxw_2ZzZ_u/view?usp=sharing",
   "badgeImage": "/uploads/badges/iso 27001.png",
@@ -190,7 +190,7 @@
     "$date": "2026-03-19T08:35:57.450Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 2
 },
@@ -198,7 +198,7 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983ee9"
   },
-  "title": "Quality and Information Security Integration",
+  "title": "Quality and Information Security Policy",
   "description": "Learn how quality management and information security work together.",
   "documentUrl": "https://docs.google.com/document/d/13GfB0MJY0kYVRzOVdxqEbDNn4-DpvFGLAe3qbzngMno/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1Gdl4WrlAr6ggWDTaBFp8em3tvHeaC8aw/view?usp=sharing",
@@ -288,7 +288,7 @@
     "$date": "2026-03-19T08:35:57.451Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:44:18.051Z"
   },
   "priority": 999
 },
@@ -386,7 +386,7 @@
     "$date": "2026-03-19T08:35:57.451Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -394,8 +394,8 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983ef5"
   },
-  "title": "Anti-Malware Policy",
-  "description": "Learn about malware protection and prevention measures.",
+  "title": "Malicious Code Awareness",
+  "description": "Equips you with knowledge to protect digital assets through understanding malicious code and preventive actions.",
   "documentUrl": "https://docs.google.com/document/d/1gcxOMPvc7vCKgBHit4RP1bNiVTprD2hdrWYfC8zARmM/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1gOhIw7EuxQtrq2XNegq87VShgxcvgriC/view?usp=sharing",
   "badgeImage": "/uploads/badges/anti malware badge.png",
@@ -484,7 +484,7 @@
     "$date": "2026-03-19T08:35:57.451Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -493,7 +493,7 @@
     "$oid": "69bbb56dc40a44e6cd983efb"
   },
   "title": "Access Control Policy",
-  "description": "Understand access control principles and user permissions.",
+  "description": "This policy ensures that access to information is controlled based on business and security requirements.",
   "documentUrl": "https://docs.google.com/document/d/1QCVAxgvSKq5cz1RMH9SiU1Jpt-OZjDuGswx1gK3_NgU/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/15uacYOudaxH476A_x8Fks_yNTKie41wa/view?usp=sharing",
   "badgeImage": "/uploads/badges/access control badge.png",
@@ -582,7 +582,7 @@
     "$date": "2026-03-19T08:35:57.451Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -680,7 +680,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -693,7 +693,7 @@
   "documentUrl": "https://docs.google.com/document/d/1xPpSApfzHsmRaRy7x6SbdaA-k8fVM94nvrCCmYsHWac/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1T0N0Qi6RpIxP7sqiXuAj4I161aPBVILu/view?usp=sharing",
   "badgeImage": "/uploads/badges/data protection and privacy.png",
-  "badgeName": "\"...I see you\"",
+  "badgeName": "The Keeper",
   "badgeDescription": "Data Protection & Privacy",
   "questions": [
     {
@@ -778,7 +778,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -876,7 +876,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -885,7 +885,7 @@
     "$oid": "69bbb56dc40a44e6cd983f13"
   },
   "title": "Cloud Service Policy",
-  "description": "Understand cloud service usage and security requirements.",
+  "description": "This policy ensures proper management and security of cloud services.",
   "documentUrl": "https://docs.google.com/document/d/1oV2mTrDpQTi-KOzarUGJRkN8fSszSGXPQ7T9ZzkQhZ4/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1UqjSg01oELSdh9cDF58Gq8N0RnKZVT9s/view?usp=sharing",
   "badgeImage": "/uploads/badges/cloud service.png",
@@ -974,7 +974,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:32:02.451Z"
   },
   "priority": 999
 },
@@ -1072,7 +1072,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -1170,7 +1170,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -1268,7 +1268,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -1366,7 +1366,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -1374,8 +1374,8 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983f31"
   },
-  "title": "Exchange of Information Policy",
-  "description": "Learn secure methods for sharing information.",
+  "title": "External Parties",
+  "description": "The external parties policy aims to maintain the security of our information processing facilities and assets.",
   "documentUrl": "https://docs.google.com/document/d/11YCDVly0Fd7VJqU2LjRvhtMjqzJW_SIeGrwgqgNEkOo/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1_vecTZkEQuJfIHFbIeOi8hfOL5Y1b6WW/view?usp=sharing",
   "badgeImage": "/uploads/badges/information exchange.png",
@@ -1413,15 +1413,15 @@
       }
     },
     {
-      "question": "Should you discuss confidential matters in public?",
+      "question": "Which of the following is not part of an external party?",
       "options": [
-        "No, only in secure locations",
-        "Yes, if quiet",
-        "Yes, if necessary",
-        "Only with colleagues"
+        "Engineers",
+        "Service Providers",
+        "Customers",
+        "Consultants"
       ],
       "correctAnswer": 0,
-      "explanation": "Public spaces pose eavesdropping and shoulder surfing risks.",
+      "explanation": "External Party categories include agreements and correct information exchange under proper procedure.",
       "isMandatory": false,
       "_id": {
         "$oid": "69bbb56dc40a44e6cd983f34"
@@ -1464,7 +1464,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:41:19.186Z"
   },
   "priority": 999
 },
@@ -1473,7 +1473,7 @@
     "$oid": "69bbb56dc40a44e6cd983f37"
   },
   "title": "Asset Inventory",
-  "description": "Understand the importance of tracking organizational assets.",
+  "description": "The asset inventory procedure ensures that we asset ownership, documentation, and location, crucial for security and efficiency.",
   "documentUrl": "https://docs.google.com/document/d/1TtzLkJ1ThTA5h0Sby2e1e_kJyJgrs7Sllo9c6lzA9rY/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1ZmEtWZd1u4XsOtvuN7Qg5EPzdwaYWpGo/view?usp=sharing",
   "badgeImage": "/uploads/badges/asset inventory.png",
@@ -1562,7 +1562,7 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:11:28.172Z"
   },
   "priority": 999
 },
@@ -1575,7 +1575,7 @@
   "documentUrl": "https://docs.google.com/document/d/1fUpuH79f6VGisrEQ2e2uTL_QEO9zqhOXkOxw8xJcoPM/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1o7HKpLzkdU63424paD_wD-SgcqV-N9Oi/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915706676-424447906.png",
-  "badgeName": "Not a phisherman",
+  "badgeName": "The Phisherman",
   "badgeDescription": "Mastered Email Security",
   "questions": [
     {
@@ -1660,7 +1660,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -1668,66 +1668,66 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983f43"
   },
-  "title": "Confidential Information Handling Policy",
-  "description": "Learn how to properly handle confidential information.",
+  "title": "Information Asset Classifications",
+  "description": "The process of categorizing information based on sensitivity and importance.",
   "documentUrl": "https://docs.google.com/document/d/1HNsOoFHNNSFJoBJKrHngYYtysXvBduXn3xdqmjcsHf0/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/17FVq8d2KbpJTrA76iOUBQgvJus8ILaMj/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915830298-353442160.png",
-  "badgeName": "The Mute",
-  "badgeDescription": "Mastered Confidential Information Handling",
+  "badgeName": "Limitless Labeler",
+  "badgeDescription": "Mastered Information Asset Classifications",
   "questions": [
     {
-      "question": "What is confidential information?",
+      "question": "What is classification?",
       "options": [
-        "Marketing materials",
-        "Public information",
-        "Personal opinions",
-        "Sensitive data requiring protection"
+        "categorized information based on essence over time",
+        "categorized information based on cost",
+        "categorized information based on shareholder value",
+        "categorized information based on sensitivity and importance"
       ],
       "correctAnswer": 3,
-      "explanation": "Confidential information requires special protection due to sensitivity.",
+      "explanation": "Classification is the process of categorizing information based on sensitivity and importance that helps protect data effectively.",
       "isMandatory": true,
       "_id": {
         "$oid": "69bbb56dc40a44e6cd983f44"
       }
     },
     {
-      "question": "Can you discuss confidential projects in public?",
+      "question": "Which of the following does not belong to the key considerations of classification?",
       "options": [
-        "Yes, but with caution",
-        "No, only in secure locations",
-        "Yes, with colleagues",
-        "Yes, if necessary"
+        "Criticality",
+        "Cost",
+        "Sensitivity",
+        "Legality"
       ],
       "correctAnswer": 1,
-      "explanation": "Public discussions risk unauthorized disclosure.",
+      "explanation": "The key considerations (legality, value, sensitivity, criticality) are taken into account when classifying assets.",
       "isMandatory": false,
       "_id": {
         "$oid": "69bbb56dc40a44e6cd983f45"
       }
     },
     {
-      "question": "How should confidential documents be stored?",
+      "question": "They primarily Classify, Label, and Handle the classification system.",
       "options": [
-        "Secured or encrypted storage",
-        "Hard drive with controlled access",
-        "Online storage drives",
-        "Folders that requires admin access"
+        "Asset Owners",
+        "Top Management",
+        "Managers",
+        "Admin"
       ],
       "correctAnswer": 0,
-      "explanation": "Confidential documents require physical or electronic protection.",
+      "explanation": "Asset owners are responsible for classifying, labeling, and handling information correctly according to its classification.",
       "isMandatory": false,
       "_id": {
         "$oid": "69bbb56dc40a44e6cd983f46"
       }
     },
     {
-      "question": "Should confidential info be taken outside work?",
+      "question": "Which of the following does not belong?",
       "options": [
-        "No, not at all",
-        "Yes, anytime",
-        "Only if authorized and protected",
-        "Only in briefcase"
+        "Confidential",
+        "Confidential-Restricted",
+        "Confidential-Mandated",
+        "Internal Use"
       ],
       "correctAnswer": 2,
       "explanation": "Removing confidential information requires approval and safeguards.",
@@ -1758,7 +1758,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -1766,7 +1766,7 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983f49"
   },
-  "title": "Telework Policy",
+  "title": "Teleworker Policy",
   "description": "Understand secure remote work practices.",
   "documentUrl": "https://docs.google.com/document/d/1HB41yaLhDtaS-tj81O2XzpIFA9_LViHqCDaqWKseigU/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1zhUqRyUfYVIh1eXg022q6LNacPenrYUJ/view?usp=sharing",
@@ -1856,7 +1856,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:47:41.527Z"
   },
   "priority": 999
 },
@@ -1864,7 +1864,7 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983f4f"
   },
-  "title": "Information Security Incident Policy",
+  "title": "Reporting InfoSec Events",
   "description": "Learn how to identify and report security incidents.",
   "documentUrl": "https://docs.google.com/document/d/1WNtCD906BoKwUC5-BQjHbyYU4qHVxWPne0Z6I35SsvQ/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1PYXh9-SEXYrwEoo8e79WC0wHRqy2EhX3/view?usp=sharing",
@@ -1954,7 +1954,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:42:16.951Z"
   },
   "priority": 999
 },
@@ -2052,7 +2052,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -2060,7 +2060,7 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983f5b"
   },
-  "title": "Secured Area Policy",
+  "title": "Physical Entry Controls",
   "description": "Learn about physical security and access controls.",
   "documentUrl": "https://docs.google.com/document/d/1o5sHW2BP6UaEyiNA7PtJcAhjQW-nvjE3aAOb0buXmek/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1iyXSSf5DyHqvTsHHCtiLGOJIz3KyhYMh/view?usp=sharing",
@@ -2150,7 +2150,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:46:06.881Z"
   },
   "priority": 999
 },
@@ -2163,7 +2163,7 @@
   "documentUrl": "https://docs.google.com/document/d/1DhTp46NvExZzsCZluRnu4IWCZ04goHbmLBnKCPCbp_I/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1A9YNEG-fqNMMO1356L9kArnkHZvrvS_U/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915753306-421128591.png",
-  "badgeName": "Thrower",
+  "badgeName": "Disposal Dog",
   "badgeDescription": "Completed Secure Disposal Training",
   "questions": [
     {
@@ -2248,7 +2248,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -2346,7 +2346,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -2354,7 +2354,7 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983f6d"
   },
-  "title": "Backup Policy",
+  "title": "Backup: Protecting Information Assets",
   "description": "Learn about data backup and recovery procedures.",
   "documentUrl": "https://docs.google.com/document/d/1Pq8I2f-eR6HWCQ6v_d6zCBJNgsUXXBb2g4OgiAhFcvw/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/13O41oJv0OmW6kuRhXFzuHQqebTpzTTiR/view?usp=sharing",
@@ -2444,7 +2444,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:12:56.773Z"
   },
   "priority": 999
 },
@@ -2452,7 +2452,7 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983f73"
   },
-  "title": "Software Regulation Policy",
+  "title": "Control of Operational Software",
   "description": "Understand software licensing and authorized usage.",
   "documentUrl": "https://docs.google.com/document/d/1dOtKvcNU3uf29uTHAAC6XN08DmJmR2bj2_aqx5fbeS0/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1TOSZZSxlsYurS_AzshwXCtC9HLVXu1By/view?usp=sharing",
@@ -2542,7 +2542,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:46:56.034Z"
   },
   "priority": 999
 },
@@ -2640,7 +2640,7 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 },
@@ -2738,7 +2738,7 @@
     "$date": "2026-03-19T08:35:57.454Z"
   },
   "updatedAt": {
-    "$date": "2026-04-14T07:37:11.785Z"
+    "$date": "2026-04-15T08:08:58.515Z"
   },
   "priority": 999
 }]

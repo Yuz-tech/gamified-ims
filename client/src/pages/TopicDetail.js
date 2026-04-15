@@ -539,7 +539,7 @@ const TopicDetail = () => {
         >
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <div style={{ fontSize: '72px', marginBottom: '20px' }}>
-              {mandatoryResult.correctAnswer ? '৻(  •̀ ᗜ •́  ৻)' : '🫵🤣'}
+              {mandatoryResult.correctAnswer ? ' •̀ ᗜ •́ ' : '🫵🤣'}
             </div>
             <div style={{
               fontSize: '24px',
