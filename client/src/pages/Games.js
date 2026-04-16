@@ -33,9 +33,8 @@ const Games = () => {
 
   const gamesByType = {
     crossword: filteredGames.filter(g => g.type === 'crossword'),
-    word_scramble: filteredGames.filter(g => g.type === 'word_scramble'),
-    quick_quiz: filteredGames.filter(g => g.type === 'quick_quiz'),
-    true_false: filteredGames.filter(g => g.type === 'true_false')
+    word_scramble: filteredGames.filter(g => g.type === 'wordle'),
+    quick_quiz: filteredGames.filter(g => g.type === 'quick_quiz')
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -44,6 +43,18 @@ const Games = () => {
       case 'medium': return 'var(--orange-accent)';
       case 'hard': return 'var(--error-red)';
       default: return 'var(--text-medium)';
+    }
+  };
+
+  const getGameRoute = (game) => {
+    switch (game.gameType) {
+      case 'crossword': 
+        return `/games/crossword/${game._id}`;
+      case 'wordle':
+        return `/games/wordle/${game._id}`;
+      case 'quickquiz':
+        return `/games/quickquiz/${game._id}`;
+      default: return '/games';
     }
   };
 
@@ -65,7 +76,7 @@ const Games = () => {
         className="neon-text"
         style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
       >
-        🎮 TRAINING GAMES
+         TRAINING GAMES
       </motion.h1>
 
       {/* Search & Filter */}
@@ -98,11 +109,10 @@ const Games = () => {
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
-              <option value="all">All Games ({games.length})</option>
+              {/* <option value="all">All Games ({games.length})</option>
               <option value="crossword">Crossword ({gamesByType.crossword.length})</option>
-              <option value="word_scramble">Word Scramble ({gamesByType.word_scramble.length})</option>
-              <option value="quick_quiz">Quick Quiz ({gamesByType.quick_quiz.length})</option>
-              <option value="true_false">True/False ({gamesByType.true_false.length})</option>
+              <option value="wordle">Wordle ({gamesByType.wordle.length})</option>
+              <option value="quick_quiz">Quick Quiz ({gamesByType.quick_quiz.length})</option> */}
             </select>
           </div>
         </div>
@@ -125,7 +135,8 @@ const Games = () => {
               className="retro-card"
               style={{
                 cursor: 'pointer',
-                transition: 'transform 0.2s',
+                position: 'relative',
+                overflow: 'hidden',
                 border: game.completed ? '3px solid var(--success-green)' : '2px solid var(--border-color)'
               }}
               whileHover={{ scale: 1.02 }}
@@ -174,6 +185,20 @@ const Games = () => {
                   {game.xpReward} XP
                 </span>
               </div>
+
+              {game.timeLimit > 0 && (
+                <div style={{
+                  padding: '8px',
+                  background: 'var(--orange-accent)',
+                  color: 'white',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: '15px'
+                }}>
+                  {Math.floor(game.timeLimit / 60)}:{(game.timeLimit % 60).toString().padStart(2, '0')} Time Limit
+                </div>
+              )}
 
               <button
                 className="retro-btn"

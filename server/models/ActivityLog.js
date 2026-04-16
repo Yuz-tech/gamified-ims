@@ -20,7 +20,11 @@ const activityLogSchema = new mongoose.Schema({
       'topic_completed',
       'profile_updated',
       'password_reset_by_admin',
-      'xp_awarded'
+      'xp_awarded',
+      'game_created',
+      'game_updated',
+      'game_deleted',
+      'game_completed'
     ]
   },
   details: {

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuth } from "../../context/AuthContext";
-import api from '../../utils/api';
+import api from "../../utils/api";
 
 const Crossword = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { gameId } = useParams();
+  const [game, setGame] = useState(null);
   const [grid, setGrid] = useState([]);
   const [clues, setClues] = useState({ across: [], down: [] });
   const [selectedCell, setSelectedCell] = useState(null);
@@ -14,45 +14,37 @@ const Crossword = () => {
   const [gameComplete, setGameComplete] = useState(false);
   const [score, setScore] = useState(0);
   const [startTime] = useState(Date.now());
+  const [loading, setLoading] = useState(true);
 
-  const puzzle = {
-    grid: [
-      ['Q', 'U', 'A', 'L', 'I', 'T', 'Y', null, null, null],
-      [null, null, 'U', null, null, null, null, null, null, null],
-      [null, null, 'D', null, null, null, null, null, null, null],
-      [null, null, 'I', null, null, null, null, null, null, null],
-      ['P', 'R', 'O', 'C', 'E', 'S', 'S', null, null, null],
-      [null, null, null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null, null, null],
-      ['R', 'I', 'S', 'K', null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null, null, null]
-    ],
-    clues: {
-      across: [
-        { number: 1, row: 0, col: 0, answer: 'QUALITY', clue: 'ISO 9001 focuses on this management system (7)' },
-        { number: 2, row: 4, col: 0, answer: 'PROCESS', clue: 'Set of interrelated activities that transform inputs to outputs (7)' },
-        { number: 3, row: 7, col: 0, answer: 'RISK', clue: 'Effect of uncertainty on objectives (4)' }
-      ],
-      down: [
-        { number: 1, row: 0, col: 2, answer: 'AUDIT', clue: 'Systematic examination to verify IMS effectiveness (5)' }
-      ]
+  useEffect(() => {
+    fetchGame();
+  }, [gameId]);
+
+  const fetchGame = async () => {
+    try {
+      const response = await api.get(`/games/${gameId}`);
+      const gameData = response.data;
+      setGame(gameData);
+      initializeGrid(gameData.content);
+    } catch (error) {
+      console.error('Error fetching game: ', error);
+      alert('Error loading game');
+      navigate('/games');
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    initializeGrid();
-  }, []);
-
-  const initializeGrid = () => {
-    const userGrid = puzzle.grid.map(row => row.map(cell => ({
-      correct: cell,
-      user: cell === null ? null : '',
-      isBlack: cell === null
-    }))
-  );
-  setGrid(userGrid);
-  setClues(puzzle.clues);
+  const initializeGrid = (content) => {
+    const userGrid = content.grid.map(row => 
+      row.map(cell => ({
+        correct: cell,
+        user: cell === null ? null : '',
+        isBlack: cell === null
+      }))
+    );
+    setGrid(userGrid);
+    setClues(content.clues);
   };
 
   const handleCellClick = (row, col) => {
@@ -70,15 +62,12 @@ const Crossword = () => {
     if (value.length > 1) return;
 
     const newGrid = [...grid];
-    newGrid[row][col] = {
-      ...newGrid[row][col],
-      user: value
-    };
+    newGrid[row][col] = { ...newGrid[row][col], user: value };
     setGrid(newGrid);
 
     if (value && direction === 'across') {
       if (col < 9 && !newGrid[row][col + 1]?.isBlack) {
-        setSelectedCell({ row, col: col + 1});
+        setSelectedCell({ row, col: col + 1 });
       }
     } else if (value && direction === 'down') {
       if (row < 9 && !newGrid[row + 1]?.[col]?.isBlack) {
@@ -97,7 +86,7 @@ const Crossword = () => {
     }
   };
 
-  const checkAnswers = () => {
+  const checkAnswers = async () => {
     let correct = 0;
     let total = 0;
 
@@ -113,12 +102,14 @@ const Crossword = () => {
     });
 
     const percentage = Math.round((correct / total) * 100);
-    const earnedXP = Math.round(percentage * 2);
+    const earnedXP = Math.round((percentage / 100) * game.maxXP);
     setScore(earnedXP);
 
     if (percentage === 100) {
       setGameComplete(true);
-      submitScore(earnedXP);
+      await submitScore(earnedXP);
+    } else {
+      alert(`You got ${correct}/${total} correct (${percentage}%). Keep Trying!`);
     }
   };
 
@@ -126,6 +117,7 @@ const Crossword = () => {
     try {
       const timeTaken = Math.floor((Date.now() - startTime) / 1000);
       await api.post('/games/submit-score', {
+        gameId: game._id,
         gameType: 'crossword',
         score: earnedXP,
         timeSpent: timeTaken
@@ -141,8 +133,16 @@ const Crossword = () => {
       user: cell.correct || ''
     }))
   );
-  setGrid(newGrid);
+    setGrid(newGrid);
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
@@ -155,10 +155,10 @@ const Crossword = () => {
         animate={{ opacity: 1, y: 0 }}
         className="retro-card"
       >
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '30px' }}>
-          CROSSWORD SAMPLE
+        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+          {game?.title || 'CROSSWORD'}
         </h1>
-
+        
         {!gameComplete ? (
           <>
             {/* Grid */}
@@ -172,23 +172,23 @@ const Crossword = () => {
                 border: '3px solid var(--primary-navy)'
               }}>
                 {grid.map((row, r) => row.map((cell, c) => (
-                  <div key={`${r}-${c}`}
-                    onClick={() => handleCellClick(r, c)}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      background: cell.isBlack ? 'var(--primary-navy)' : 'white',
-                      border: cell.isBlack ? 'none' : '2px solid var(--border-color)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: cell.isBlack ? 'default' : 'pointer',
-                      position: 'relative', 
-                      boxShadow: selectedCell?.row === r && selectedCell?.col === c ? '0 0 0 3px var(--bright-blue)' : 'none'
-                    }}
+                  <div key={`${r}-${c}`} onClick={() => handleCellClick(r, c)} style={{
+                    width: '40px',
+                    height: '40px',
+                    background: cell.isBlack ? 'var(--primary-navy)' : 'white',
+                    border: cell.isBlack ? 'none' : '2px solid var(--border-color)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: cell.isBlack ? 'default' : 'pointer',
+                    position: 'relative',
+                    boxShadow: selectedCell?.row === r && selectedCell?.col === c 
+                      ? '0 0 0 3px var(--bright-blue)'
+                      : 'none'
+                  }}
                   >
                     {!cell.isBlack && (
-                      <input ref = {el => {
+                      <input ref={el => {
                         if (selectedCell?.row === r && selectedCell?.col === c) {
                           el?.focus();
                         }
@@ -196,7 +196,7 @@ const Crossword = () => {
                       type="text"
                       maxLength="1"
                       value={cell.user}
-                      onChange={(e) => handleInput(e,r,c)}
+                      onChange={(e) => handleInput(e, r, c)}
                       onKeyDown={(e) => handleKeyDown(e, r, c)}
                       style={{
                         width: '100%',
@@ -214,16 +214,15 @@ const Crossword = () => {
                       />
                     )}
                   </div>
-                ))
-                )}
+                )))}
               </div>
             </div>
 
             {/* Clues */}
-            <div style = {{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
               {/* Across */}
               <div>
-                <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '15px'}}>
+                <h3 style={{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '15px' }}>
                   ACROSS
                 </h3>
 
@@ -236,7 +235,7 @@ const Crossword = () => {
 
               {/* DOWN */}
               <div>
-                <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '15px' }}>
+                <h3 style={{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '15px' }}>
                   DOWN
                 </h3>
                 {clues.down.map((clue, idx) => (
@@ -249,16 +248,20 @@ const Crossword = () => {
 
             {/* Controls */}
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button onClick={checkAnswers} className="retro-btn">Check Answers</button>
-              <button onClick={revealAnswers} className="retro-btn secondary">Reveal Answers</button>
-              <button onClick={initializeGrid} className="retro-btn secondary">Reset</button>
+              <button onClick={checkAnswers} className="retro-btn">
+                Check Answers
+              </button>
+              <button onClick={revealAnswers} className="retro-btn secondary">
+                Reveal Answers
+              </button>
+              <button onClick={() => fetchGame()} className="retro-btn secondary">
+                Reset
+              </button>
             </div>
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>
-              🎉
-            </div>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
             <h2 style={{ fontSize: '24px', color: 'var(--success-green)', marginBottom: '20px' }}>
               Perfect!
             </h2>
@@ -267,7 +270,7 @@ const Crossword = () => {
             </div>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button onClick={() => navigate('/games')} className="retro-btn">
-                Back
+                Back to Games
               </button>
               <button onClick={() => window.location.reload()} className="retro-btn secondary">
                 Play Again

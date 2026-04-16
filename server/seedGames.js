@@ -1,230 +1,319 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Game from './models/Game.js';
 
 dotenv.config();
 
 const gamesData = [
-    {
-        title: 'IMS Basics',
-        type: 'crossword',
-        difficulty: 'easy',
-        xpReward: 50,
-        questions: [
-            { clue: 'System for managing quality standards', answer: 'IMS' },
-            { clue: 'Document that outlines procedures', answer: 'POLICY' },
-            { clue: 'Continuous improvement methodology', answer: 'KAIZEN' },
-            { clue: 'International Standards Organization (abbr.)', answer: 'ISO' },
-            { clue: 'Process of checking compliance', answer: 'AUDIT' }
+  // ==================== CROSSWORD ====================
+  {
+    title: 'IMS Crossword Challenge',
+    description: 'Test your IMS knowledge with this crossword puzzle',
+    gameType: 'crossword',
+    difficulty: 'medium',
+    maxXP: 200,
+    timeLimit: 0,
+    content: {
+      grid: [
+        ['Q', 'U', 'A', 'L', 'I', 'T', 'Y', null, null, null],
+        [null, null, 'U', null, null, null, null, null, null, null],
+        [null, null, 'D', null, null, null, null, null, null, null],
+        [null, null, 'I', null, null, null, null, null, null, null],
+        ['P', 'R', 'O', 'C', 'E', 'S', 'S', null, null, null],
+        [null, null, null, null, null, null, null, null, null, null],
+        [null, null, null, null, null, null, null, null, null, null],
+        ['R', 'I', 'S', 'K', null, null, null, null, null, null],
+        [null, null, null, null, null, null, null, null, null, null],
+        [null, null, null, null, null, null, null, null, null, null]
+      ],
+      clues: {
+        across: [
+          { number: 1, row: 0, col: 0, answer: 'QUALITY', clue: 'ISO 9001 focuses on this management system (7)' },
+          { number: 2, row: 4, col: 0, answer: 'PROCESS', clue: 'Set of interrelated activities that transform inputs to outputs (7)' },
+          { number: 3, row: 7, col: 0, answer: 'RISK', clue: 'Effect of uncertainty on objectives (4)' }
+        ],
+        down: [
+          { number: 1, row: 0, col: 2, answer: 'AUDIT', clue: 'Systematic examination to verify IMS effectiveness (5)' }
         ]
+      }
     },
-    {
-        title: 'Quality Management',
-        type: 'crossword',
-        difficulty: 'medium',
-        xpReward: 75,
-        questions: [
-            { clue: 'Meeting customer needs consistently', answer: 'QUALITY' },
-            { clue: 'Preventing defects before they occur', answer: 'PREVENTION' },
-            { clue: 'Systematic examination of records', answer: 'REVIEW' },
-            { clue: 'Measure of process effectiveness', answer: 'METRIC' },
-            { clue: 'Action to eliminate nonconformity', answer: 'CORRECTION' }
-        ]
+    isActive: true
+  },
+  
+  // ==================== WORDLE ====================
+  {
+    title: 'IMS Word Puzzle',
+    description: 'Guess the 5-letter IMS term in 6 tries',
+    gameType: 'wordle',
+    difficulty: 'medium',
+    maxXP: 150,
+    timeLimit: 0,
+    content: {
+      words: [
+        { word: 'AUDIT', hint: 'Systematic examination' },
+        { word: 'RISKS', hint: 'Uncertainties that affect objectives' },
+        { word: 'SCOPE', hint: 'Boundaries of the management system' },
+        { word: 'PDCA', hint: 'Plan-Do-Check-Act cycle (4 letters)' },
+        { word: 'TRACE', hint: 'Ability to track something through records' },
+        { word: 'VALID', hint: 'Confirmed through evidence' },
+        { word: 'POLICY', hint: 'Statement of intent from management (6 letters)' },
+        { word: 'METRIC', hint: 'Quantifiable measure of performance (6 letters)' }
+      ]
     },
-    {
-        title: 'Document Control',
-        type: 'crossword',
-        difficulty: 'medium',
-        xpReward: 75,
-        questions: [
-            { clue: 'Official authorization to use', answer: 'APPROVAL' },
-            { clue: 'Unique identifier for documents', answer: 'NUMBER' },
-            { clue: 'Most current version', answer: 'LATEST' },
-            { clue: 'No longer in effect', answer: 'OBSOLETE' },
-            { clue: 'Change to a document', answer: 'REVISION' }
-        ]
+    isActive: true
+  },
+  
+  // ==================== QUICK QUIZ ====================
+  {
+    title: 'IMS Speed Quiz',
+    description: 'Answer as many questions correctly as you can in 2 minutes',
+    gameType: 'quickquiz',
+    difficulty: 'easy',
+    maxXP: 200,
+    timeLimit: 120, // 2 minutes
+    content: {
+      questions: [
+        {
+          question: 'What does IMS stand for?',
+          options: [
+            'Integrated Management System',
+            'Internal Monitoring Service',
+            'Information Management Software',
+            'International Marketing Strategy'
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: 'What does PDCA stand for?',
+          options: [
+            'Plan-Design-Create-Approve',
+            'Plan-Do-Check-Act',
+            'Process-Document-Control-Audit',
+            'Prepare-Deploy-Complete-Assess'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is the primary focus of ISO 9001?',
+          options: [
+            'Environmental Management',
+            'Quality Management',
+            'Information Security',
+            'Health and Safety'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What does CIA stand for in information security?',
+          options: [
+            'Central Intelligence Agency',
+            'Confidentiality, Integrity, Availability',
+            'Computer Information Access',
+            'Critical Information Assets'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is a nonconformity?',
+          options: [
+            'A suggestion for improvement',
+            'Non-fulfillment of a requirement',
+            'A good practice',
+            'An optional standard'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is the purpose of internal audits?',
+          options: [
+            'To punish employees',
+            'To verify IMS effectiveness',
+            'To create paperwork',
+            'To satisfy external auditors only'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is corrective action?',
+          options: [
+            'Punishment for mistakes',
+            'Action to eliminate cause of nonconformity',
+            'Temporary fix',
+            'Blame assignment'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is continual improvement?',
+          options: [
+            'One-time effort',
+            'Recurring activity to enhance performance',
+            'Random updates',
+            'Annual review'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is risk-based thinking?',
+          options: [
+            'Ignoring all risks',
+            'Considering risks when planning',
+            'Only thinking about problems',
+            'Avoiding all changes'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What makes a good quality objective?',
+          options: [
+            'Vague and general',
+            'SMART (Specific, Measurable, Achievable, Relevant, Time-bound)',
+            'Impossible to achieve',
+            'Not documented'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is competence?',
+          options: [
+            'Just having a degree',
+            'Ability to apply knowledge and skills effectively',
+            'Years of service',
+            'Job title'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is documented information?',
+          options: [
+            'Random files',
+            'Information required to be controlled and maintained',
+            'Only emails',
+            'Only verbal instructions'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is process control?',
+          options: [
+            'Micromanaging people',
+            'Ensuring processes operate under controlled conditions',
+            'Random checks',
+            'Ignoring procedures'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is management review?',
+          options: [
+            'Employee evaluation',
+            'Top management evaluation of IMS',
+            'Customer survey',
+            'Financial audit'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is root cause analysis?',
+          options: [
+            'Finding someone to blame',
+            'Identifying fundamental reason for problem',
+            'Treating symptoms only',
+            'Ignoring the problem'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'Who is responsible for quality?',
+          options: [
+            'Only the quality department',
+            'Everyone in the organization',
+            'Only top management',
+            'Only external auditors'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is the purpose of management review?',
+          options: [
+            'To criticize employees',
+            'To evaluate IMS effectiveness and plan improvements',
+            'To delay decisions',
+            'To create reports for storage'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is interested party?',
+          options: [
+            'Only customers',
+            'Anyone affected by or affecting the organization',
+            'Only shareholders',
+            'Only employees'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'What is operational planning?',
+          options: [
+            'Random activities',
+            'Planning processes to meet requirements',
+            'Daily schedules only',
+            'Vacation planning'
+          ],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          question: 'Why evaluate performance?',
+          options: [
+            'To punish people',
+            'To determine if objectives are achieved',
+            'To create reports',
+            'To compare employees'
+          ],
+          correctAnswer: 1,
+          points: 10
+        }
+      ]
     },
-    {
-        title: 'Risk Management',
-        type: 'crossword',
-        difficulty: 'hard',
-        xpReward: 100,
-        questions: [
-            { clue: 'Potential source of harm', answer: 'HAZARD' },
-            { clue: 'Likelihood of occurrence', answer: 'PROBABILITY' },
-            { clue: 'Reducing risk to acceptable level', answer: 'MITIGATION' },
-            { clue: 'Effect of uncertainty on objectives', answer: 'RISK' },
-            { clue: 'Plan to address potential issues', answer: 'CONTINGENCY' }
-        ]
-    },
-    {
-        title: 'Process Improvement',
-        type: 'crossword',
-        difficulty: 'medium',
-        xpReward: 75,
-        questions: [
-            { clue: 'Japanese term for workplace', answer: 'GEMBA' },
-            { clue: 'Visual management board', answer: 'KANBAN' },
-            { clue: 'Eliminating waste', answer: 'LEAN' },
-            { clue: 'Six _____ methodology', answer: 'SIGMA' },
-            { clue: 'Plan-Do-Check-___', answer: 'ACT' }
-        ]
-    },
-    {
-        title: 'Compliance Crossword',
-        type: 'crossword',
-        difficulty: 'easy',
-        xpReward: 50,
-        questions: [
-            { clue: 'Following established rules', answer: 'COMPLIANCE' },
-            { clue: 'Required by regulation', answer: 'MANDATORY' },
-            { clue: 'Official inspection', answer: 'AUDIT' },
-            { clue: 'Written guideline', answer: 'PROCEDURE' },
-            { clue: 'Meets requirements', answer: 'CONFORMITY' }
-        ]
-    }, 
-    {
-        title: 'Training & Competence',
-        type: 'crossword',
-        difficulty: 'medium',
-        xpReward: 75,
-        questions: [
-            { clue: 'Ability to perform a task', answer: 'COMPETENCE' },
-            { clue: 'Learning program', answer: 'TRAINING' },
-            { clue: 'Official recognition of skills', answer: 'CERTIFICATION' },
-            { clue: 'Proof of completion', answer: 'RECORD' },
-            { clue: 'Evaluation of performance', answer: 'ASSESSMENT' }
-        ]
-    },
-    {
-        title: 'Internal Audit',
-        type: 'crossword',
-        difficulty: 'hard',
-        xpReward: 100,
-        questions: [
-            { clue: 'Person conducting audit', answer: 'AUDITOR' },
-            { clue: 'Area being examined', answer: 'SCOPE' },
-            { clue: 'Evidence of noncompliance', answer: 'FINDING' },
-            { clue: 'Planned audit schedule', answer: 'PROGRAM' },
-            { clue: 'Corrective action plan', answer: 'CAPA' }
-        ]
-    },
-    {
-        title: 'IMS Terminology',
-        type: 'word_scramble',
-        difficulty: 'easy',
-        xpReward: 50,
-        questions: [
-            { scrambled: 'TIDUUA', answer: 'AUDIT', hint: 'Systematic examination' },
-            { scrambled: 'LITYQUA', answer: 'QUALITY', hint: 'Meeting requirements' },
-            { scrambled: 'CESROPS', answer: 'PROCESS', hint: 'Set of activities' },
-            { scrambled: 'CYILOP', answer: 'POLICY', hint: 'High-level directive' },
-            { scrambled: 'DRADSTAN', answer: 'STANDARD', hint: 'Established requirement' }
-        ]
-    },
-    {
-        title: 'Quality Terms',
-        type: 'word_scramble',
-        difficulty: 'medium',
-        xpReward: 75,
-        questions: [
-            { scrambled: 'VETNPRIONE', answer: 'PREVENTION', hint: 'Stopping before it happens' },
-            { scrambled: 'INEMVORIPEM', answer: 'IMPROVEMENT', hint: 'Making better' },
-            { scrambled: 'ECNAILMOCP', answer: 'COMPLIANCE', hint: 'Following rules' },
-            { scrambled: 'FECITVEEFENS', answer: 'EFFECTIVENESS', hint: 'Achieving objectives' },
-            { scrambled: 'YCCFIEIFNE', answer: 'EFFICIENCY', hint: 'Resource optimization' }
-        ]
-    },
-    {
-        title: 'Documentation fundamentals',
-        type: 'word_scramble',
-        difficulty: 'medium',
-        xpReward: 75,
-        questions: [
-            { scrambled: 'DROERC', answer: 'RECORD', hint: 'Evidence of activity' },
-            { scrambled: 'DUOCTENM', answer: 'DOCUMENT', hint: 'Written information' },
-            { scrambled: 'VERIONIS', answer: 'REVISION', hint: 'Updated version' },
-            { scrambled: 'LOVAPARP', answer: 'APPROVAL', hint: 'Official authorization'},
-            { scrambled: 'TRLOOCN', answer: 'CONTROL', hint: 'Managing access'}
-        ]
-    },
-    {
-        title: 'Management',
-        type: 'word_scramble',
-        difficulty: 'hard',
-        xpReward: 100,
-        questions: [
-            { scrambled: 'ETJBCOVIE', answer: 'OBJECTIVE', hint: 'Measurable goal' },
-            { scrambled: 'YGASRETT', answer: 'STRATEGY', hint: 'High-level plan'},
-            { scrambled: 'NERPFRACMEO', answer: 'PERFORMANCE', hint: 'Achievement level'},
-            { scrambled: 'THKREADLSOE', answer: 'STAKEHOLDER', hint: 'Interested party' },
-            { scrambled: 'NCEAEVGORN', answer: 'GOVERNANCE', hint: 'Leadership Framework'}
-        ]
-    },
-    {
-        title: 'Risk & Safety',
-        type: 'word_scramble',
-        difficulty: 'medium',
-        xpReward: 75,
-        questions: [
-            { scrambled: 'AZDHAH', answer: 'HAZARD', hint: 'Source of danger' },
-            { scrambled: 'GMITIITONA', answer: 'MITIGATION', hint: 'Risk reduction' },
-            { scrambled: 'CTNEDNII', answer: 'INCIDENT', hint: 'Unwanted event' },
-            { scrambled: 'YTFSAE', answer: 'SAFETY', hint: 'Freedom from harm' },
-            { scrambled: 'NYPTNCOIECG', answer: 'CONTINGENCY', hint: 'Backup plan' }
-        ]
-    },
-    {
-        title: 'IMS Fundamentals',
-        type: 'quick_quiz',
-        difficulty: 'easy',
-        xpReward: 60,
-        questions: [
-            {
-                question: 'What does IMS stand for?',
-                options: [
-                    'Internal Management System',
-                    'Integrated Management System',
-                    'International Monitoring Standard',
-                    'Information Management Service'
-                ],
-                correctAnswer: 1
-            },
-            {
-                question: 'What is the primary goal of IMS?',
-                options: [
-                    'Reduce costs',
-                    'Increase sales',
-                    'Improve organizational performance',
-                    'Replace existing systems'
-                ],
-                correctAnswer: 2
-            },
-            {
-                question: 'Which ISO standard covers quality management?',
-                options: [
-                    'ISO 9001',
-                    'ISO 14001',
-                    'ISO 27001',
-                    'ISO 6969'
-                ],
-                correctAnswer: 0
-            }
-        ]
-    }
+    isActive: true
+  }
 ];
 
 const seedGames = async () => {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        await Game.deleteMany({});
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
 
-        const games = await Game.insertMany(gamesData);
-        process.exit(0);
-    } catch (error) {
-        console.error('Seed error: ', error);
-        process.exit(1);
-    }
+    // Clear existing games
+    await Game.deleteMany({});
+
+    // Insert new games
+    const games = await Game.insertMany(gamesData);
+
+    process.exit(0);
+  } catch (error) {
+    console.error('error:', error);
+    process.exit(1);
+  }
 };
 
 seedGames();

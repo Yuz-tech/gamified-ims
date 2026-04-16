@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
-import CrosswordGame from './CrosswordGame';
+import Crossword from './Crossword';
 import WordScrambleGame from './WordScrambleGame';
 import QuickQuizGame from './QuickQuizGame';
 import TrueFalseGame from './TrueFalseGame';
@@ -50,7 +50,7 @@ const GameRouter = () => {
 
   switch (game.type) {
     case 'crossword':
-      return <CrosswordGame game={game} />;
+      return <Crossword game={game} />;
     case 'word_scramble':
       return <WordScrambleGame game={game} />;
     case 'quick_quiz':

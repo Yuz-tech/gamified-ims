@@ -5,44 +5,38 @@ const gameSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    type: {
+    description: {
         type: String,
-        enum: ['crossword', 'quick_quiz', 'word_scramble'],
         required: true
+    },
+    gameType: {
+        type: String,
+        required: true,
+        enum: ['crossword', 'wordle', 'quickquiz']
     },
     difficulty: {
         type: String,
         enum: ['easy', 'medium', 'hard'],
-        default: 'medium'
+        default: 'easy'
     },
-    relatedTopics: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Topic'
-    }],
-    xpReward: {
+    maxXP: {
         type: Number,
-        default: 50
+        default: 100
     },
     timeLimit: {
         type: Number,
-        default: null
+        default: 0
+    },
+    content: {
+        type: mongoose.Schema.Types.Mixed,
+        required: true
     },
     isActive: {
         type: Boolean,
         default: true
-    }, 
-    playCount: {
-        type: Number,
-        default: 0
-    },
-    averageScore: {
-        type: Number,
-        default: 0
     }
 }, {
     timestamps: true
 });
 
-const Game = mongoose.model('Game', gameSchema);
-
-export default Game;
+export default mongoose.model('Game', gameSchema);

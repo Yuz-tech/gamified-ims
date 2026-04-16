@@ -1,40 +1,137 @@
 import express from 'express';
 import Game from '../models/Game.js';
-import GameProgress from '../models/GameProgress.js';
 import User from '../models/User.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, isAdmin } from '../middleware/auth.js';
 import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
 
-router.use(authenticateToken);
-
-// GET all games
-router.get('/', async (req, res) => {
+// Get all games 
+router.get('/admin/all', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const games = await Game.find()
-          .select('title type difficulty xpReward')
-          .sort({ difficulty: 1, title: 1 });
+        const games = (await Game.find()).toSorted({ createdAt: -1 });
+        res.json(games);
+    } catch (error) {
+        console.error('Error fetching all games: ', error);
+        res.status(500).json({ message: 'Server error'});
+    }
+});
 
-        const userProgress = await GameProgress.find({ userId: req.user._id });
-        const completedGameIds = userProgress.map(p => p.gameId.toString());
+// Create game
+router.post('/admin/create', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { title, description, gameType, difficulty, maxXP, timeLimit, content } = req.body;
 
-        const gamesWithProgress = games.map(game => ({
-            ...game.toObject(),
-            completed: completedGameIds.includes(game._id.toString()),
-            lastPlayed: userProgress.find(p => p.gameId.toString() === game._id.toString())?.lastPlayed
-        }));
+        const game = new Game({
+            title,
+            description,
+            gameType,
+            difficulty,
+            maxXP,
+            timeLimit,
+            content
+        });
 
-        res.json(gamesWithProgress);
+        await game.save();
+
+        await logActivity(req.user._id, 'game_created', {
+            gameId: game._id,
+            title: game.title,
+            gameType: game.gameType
+        }, req);
+
+        res.json({
+            message: 'Game created successfully',
+            game
+        });
+    } catch (error) {
+        console.error('Error creating game: ', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Update game 
+router.put('/admin/:gameId', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { gameId } = req.params;
+        const { title, description, gameType, difficulty, maxXP, timeLimit, content, isActive } = req.body;
+
+        const game = await Game.findByIdAndUpdate(
+            gameId,
+            {
+                title,
+                description,
+                gameType,
+                difficulty,
+                maxXP,
+                timeLimit,
+                content,
+                isActive
+            },
+            { new: true }
+        );
+
+        if (!game) {
+            return res.status(404).json({ message: 'Game not found' });
+        }
+
+        await logActivity(req.user._id, 'game_updated', {
+            gameId: game._id,
+            title: game.title
+        }, req);
+
+        res.json({
+            message: 'Game updated successfully',
+            game
+        });
+    } catch (error) {
+        console.error('Error updating game: ', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Delete game
+router.delete('/admin/:gameId', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { gameId } = req.params;
+        const game = await Game.findByIdAndDelete(gameId);
+
+        if (!game) {
+            return res.status(404).json({ message: 'Game not found' });
+        }
+
+        await logActivity(req.user._id, 'game_deleted', {
+            gameId: game._id,
+            title: game.title
+        }, req);
+
+        res.json({ message: 'Game deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting game: ', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Get all active games
+router.get('/', authenticateToken, async (req,res) => {
+    try {
+        const games = await Game.find({ isActive: true })
+            .select('title description gameType difficulty maxXP timeLimit')
+            .sort({ createdAt: -1 });
+        
+        res.json(games);
     } catch (error) {
         console.error('Error fetching games: ', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-router.get('/:gameId', async (req, res) => {
+// Get game by ID
+router.get('/:gameId', authenticateToken, async (req, res) => {
     try {
-        const game = await Game.findById(req.params.gameId);
+        const { gameId } = req.params;
+
+        const game = await Game.findOne({ _id: gameId, isActive: true });
 
         if (!game) {
             return res.status(404).json({ message: 'Game not found' });
@@ -47,49 +144,34 @@ router.get('/:gameId', async (req, res) => {
     }
 });
 
-// Submit answers
-router.post('/:gameId/submit', async (req,res) => {
+// Submit game
+router.post('/submit-score', authenticateToken, async (req, res) => {
     try {
-        const { gameId } = req.params;
-        const { answers } = req.body;
+        const { gameId, gameType, score, timeSpent } = req.body;
         const userId = req.user._id;
 
-        const game = await Game.findById(gameId);
-        if (!game) {
-            return res.status(404).json({ message: 'Game not found' });
+        if (typeof score !== 'number' || score < 0) {
+            return res.status(400).json({ message: 'Invalid score' });
         }
 
-        let correctCount = 0;
-        let totalQuestions = game.questions.length;
-
-        game.questions.forEach((question, index) => {
-            const userAnswer = answers[index];
-
-            if (game.type === 'crossword' || game.type === 'word_scramble') {
-                if (userAnswer && userAnswer.toUpperCase() === question.answer.toUpperCase()) {
-                    correctCount++;
-                }
+        let game;
+        if (gameId) {
+            game = await Game.findById(gameId);
+            if (!game) {
+                return res.status(404).json({ message: 'Game not found' });
             }
-        });
+        }
 
-        const percentage = (correctCount / totalQuestions) * 100;
-        const score = Math.round((percentage / 100) * game.xpReward);
-
-        await GameProgress.findOneAndUpdate(
-            { userId, gameId },
-            { 
-                score: percentage,
-                completed: true,
-                lastPlayed: new Date()
-            },
-            { upsert: true, new: true }
-        );
+        const maxXP = game ? game.maxXP : 100;
+        const cappedScore = Math.min(score, maxXP);
 
         const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
         const oldLevel = user.level;
-        const oldXP = user.xp;
-        
-        user.xp += score;
+        user.xp += cappedScore;
 
         const { calculateLevel } = await import('../utils/levelSystem.js');
         const newLevel = calculateLevel(user.xp);
@@ -102,26 +184,22 @@ router.post('/:gameId/submit', async (req,res) => {
         await user.save();
 
         await logActivity(userId, 'game_completed', {
-            gameId,
-            gameTitle: game.title,
-            score: percentage,
-            xpEarned: score,
-            correctAnswers: correctCount,
-            totalQuestions
+            gameId: gameId || null,
+            gameType,
+            score: cappedScore,
+            timeSpent,
+            leveledUp
         }, req);
 
         res.json({
-            score,
-            percentage: Math.round(percentage),
-            correctCount,
-            totalQuestions,
-            xpEarned: score,
+            xpEarned: cappedScore,
+            totalXP: user.xp,
             leveledUp,
-            newLevel: user.level,
-            newXP: user.xp
+            newLevel: user.level
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        console.error('Error submitting game score: ', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
