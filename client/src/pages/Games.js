@@ -7,8 +7,6 @@ const Games = () => {
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchGames();
@@ -25,16 +23,22 @@ const Games = () => {
     }
   };
 
-  const filteredGames = games.filter(game => {
-    const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === 'all' || game.type === filter;
-    return matchesSearch && matchesFilter;
-  });
+  const getGameIcon = (gameType) => {
+    switch (gameType) {
+      case 'crossword': return '🧩';
+      case 'wordle': return '🔤';
+      case 'quickquiz': return '⚡';
+      default: return '🎮';
+    }
+  };
 
-  const gamesByType = {
-    crossword: filteredGames.filter(g => g.type === 'crossword'),
-    word_scramble: filteredGames.filter(g => g.type === 'wordle'),
-    quick_quiz: filteredGames.filter(g => g.type === 'quick_quiz')
+  const getGameRoute = (game) => {
+    switch (game.gameType) {
+      case 'crossword': return `/games/${game._id}`;
+      case 'wordle': return `/games/wordle/${game._id}`;
+      case 'quickquiz': return `/games/quickquiz/${game._id}`;
+      default: return '/games';
+    }
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -43,18 +47,6 @@ const Games = () => {
       case 'medium': return 'var(--orange-accent)';
       case 'hard': return 'var(--error-red)';
       default: return 'var(--text-medium)';
-    }
-  };
-
-  const getGameRoute = (game) => {
-    switch (game.gameType) {
-      case 'crossword': 
-        return `/games/crossword/${game._id}`;
-      case 'wordle':
-        return `/games/wordle/${game._id}`;
-      case 'quickquiz':
-        return `/games/quickquiz/${game._id}`;
-      default: return '/games';
     }
   };
 
@@ -76,116 +68,128 @@ const Games = () => {
         className="neon-text"
         style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
       >
-         TRAINING GAMES
+         GAMES ARCADE
       </motion.h1>
 
-      {/* Search & Filter */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="retro-card"
         style={{ marginBottom: '30px' }}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
-              SEARCH
-            </label>
-            <input
-              type="text"
-              className="retro-input"
-              placeholder="Search games..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '10px', color: 'var(--text-medium)' }}>
-              FILTER BY TYPE
-            </label>
-            <select
-              className="retro-input"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              {/* <option value="all">All Games ({games.length})</option>
-              <option value="crossword">Crossword ({gamesByType.crossword.length})</option>
-              <option value="wordle">Wordle ({gamesByType.wordle.length})</option>
-              <option value="quick_quiz">Quick Quiz ({gamesByType.quick_quiz.length})</option> */}
-            </select>
-          </div>
-        </div>
+        <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-dark)', textAlign: 'center' }}>
+          Test your IMS knowledge with fun and interactive games! Earn XP while learning.
+        </p>
       </motion.div>
 
-      {/* Games Grid */}
-      {filteredGames.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-medium)' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px' }}>🎮</div>
-          <div style={{ fontSize: '14px' }}>No games found</div>
-        </div>
+      {games.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="retro-card"
+          style={{ textAlign: 'center', padding: '60px 20px' }}
+        >
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎮</div>
+          <h2 style={{ fontSize: '18px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            No Games Available
+          </h2>
+          <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>
+            Check back later for new games!
+          </p>
+        </motion.div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {filteredGames.map((game, index) => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+          {games.map((game, index) => (
             <motion.div
               key={game._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.03 }}
               className="retro-card"
               style={{
                 cursor: 'pointer',
                 position: 'relative',
-                overflow: 'hidden',
-                border: game.completed ? '3px solid var(--success-green)' : '2px solid var(--border-color)'
+                overflow: 'hidden'
               }}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => navigate(`/games/${game._id}`)}
+              onClick={() => navigate(getGameRoute(game))}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                {game.completed && (
-                  <div style={{
-                    padding: '5px 10px',
-                    background: 'var(--success-green)',
-                    color: 'white',
-                    fontSize: '9px',
-                    fontWeight: 'bold',
-                    borderRadius: '3px'
-                  }}>
-                    COMPLETED
-                  </div>
-                )}
+              {/* Game Icon */}
+              <div style={{
+                fontSize: '64px',
+                textAlign: 'center',
+                marginBottom: '20px'
+              }}>
+                {getGameIcon(game.gameType)}
               </div>
 
-              <h3 style={{ fontSize: '14px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+              {/* Title */}
+              <h3 style={{
+                fontSize: '14px',
+                fontWeight: 'bold',
+                color: 'var(--primary-navy)',
+                marginBottom: '10px',
+                textAlign: 'center',
+                minHeight: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
                 {game.title}
               </h3>
 
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                <span style={{
-                  padding: '5px 10px',
-                  background: getDifficultyColor(game.difficulty),
-                  color: 'white',
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                  textTransform: 'uppercase',
-                  borderRadius: '3px'
+              {/* Description */}
+              <p style={{
+                fontSize: '11px',
+                color: 'var(--text-medium)',
+                marginBottom: '20px',
+                textAlign: 'center',
+                minHeight: '40px'
+              }}>
+                {game.description}
+              </p>
+
+              {/* Stats */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px',
+                marginBottom: '20px'
+              }}>
+                <div style={{
+                  padding: '10px',
+                  background: 'var(--bg-light)',
+                  border: '2px solid var(--border-color)',
+                  textAlign: 'center'
                 }}>
-                  {game.difficulty}
-                </span>
-                <span style={{
-                  padding: '5px 10px',
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  border: '2px solid var(--bright-blue)',
-                  color: 'var(--bright-blue)',
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                  borderRadius: '3px'
+                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
+                    DIFFICULTY
+                  </div>
+                  <div style={{
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: getDifficultyColor(game.difficulty),
+                    textTransform: 'uppercase'
+                  }}>
+                    {game.difficulty}
+                  </div>
+                </div>
+                <div style={{
+                  padding: '10px',
+                  background: 'var(--bg-light)',
+                  border: '2px solid var(--border-color)',
+                  textAlign: 'center'
                 }}>
-                  {game.xpReward} XP
-                </span>
+                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
+                    MAX XP
+                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
+                    {game.maxXP}
+                  </div>
+                </div>
               </div>
 
+              {/* Time Limit */}
               {game.timeLimit > 0 && (
                 <div style={{
                   padding: '8px',
@@ -196,15 +200,20 @@ const Games = () => {
                   textAlign: 'center',
                   marginBottom: '15px'
                 }}>
-                  {Math.floor(game.timeLimit / 60)}:{(game.timeLimit % 60).toString().padStart(2, '0')} Time Limit
+                  ⏱️ {Math.floor(game.timeLimit / 60)}:{(game.timeLimit % 60).toString().padStart(2, '0')} Time Limit
                 </div>
               )}
 
+              {/* Play Button */}
               <button
                 className="retro-btn"
-                style={{ width: '100%', fontSize: '11px' }}
+                style={{ width: '100%', fontSize: '12px' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(getGameRoute(game));
+                }}
               >
-                {game.completed ? 'PLAY AGAIN' : 'PLAY NOW'}
+                PLAY NOW
               </button>
             </motion.div>
           ))}

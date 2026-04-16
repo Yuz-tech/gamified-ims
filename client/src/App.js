@@ -10,7 +10,7 @@ import TopicDetail from './pages/TopicDetail';
 import Achievements from './pages/Achievements';
 import Players from './pages/Players';
 import Games from './pages/Games';
-import GameRouter from './pages/games/GameRouter';
+import Crossword from './pages/games/Crossword';
 import Footer from './components/Footer';
 import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';
@@ -160,14 +160,6 @@ const AppRoutes = () => {
               <Achievements />
             </ProtectedRoute>
           } 
-        />
-        <Route
-          path="/games/:gameId"
-          element={
-            <ProtectedRoute>
-              <GameRouter />
-            </ProtectedRoute>
-          }
         />
         <Route
           path="/games"

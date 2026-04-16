@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import api from "../../utils/api";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
 
 const Crossword = () => {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const Crossword = () => {
       setGame(gameData);
       initializeGrid(gameData.content);
     } catch (error) {
-      console.error('Error fetching game: ', error);
+      console.error('Error fetching game:', error);
       alert('Error loading game');
       navigate('/games');
     } finally {
@@ -36,7 +36,7 @@ const Crossword = () => {
   };
 
   const initializeGrid = (content) => {
-    const userGrid = content.grid.map(row => 
+    const userGrid = content.grid.map(row =>
       row.map(cell => ({
         correct: cell,
         user: cell === null ? null : '',
@@ -49,7 +49,7 @@ const Crossword = () => {
 
   const handleCellClick = (row, col) => {
     if (grid[row][col].isBlack) return;
-
+    
     if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
       setDirection(d => d === 'across' ? 'down' : 'across');
     } else {
@@ -109,7 +109,7 @@ const Crossword = () => {
       setGameComplete(true);
       await submitScore(earnedXP);
     } else {
-      alert(`You got ${correct}/${total} correct (${percentage}%). Keep Trying!`);
+      alert(`You got ${correct}/${total} correct (${percentage}%). Keep trying!`);
     }
   };
 
@@ -123,23 +123,24 @@ const Crossword = () => {
         timeSpent: timeTaken
       });
     } catch (error) {
-      console.error('Error submitting score: ', error);
+      console.error('Error submitting score:', error);
     }
   };
 
   const revealAnswers = () => {
-    const newGrid = grid.map(row => row.map(cell => ({
-      ...cell,
-      user: cell.correct || ''
-    }))
-  );
+    const newGrid = grid.map(row =>
+      row.map(cell => ({
+        ...cell,
+        user: cell.correct || ''
+      }))
+    );
     setGrid(newGrid);
   };
 
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">Loading...</div>
+        <div className="loading neon-text">LOADING GAME...</div>
       </div>
     );
   }
@@ -147,7 +148,7 @@ const Crossword = () => {
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        Back to Games
+        ← BACK TO GAMES
       </button>
 
       <motion.div
@@ -156,9 +157,12 @@ const Crossword = () => {
         className="retro-card"
       >
         <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
-          {game?.title || 'CROSSWORD'}
+          🧩 {game?.title || 'CROSSWORD'}
         </h1>
-        
+        <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '30px' }}>
+          {game?.description}
+        </p>
+
         {!gameComplete ? (
           <>
             {/* Grid */}
@@ -171,50 +175,56 @@ const Crossword = () => {
                 background: 'var(--bg-light)',
                 border: '3px solid var(--primary-navy)'
               }}>
-                {grid.map((row, r) => row.map((cell, c) => (
-                  <div key={`${r}-${c}`} onClick={() => handleCellClick(r, c)} style={{
-                    width: '40px',
-                    height: '40px',
-                    background: cell.isBlack ? 'var(--primary-navy)' : 'white',
-                    border: cell.isBlack ? 'none' : '2px solid var(--border-color)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: cell.isBlack ? 'default' : 'pointer',
-                    position: 'relative',
-                    boxShadow: selectedCell?.row === r && selectedCell?.col === c 
-                      ? '0 0 0 3px var(--bright-blue)'
-                      : 'none'
-                  }}
-                  >
-                    {!cell.isBlack && (
-                      <input ref={el => {
-                        if (selectedCell?.row === r && selectedCell?.col === c) {
-                          el?.focus();
-                        }
-                      }}
-                      type="text"
-                      maxLength="1"
-                      value={cell.user}
-                      onChange={(e) => handleInput(e, r, c)}
-                      onKeyDown={(e) => handleKeyDown(e, r, c)}
+                {grid.map((row, r) =>
+                  row.map((cell, c) => (
+                    <div
+                      key={`${r}-${c}`}
+                      onClick={() => handleCellClick(r, c)}
                       style={{
-                        width: '100%',
-                        height: '100%',
-                        border: 'none',
-                        background: 'transparent',
-                        textAlign: 'center',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        color: 'var(--primary-navy)',
-                        textTransform: 'uppercase',
-                        outline: 'none',
-                        cursor: 'pointer'
+                        width: '40px',
+                        height: '40px',
+                        background: cell.isBlack ? 'var(--primary-navy)' : 'white',
+                        border: cell.isBlack ? 'none' : '2px solid var(--border-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: cell.isBlack ? 'default' : 'pointer',
+                        position: 'relative',
+                        boxShadow: selectedCell?.row === r && selectedCell?.col === c
+                          ? '0 0 0 3px var(--bright-blue)'
+                          : 'none'
                       }}
-                      />
-                    )}
-                  </div>
-                )))}
+                    >
+                      {!cell.isBlack && (
+                        <input
+                          ref={el => {
+                            if (selectedCell?.row === r && selectedCell?.col === c) {
+                              el?.focus();
+                            }
+                          }}
+                          type="text"
+                          maxLength="1"
+                          value={cell.user}
+                          onChange={(e) => handleInput(e, r, c)}
+                          onKeyDown={(e) => handleKeyDown(e, r, c)}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            border: 'none',
+                            background: 'transparent',
+                            textAlign: 'center',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            color: 'var(--primary-navy)',
+                            textTransform: 'uppercase',
+                            outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        />
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -222,10 +232,9 @@ const Crossword = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
               {/* Across */}
               <div>
-                <h3 style={{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '15px' }}>
+                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
                   ACROSS
                 </h3>
-
                 {clues.across.map((clue, idx) => (
                   <div key={idx} style={{ fontSize: '11px', marginBottom: '10px', lineHeight: '1.6' }}>
                     <strong>{clue.number}.</strong> {clue.clue}
@@ -233,9 +242,9 @@ const Crossword = () => {
                 ))}
               </div>
 
-              {/* DOWN */}
+              {/* Down */}
               <div>
-                <h3 style={{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '15px' }}>
+                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
                   DOWN
                 </h3>
                 {clues.down.map((clue, idx) => (
@@ -249,13 +258,13 @@ const Crossword = () => {
             {/* Controls */}
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <button onClick={checkAnswers} className="retro-btn">
-                Check Answers
+                ✓ CHECK ANSWERS
               </button>
               <button onClick={revealAnswers} className="retro-btn secondary">
-                Reveal Answers
+                💡 REVEAL ANSWERS
               </button>
               <button onClick={() => fetchGame()} className="retro-btn secondary">
-                Reset
+                RESET
               </button>
             </div>
           </>
@@ -263,17 +272,17 @@ const Crossword = () => {
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
             <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
             <h2 style={{ fontSize: '24px', color: 'var(--success-green)', marginBottom: '20px' }}>
-              Perfect!
+              PERFECT!
             </h2>
             <div style={{ fontSize: '14px', marginBottom: '30px' }}>
               You earned <strong style={{ color: 'var(--bright-blue)' }}>{score} XP</strong>!
             </div>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button onClick={() => navigate('/games')} className="retro-btn">
-                Back to Games
+                BACK TO GAMES
               </button>
               <button onClick={() => window.location.reload()} className="retro-btn secondary">
-                Play Again
+                PLAY AGAIN
               </button>
             </div>
           </div>
