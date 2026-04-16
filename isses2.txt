@@ -1,5 +1,11 @@
-1. Provide a new seedData 
-2. Games module + seedGames.js
-(Crossword, Wordle, QuickQuiz (quiz with timer))
-3. Admin can edit the games (content, title, etc.)
-4. Modals to replace window.confirm, not alert messages
+Error fetching game:  CastError: Cast to ObjectId failed for value ":69e0437d1701c13c39687cc9" (type string) at path "_id" for model "Game"
+
+at async file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/games.js:134:22 {
+  stringValue: '":69e0437d1701c13c39687cc9"',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: ':69e0437d1701c13c39687cc9',
+  path: '_id',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+
+  
