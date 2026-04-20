@@ -18,3 +18,549 @@ const topicSchema = new mongoose.Schema({
 });
 
 
+routes/admin.js
+// Add this endpoint to your existing server/routes/admin.js file
+
+// Toggle topic "new" status
+router.patch('/topics/:topicId/toggle-new', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { topicId } = req.params;
+    
+    const topic = await Topic.findById(topicId);
+    
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+    
+    // Toggle the isNew status
+    topic.isNew = !topic.isNew;
+    await topic.save();
+    
+    await logActivity(req.user._id, 'topic_new_toggled', {
+      topicId: topic._id,
+      topicTitle: topic.title,
+      isNew: topic.isNew
+    }, req);
+    
+    res.json({
+      message: `Topic marked as ${topic.isNew ? 'new' : 'not new'}`,
+      topic: {
+        _id: topic._id,
+        title: topic.title,
+        isNew: topic.isNew
+      }
+    });
+  } catch (error) {
+    console.error('Error toggling topic new status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update existing topic endpoint to include isNew field
+router.put('/topics/:topicId', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { topicId } = req.params;
+    const { 
+      title, 
+      description, 
+      documentUrl, 
+      videoUrl, 
+      badgeName, 
+      badgeImage, 
+      questions, 
+      priority, 
+      isActive,
+      isNew // ✅ Add this field
+    } = req.body;
+
+    const topic = await Topic.findByIdAndUpdate(
+      topicId,
+      {
+        title,
+        description,
+        documentUrl,
+        videoUrl,
+        badgeName,
+        badgeImage,
+        questions,
+        priority,
+        isActive,
+        isNew // ✅ Add this field
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    await logActivity(req.user._id, 'topic_updated', {
+      topicId: topic._id,
+      title: topic.title
+    }, req);
+
+    res.json({
+      message: 'Topic updated successfully',
+      topic
+    });
+  } catch (error) {
+    console.error('Error updating topic:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+routes/topics.js
+// Get all active topics with priority sorting
+    const topics = await Topic.find({ isActive: true })
+      .select('title description documentUrl videoUrl badgeName badgeImage questions priority isNew') // ✅ Add isNew
+      .sort({ priority: 1, title: 1 });
+
+
+src/pages/topics
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import api from '../utils/api';
+
+const Topics = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  useEffect(() => {
+    fetchTopics();
+  }, []);
+
+  const fetchTopics = async () => {
+    try {
+      const response = await api.get('/topics');
+      setTopics(response.data);
+    } catch (error) {
+      console.error('Error fetching topics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sortTopicsWithPriority = (topicsArray) => {
+    return [...topicsArray].sort((a, b) => {
+      const priorityDiff = (a.priority || 999) - (b.priority || 999);
+      if (priorityDiff !== 0) return priorityDiff;
+      return a.title.localeCompare(b.title);
+    });
+  };
+
+  const getFilteredTopics = () => {
+    let filtered = topics;
+
+    if (searchTerm) {
+      filtered = filtered.filter(topic =>
+        topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        topic.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(topic => {
+        const isCompleted = user?.completedTopics?.some(ct => ct.topicId === topic._id);
+        
+        if (filterStatus === 'completed') return isCompleted;
+        if (filterStatus === 'not_started') return !isCompleted;
+        return true;
+      });
+    }
+
+    return sortTopicsWithPriority(filtered);
+  };
+
+  const filteredTopics = getFilteredTopics();
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING TOPICS...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div className="scanlines"></div>
+
+      <motion.h1
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="neon-text"
+        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
+      >
+        📚 TRAINING TOPICS
+      </motion.h1>
+
+      {/* Search and Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', marginBottom: '20px' }}>
+          <input
+            type="text"
+            placeholder="Search topics..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              padding: '12px',
+              fontSize: '12px',
+              border: '2px solid var(--border-color)',
+              background: 'white'
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setFilterStatus('all')}
+            className={filterStatus === 'all' ? 'retro-btn' : 'retro-btn secondary'}
+            style={{ fontSize: '11px', padding: '10px 20px' }}
+          >
+            ALL TOPICS
+          </button>
+          <button
+            onClick={() => setFilterStatus('not_started')}
+            className={filterStatus === 'not_started' ? 'retro-btn' : 'retro-btn secondary'}
+            style={{ fontSize: '11px', padding: '10px 20px' }}
+          >
+            NOT STARTED
+          </button>
+          <button
+            onClick={() => setFilterStatus('completed')}
+            className={filterStatus === 'completed' ? 'retro-btn' : 'retro-btn secondary'}
+            style={{ fontSize: '11px', padding: '10px 20px' }}
+          >
+            COMPLETED
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Topics Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+        {filteredTopics.map((topic, index) => {
+          const isCompleted = user?.completedTopics?.some(ct => ct.topicId === topic._id);
+          const isPriority = topic.priority && topic.priority < 999;
+
+          return (
+            <motion.div
+              key={topic._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="retro-card"
+              style={{
+                cursor: 'pointer',
+                border: isPriority ? '3px solid var(--orange-accent)' : '2px solid var(--border-color)',
+                background: isPriority ? 'rgba(249, 115, 22, 0.05)' : 'white',
+                position: 'relative',
+                overflow: 'visible'
+              }}
+              onClick={() => navigate(`/topics/${topic._id}`)}
+            >
+              {/* ✅ NEW RIBBON */}
+              {topic.isNew && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  zIndex: 10
+                }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: 'white',
+                    padding: '5px 15px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
+                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)',
+                    border: '2px solid white',
+                    transform: 'rotate(3deg)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    <span style={{ fontSize: '12px' }}>✨</span>
+                    NEW
+                    <span style={{ fontSize: '12px' }}>✨</span>
+                  </div>
+                  {/* Ribbon tail effect */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-8px',
+                    right: '0',
+                    width: '0',
+                    height: '0',
+                    borderLeft: '10px solid transparent',
+                    borderRight: '10px solid transparent',
+                    borderTop: '8px solid #991b1b'
+                  }}></div>
+                </div>
+              )}
+
+              {/* Priority Badge */}
+              {isPriority && (
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  left: '10px',
+                  padding: '5px 10px',
+                  background: 'var(--orange-accent)',
+                  color: 'white',
+                  fontSize: '8px',
+                  fontWeight: 'bold',
+                  borderRadius: '3px',
+                  zIndex: 5
+                }}>
+                  📌 PRIORITY
+                </div>
+              )}
+
+              {/* Completion Badge */}
+              {isCompleted && (
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: topic.isNew ? '10px' : '10px',
+                  padding: '5px 10px',
+                  background: 'var(--success-green)',
+                  color: 'white',
+                  fontSize: '8px',
+                  fontWeight: 'bold',
+                  borderRadius: '3px',
+                  zIndex: 5
+                }}>
+                  ✓ COMPLETED
+                </div>
+              )}
+
+              {/* Topic Content */}
+              <div style={{ marginTop: isPriority || isCompleted ? '35px' : '10px' }}>
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  color: 'var(--primary-navy)',
+                  marginBottom: '10px',
+                  lineHeight: '1.4'
+                }}>
+                  {topic.title}
+                </h3>
+
+                <p style={{
+                  fontSize: '11px',
+                  color: 'var(--text-medium)',
+                  marginBottom: '20px',
+                  lineHeight: '1.6'
+                }}>
+                  {topic.description}
+                </p>
+
+                {/* Progress Bar */}
+                <div style={{ marginBottom: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                    <span style={{ fontSize: '9px', color: 'var(--text-medium)' }}>PROGRESS</span>
+                    <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
+                      {isCompleted ? '100%' : '0%'}
+                    </span>
+                  </div>
+                  <div style={{
+                    width: '100%',
+                    height: '8px',
+                    background: 'var(--bg-medium)',
+                    border: '2px solid var(--border-color)',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      width: isCompleted ? '100%' : '0%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, var(--bright-blue), var(--secondary-pink))',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Badge Preview */}
+                <div style={{
+                  padding: '10px',
+                  background: 'var(--bg-light)',
+                  border: '2px solid var(--border-color)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  <div style={{ fontSize: '24px' }}>🏆</div>
+                  <div>
+                    <div style={{ fontSize: '9px', color: 'var(--text-medium)' }}>BADGE REWARD</div>
+                    <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--primary-navy)' }}>
+                      {topic.badgeName}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {filteredTopics.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="retro-card"
+          style={{ textAlign: 'center', padding: '60px 20px' }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔍</div>
+          <h3 style={{ fontSize: '16px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            No Topics Found
+          </h3>
+          <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>
+            Try adjusting your search or filter
+          </p>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+export default Topics;
+
+
+src/pages/admin/AdminTopics
+// Add this function to your AdminTopics component
+
+const handleToggleNew = async (topicId, currentStatus) => {
+  try {
+    const response = await api.patch(`/admin/topics/${topicId}/toggle-new`);
+    
+    // Refresh topics list
+    fetchTopics();
+    
+    alert(response.data.message);
+  } catch (error) {
+    console.error('Error toggling new status:', error);
+    alert('Error updating topic status');
+  }
+};
+
+// Update your topics table to include the NEW badge and toggle button
+// Find the <tbody> section and update each row:
+
+<tbody>
+  {topics.map(topic => (
+    <tr key={topic._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+      <td style={{ padding: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* ✅ NEW Badge Indicator */}
+          {topic.isNew && (
+            <span style={{
+              padding: '3px 8px',
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              color: 'white',
+              fontSize: '8px',
+              fontWeight: 'bold',
+              borderRadius: '3px',
+              letterSpacing: '1px'
+            }}>
+              ✨ NEW
+            </span>
+          )}
+          <div>
+            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{topic.title}</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
+              {topic.description.substring(0, 60)}...
+            </div>
+          </div>
+        </div>
+      </td>
+      
+      <td style={{ padding: '15px', textAlign: 'center' }}>
+        {topic.questions?.length || 0}
+      </td>
+      
+      <td style={{ padding: '15px', textAlign: 'center' }}>
+        {topic.priority || 999}
+      </td>
+      
+      <td style={{ padding: '15px', textAlign: 'center' }}>
+        <span style={{
+          padding: '5px 10px',
+          background: topic.isActive ? 'var(--success-green)' : 'var(--text-medium)',
+          color: 'white',
+          fontSize: '9px',
+          fontWeight: 'bold',
+          borderRadius: '3px'
+        }}>
+          {topic.isActive ? 'ACTIVE' : 'INACTIVE'}
+        </span>
+      </td>
+      
+      <td style={{ padding: '15px', textAlign: 'center' }}>
+        {/* ✅ Toggle NEW Button */}
+        <button
+          onClick={() => handleToggleNew(topic._id, topic.isNew)}
+          className="retro-btn secondary"
+          style={{
+            fontSize: '10px',
+            padding: '8px 12px',
+            marginRight: '5px',
+            background: topic.isNew ? '#ef4444' : undefined,
+            color: topic.isNew ? 'white' : undefined,
+            border: topic.isNew ? '2px solid #ef4444' : undefined
+          }}
+          title={topic.isNew ? 'Mark as not new' : 'Mark as new'}
+        >
+          {topic.isNew ? '✨ NEW' : 'MARK NEW'}
+        </button>
+        
+        <button
+          onClick={() => handleEdit(topic)}
+          className="retro-btn secondary"
+          style={{ fontSize: '10px', padding: '8px 12px', marginRight: '5px' }}
+        >
+          EDIT
+        </button>
+        
+        <button
+          onClick={() => handleDelete(topic._id)}
+          className="retro-btn secondary"
+          style={{ fontSize: '10px', padding: '8px 12px', marginRight: '5px' }}
+        >
+          DELETE
+        </button>
+        
+        <button
+          onClick={() => handleToggleActive(topic._id, topic.isActive)}
+          className="retro-btn secondary"
+          style={{ fontSize: '10px', padding: '8px 12px' }}
+        >
+          {topic.isActive ? 'DEACTIVATE' : 'ACTIVATE'}
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+// Also update the table header to add a NEW column indicator if needed
+<thead>
+  <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+    <th style={{ padding: '15px', textAlign: 'left' }}>Topic</th>
+    <th style={{ padding: '15px', textAlign: 'center' }}>Questions</th>
+    <th style={{ padding: '15px', textAlign: 'center' }}>Priority</th>
+    <th style={{ padding: '15px', textAlign: 'center' }}>Status</th>
+    <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
+  </tr>
+</thead>
+
