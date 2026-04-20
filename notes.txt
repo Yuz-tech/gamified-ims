@@ -1,140 +1,35 @@
-components/ConfirmModal
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+https://docs.google.com/forms/d/e/1FAIpQLScSPvxLKhtVr8y1Gsw_BNxM1NzIpepj3_JBk4IQY254qoYGHg/viewform
 
-const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
-  if (!isOpen) return null;
+1. Update server/index.js
+Add games routes:
+import gamesRoutes from './routes/games.js';
 
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.7)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px'
-        }}
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.8, opacity: 0 }}
-          onClick={(e) => e.stopPropagation()}
-          className="retro-card"
-          style={{
-            maxWidth: '500px',
-            width: '100%',
-            padding: '30px',
-            background: 'white',
-            border: '4px solid var(--primary-navy)'
-          }}
-        >
-          <h3 style={{ 
-            fontSize: '18px', 
-            color: 'var(--primary-navy)', 
-            marginBottom: '20px',
-            fontWeight: 'bold'
-          }}>
-            {title}
-          </h3>
-          
-          <p style={{ 
-            fontSize: '12px', 
-            lineHeight: '1.6', 
-            marginBottom: '30px',
-            color: 'var(--text-dark)'
-          }}>
-            {message}
-          </p>
+// Add with other routes
+app.use('/api/games', gamesRoutes);
+2. Update client/src/App.js
+Add game routes with FIXED paths:
+import Games from './pages/Games';
+import Crossword from './pages/games/Crossword';
 
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={onConfirm}
-              className="retro-btn"
-              style={{ flex: 1 }}
-            >
-              CONFIRM
-            </button>
-            <button
-              onClick={onClose}
-              className="retro-btn secondary"
-              style={{ flex: 1 }}
-            >
-              CANCEL
-            </button>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-};
-
-export default ConfirmModal;
-
-
-import ConfirmModal from '../components/ConfirmModal';
-
-const [confirmModal, setConfirmModal] = useState({
-  isOpen: false,
-  title: '',
-  message: '',
-  onConfirm: null
-});
-
-const handleDeleteUser = (userId) => {
-  setConfirmModal({
-    isOpen: true,
-    title: 'Delete User',
-    message: 'Are you sure you want to delete this user? This action cannot be undone.',
-    onConfirm: () => confirmDeleteUser(userId)
-  });
-};
-
-const confirmDeleteUser = async (userId) => {
-  try {
-    await api.delete(`/admin/users/${userId}`);
-    fetchUsers();
-    setConfirmModal({ ...confirmModal, isOpen: false });
-  } catch (error) {
-    alert('Error deleting user');
+// Add these routes
+<Route
+  path="/games"
+  element={
+    <ProtectedRoute>
+      <Games />
+    </ProtectedRoute>
   }
-};
-
-// In JSX:
-<ConfirmModal
-  isOpen={confirmModal.isOpen}
-  onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-  onConfirm={confirmModal.onConfirm}
-  title={confirmModal.title}
-  message={confirmModal.message}
+/>
+<Route
+  path="/games/crossword/:id"
+  element={
+    <ProtectedRoute>
+      <Crossword />
+    </ProtectedRoute>
+  }
 />
 
-
-OLD:
-const handleDeleteUser = async (userId) => {
-  if (window.confirm('Are you sure you want to delete this user?')) {
-    try {
-      await api.delete(`/admin/users/${userId}`);
-      fetchUsers();
-    } catch (error) {
-      alert('Error deleting user');
-    }
-  }
-};
-
-
-model/game
+model/games
 import mongoose from 'mongoose';
 
 const gameSchema = new mongoose.Schema({
@@ -161,15 +56,12 @@ const gameSchema = new mongoose.Schema({
     default: 200
   },
   timeLimit: {
-    type: Number, // in seconds, 0 means no limit
+    type: Number,
     default: 0
   },
   content: {
     type: mongoose.Schema.Types.Mixed,
     required: true
-    // For crossword: { grid, clues }
-    // For wordle: { words, hints }
-    // For quickquiz: { questions }
   },
   isActive: {
     type: Boolean,
@@ -181,25 +73,15 @@ const gameSchema = new mongoose.Schema({
 
 export default mongoose.model('Game', gameSchema);
 
-
-Backend Files (4):
-
-Game.js → Copy to server/models/Game.js
-games-routes.js → Copy to server/routes/games.js
-seedGames.js → Copy to server/seedGames.js
-seedData.js → Copy to server/seedData.js (15 topics from your JSON)
-
-Frontend Files (5):
-
-Games.js → Copy to client/src/pages/Games.js
-Crossword.js → Copy to client/src/pages/games/Crossword.js
-Wordle.js → Copy to client/src/pages/games/Wordle.js
-QuickQuiz.js → Copy to client/src/pages/games/QuickQuiz.js
-AdminGames.js → Copy to client/src/pages/admin/AdminGames.js
+App.js
+import Games from './pages/Games';
+import Crossword from './pages/games/Crossword';
+import Wordle from './pages/games/Wordle';
+import QuickQuiz from './pages/games/QuickQuiz';
+import AdminGames from './pages/admin/AdminGames';
 
 
-routes/
-
+routes/games
 import express from 'express';
 import Game from '../models/Game.js';
 import User from '../models/User.js';
@@ -207,115 +89,6 @@ import { authenticateToken, isAdmin } from '../middleware/auth.js';
 import { logActivity } from '../utils/activityLogger.js';
 
 const router = express.Router();
-
-// ==================== ADMIN ROUTES ====================
-
-// Get all games (admin)
-router.get('/admin/all', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const games = await Game.find().sort({ createdAt: -1 });
-    res.json(games);
-  } catch (error) {
-    console.error('Error fetching all games:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Create game (admin)
-router.post('/admin/create', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { title, description, gameType, difficulty, maxXP, timeLimit, content } = req.body;
-
-    const game = new Game({
-      title,
-      description,
-      gameType,
-      difficulty,
-      maxXP,
-      timeLimit,
-      content
-    });
-
-    await game.save();
-
-    await logActivity(req.user._id, 'game_created', {
-      gameId: game._id,
-      title: game.title,
-      gameType: game.gameType
-    }, req);
-
-    res.json({
-      message: 'Game created successfully',
-      game
-    });
-  } catch (error) {
-    console.error('Error creating game:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Update game (admin)
-router.put('/admin/:gameId', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { gameId } = req.params;
-    const { title, description, gameType, difficulty, maxXP, timeLimit, content, isActive } = req.body;
-
-    const game = await Game.findByIdAndUpdate(
-      gameId,
-      {
-        title,
-        description,
-        gameType,
-        difficulty,
-        maxXP,
-        timeLimit,
-        content,
-        isActive
-      },
-      { new: true }
-    );
-
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-
-    await logActivity(req.user._id, 'game_updated', {
-      gameId: game._id,
-      title: game.title
-    }, req);
-
-    res.json({
-      message: 'Game updated successfully',
-      game
-    });
-  } catch (error) {
-    console.error('Error updating game:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Delete game (admin)
-router.delete('/admin/:gameId', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { gameId } = req.params;
-
-    const game = await Game.findByIdAndDelete(gameId);
-
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-
-    await logActivity(req.user._id, 'game_deleted', {
-      gameId: game._id,
-      title: game.title
-    }, req);
-
-    res.json({ message: 'Game deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting game:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
 // ==================== USER ROUTES ====================
 
@@ -333,21 +106,26 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Get game by ID (with content)
-router.get('/:gameId', authenticateToken, async (req, res) => {
+// Get single game by ID (with content)
+router.get('/play/:id', authenticateToken, async (req, res) => {
   try {
-    const { gameId } = req.params;
+    const gameId = req.params.id;
+    console.log('Fetching game with ID:', gameId); // Debug log
 
-    const game = await Game.findOne({ _id: gameId, isActive: true });
+    const game = await Game.findById(gameId);
 
     if (!game) {
       return res.status(404).json({ message: 'Game not found' });
     }
 
+    if (!game.isActive) {
+      return res.status(403).json({ message: 'This game is not active' });
+    }
+
     res.json(game);
   } catch (error) {
     console.error('Error fetching game:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -357,7 +135,6 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
     const { gameId, gameType, score, timeSpent } = req.body;
     const userId = req.user._id;
 
-    // Validate score
     if (typeof score !== 'number' || score < 0) {
       return res.status(400).json({ message: 'Invalid score' });
     }
@@ -415,10 +192,638 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
   }
 });
 
+// ==================== ADMIN ROUTES ====================
+
+// Get all games (admin)
+router.get('/admin/all', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const games = await Game.find().sort({ createdAt: -1 });
+    res.json(games);
+  } catch (error) {
+    console.error('Error fetching all games:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create game (admin)
+router.post('/admin/create', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { title, description, gameType, difficulty, maxXP, timeLimit, content } = req.body;
+
+    const game = new Game({
+      title,
+      description,
+      gameType,
+      difficulty,
+      maxXP,
+      timeLimit,
+      content
+    });
+
+    await game.save();
+
+    await logActivity(req.user._id, 'game_created', {
+      gameId: game._id,
+      title: game.title,
+      gameType: game.gameType
+    }, req);
+
+    res.json({
+      message: 'Game created successfully',
+      game
+    });
+  } catch (error) {
+    console.error('Error creating game:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update game (admin)
+router.put('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const gameId = req.params.id;
+    const { title, description, gameType, difficulty, maxXP, timeLimit, content, isActive } = req.body;
+
+    const game = await Game.findByIdAndUpdate(
+      gameId,
+      {
+        title,
+        description,
+        gameType,
+        difficulty,
+        maxXP,
+        timeLimit,
+        content,
+        isActive
+      },
+      { new: true }
+    );
+
+    if (!game) {
+      return res.status(404).json({ message: 'Game not found' });
+    }
+
+    await logActivity(req.user._id, 'game_updated', {
+      gameId: game._id,
+      title: game.title
+    }, req);
+
+    res.json({
+      message: 'Game updated successfully',
+      game
+    });
+  } catch (error) {
+    console.error('Error updating game:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete game (admin)
+router.delete('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const gameId = req.params.id;
+
+    const game = await Game.findByIdAndDelete(gameId);
+
+    if (!game) {
+      return res.status(404).json({ message: 'Game not found' });
+    }
+
+    await logActivity(req.user._id, 'game_deleted', {
+      gameId: game._id,
+      title: game.title
+    }, req);
+
+    res.json({ message: 'Game deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting game:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;
 
-seedGames
 
+pages/games
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../utils/api';
+
+const Games = () => {
+  const navigate = useNavigate();
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchGames();
+  }, []);
+
+  const fetchGames = async () => {
+    try {
+      const response = await api.get('/games');
+      setGames(response.data);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getGameIcon = (gameType) => {
+    switch (gameType) {
+      case 'crossword': return '🧩';
+      case 'wordle': return '🔤';
+      case 'quickquiz': return '⚡';
+      default: return '🎮';
+    }
+  };
+
+  const handlePlayGame = (game) => {
+    // Navigate to game with ID
+    navigate(`/games/${game.gameType}/${game._id}`);
+  };
+
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case 'easy': return 'var(--success-green)';
+      case 'medium': return 'var(--orange-accent)';
+      case 'hard': return 'var(--error-red)';
+      default: return 'var(--text-medium)';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING GAMES...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <motion.h1
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="neon-text"
+        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
+      >
+        🎮 GAMES ARCADE
+      </motion.h1>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ marginBottom: '30px' }}
+      >
+        <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-dark)', textAlign: 'center' }}>
+          Test your IMS knowledge with fun and interactive games! Earn XP while learning.
+        </p>
+      </motion.div>
+
+      {games.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="retro-card"
+          style={{ textAlign: 'center', padding: '60px 20px' }}
+        >
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎮</div>
+          <h2 style={{ fontSize: '18px', color: 'var(--text-medium)', marginBottom: '10px' }}>
+            No Games Available
+          </h2>
+          <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>
+            Check back later for new games!
+          </p>
+        </motion.div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+          {games.map((game, index) => (
+            <motion.div
+              key={game._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.03 }}
+              className="retro-card"
+              style={{ cursor: 'pointer' }}
+              onClick={() => handlePlayGame(game)}
+            >
+              <div style={{ fontSize: '64px', textAlign: 'center', marginBottom: '20px' }}>
+                {getGameIcon(game.gameType)}
+              </div>
+
+              <h3 style={{
+                fontSize: '14px',
+                fontWeight: 'bold',
+                color: 'var(--primary-navy)',
+                marginBottom: '10px',
+                textAlign: 'center',
+                minHeight: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {game.title}
+              </h3>
+
+              <p style={{
+                fontSize: '11px',
+                color: 'var(--text-medium)',
+                marginBottom: '20px',
+                textAlign: 'center',
+                minHeight: '40px'
+              }}>
+                {game.description}
+              </p>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px',
+                marginBottom: '20px'
+              }}>
+                <div style={{
+                  padding: '10px',
+                  background: 'var(--bg-light)',
+                  border: '2px solid var(--border-color)',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
+                    DIFFICULTY
+                  </div>
+                  <div style={{
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: getDifficultyColor(game.difficulty),
+                    textTransform: 'uppercase'
+                  }}>
+                    {game.difficulty}
+                  </div>
+                </div>
+                <div style={{
+                  padding: '10px',
+                  background: 'var(--bg-light)',
+                  border: '2px solid var(--border-color)',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
+                    MAX XP
+                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
+                    {game.maxXP}
+                  </div>
+                </div>
+              </div>
+
+              {game.timeLimit > 0 && (
+                <div style={{
+                  padding: '8px',
+                  background: 'var(--orange-accent)',
+                  color: 'white',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: '15px'
+                }}>
+                  ⏱️ {Math.floor(game.timeLimit / 60)}:{(game.timeLimit % 60).toString().padStart(2, '0')} Time Limit
+                </div>
+              )}
+
+              <button
+                className="retro-btn"
+                style={{ width: '100%', fontSize: '12px' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePlayGame(game);
+                }}
+              >
+                PLAY NOW
+              </button>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Games;
+
+
+crossword.js
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
+
+const Crossword = () => {
+  const navigate = useNavigate();
+  const { id } = useParams(); // Get game ID from URL
+  const [game, setGame] = useState(null);
+  const [grid, setGrid] = useState([]);
+  const [clues, setClues] = useState({ across: [], down: [] });
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [direction, setDirection] = useState('across');
+  const [gameComplete, setGameComplete] = useState(false);
+  const [score, setScore] = useState(0);
+  const [startTime] = useState(Date.now());
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchGame();
+  }, [id]);
+
+  const fetchGame = async () => {
+    try {
+      console.log('Fetching game with ID:', id);
+      const response = await api.get(`/games/play/${id}`);
+      const gameData = response.data;
+      setGame(gameData);
+      initializeGrid(gameData.content);
+    } catch (error) {
+      console.error('Error fetching game:', error);
+      alert('Error loading game. Please try again.');
+      navigate('/games');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initializeGrid = (content) => {
+    const userGrid = content.grid.map(row =>
+      row.map(cell => ({
+        correct: cell,
+        user: cell === null ? null : '',
+        isBlack: cell === null
+      }))
+    );
+    setGrid(userGrid);
+    setClues(content.clues);
+  };
+
+  const handleCellClick = (row, col) => {
+    if (grid[row][col].isBlack) return;
+    
+    if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
+      setDirection(d => d === 'across' ? 'down' : 'across');
+    } else {
+      setSelectedCell({ row, col });
+    }
+  };
+
+  const handleInput = (e, row, col) => {
+    const value = e.target.value.toUpperCase();
+    if (value.length > 1) return;
+
+    const newGrid = [...grid];
+    newGrid[row][col] = { ...newGrid[row][col], user: value };
+    setGrid(newGrid);
+
+    if (value && direction === 'across') {
+      if (col < 9 && !newGrid[row][col + 1]?.isBlack) {
+        setSelectedCell({ row, col: col + 1 });
+      }
+    } else if (value && direction === 'down') {
+      if (row < 9 && !newGrid[row + 1]?.[col]?.isBlack) {
+        setSelectedCell({ row: row + 1, col });
+      }
+    }
+  };
+
+  const handleKeyDown = (e, row, col) => {
+    if (e.key === 'Backspace' && !grid[row][col].user) {
+      if (direction === 'across' && col > 0 && !grid[row][col - 1]?.isBlack) {
+        setSelectedCell({ row, col: col - 1 });
+      } else if (direction === 'down' && row > 0 && !grid[row - 1]?.[col]?.isBlack) {
+        setSelectedCell({ row: row - 1, col });
+      }
+    }
+  };
+
+  const checkAnswers = async () => {
+    let correct = 0;
+    let total = 0;
+
+    grid.forEach((row, r) => {
+      row.forEach((cell, c) => {
+        if (!cell.isBlack) {
+          total++;
+          if (cell.user === cell.correct) {
+            correct++;
+          }
+        }
+      });
+    });
+
+    const percentage = Math.round((correct / total) * 100);
+    const earnedXP = Math.round((percentage / 100) * game.maxXP);
+    setScore(earnedXP);
+
+    if (percentage === 100) {
+      setGameComplete(true);
+      await submitScore(earnedXP);
+    } else {
+      alert(`You got ${correct}/${total} correct (${percentage}%). Keep trying!`);
+    }
+  };
+
+  const submitScore = async (earnedXP) => {
+    try {
+      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+      await api.post('/games/submit-score', {
+        gameId: game._id,
+        gameType: 'crossword',
+        score: earnedXP,
+        timeSpent: timeTaken
+      });
+    } catch (error) {
+      console.error('Error submitting score:', error);
+    }
+  };
+
+  const revealAnswers = () => {
+    const newGrid = grid.map(row =>
+      row.map(cell => ({
+        ...cell,
+        user: cell.correct || ''
+      }))
+    );
+    setGrid(newGrid);
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING GAME...</div>
+      </div>
+    );
+  }
+
+  if (!game) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h2 style={{ color: 'var(--error-red)' }}>Game Not Found</h2>
+          <button onClick={() => navigate('/games')} className="retro-btn">
+            BACK TO GAMES
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
+        ← BACK TO GAMES
+      </button>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+      >
+        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+          🧩 {game.title}
+        </h1>
+        <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '30px' }}>
+          {game.description}
+        </p>
+
+        {!gameComplete ? (
+          <>
+            {/* Grid */}
+            <div style={{ marginBottom: '30px', overflowX: 'auto' }}>
+              <div style={{
+                display: 'inline-grid',
+                gridTemplateColumns: 'repeat(10, 40px)',
+                gap: '2px',
+                padding: '20px',
+                background: 'var(--bg-light)',
+                border: '3px solid var(--primary-navy)'
+              }}>
+                {grid.map((row, r) =>
+                  row.map((cell, c) => (
+                    <div
+                      key={`${r}-${c}`}
+                      onClick={() => handleCellClick(r, c)}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        background: cell.isBlack ? 'var(--primary-navy)' : 'white',
+                        border: cell.isBlack ? 'none' : '2px solid var(--border-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: cell.isBlack ? 'default' : 'pointer',
+                        position: 'relative',
+                        boxShadow: selectedCell?.row === r && selectedCell?.col === c
+                          ? '0 0 0 3px var(--bright-blue)'
+                          : 'none'
+                      }}
+                    >
+                      {!cell.isBlack && (
+                        <input
+                          ref={el => {
+                            if (selectedCell?.row === r && selectedCell?.col === c) {
+                              el?.focus();
+                            }
+                          }}
+                          type="text"
+                          maxLength="1"
+                          value={cell.user}
+                          onChange={(e) => handleInput(e, r, c)}
+                          onKeyDown={(e) => handleKeyDown(e, r, c)}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            border: 'none',
+                            background: 'transparent',
+                            textAlign: 'center',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            color: 'var(--primary-navy)',
+                            textTransform: 'uppercase',
+                            outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        />
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Clues */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
+              <div>
+                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
+                  ACROSS
+                </h3>
+                {clues.across.map((clue, idx) => (
+                  <div key={idx} style={{ fontSize: '11px', marginBottom: '10px', lineHeight: '1.6' }}>
+                    <strong>{clue.number}.</strong> {clue.clue}
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
+                  DOWN
+                </h3>
+                {clues.down.map((clue, idx) => (
+                  <div key={idx} style={{ fontSize: '11px', marginBottom: '10px', lineHeight: '1.6' }}>
+                    <strong>{clue.number}.</strong> {clue.clue}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button onClick={checkAnswers} className="retro-btn">
+                ✓ CHECK ANSWERS
+              </button>
+              <button onClick={revealAnswers} className="retro-btn secondary">
+                💡 REVEAL ANSWERS
+              </button>
+              <button onClick={() => fetchGame()} className="retro-btn secondary">
+                🔄 RESET
+              </button>
+            </div>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
+            <h2 style={{ fontSize: '24px', color: 'var(--success-green)', marginBottom: '20px' }}>
+              PERFECT!
+            </h2>
+            <div style={{ fontSize: '14px', marginBottom: '30px' }}>
+              You earned <strong style={{ color: 'var(--bright-blue)' }}>{score} XP</strong>!
+            </div>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button onClick={() => navigate('/games')} className="retro-btn">
+                BACK TO GAMES
+              </button>
+              <button onClick={() => window.location.reload()} className="retro-btn secondary">
+                PLAY AGAIN
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
+export default Crossword;
+
+
+seedGames
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Game from './models/Game.js';
@@ -744,1648 +1149,53 @@ const seedGames = async () => {
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Seed error:', error);
     process.exit(1);
   }
 };
 
 seedGames();
 
-src/pages/
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../utils/api';
 
-const Games = () => {
-  const navigate = useNavigate();
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchGames();
-  }, []);
-
-  const fetchGames = async () => {
-    try {
-      const response = await api.get('/games');
-      setGames(response.data);
-    } catch (error) {
-      console.error('Error fetching games:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getGameIcon = (gameType) => {
-    switch (gameType) {
-      case 'crossword': return '🧩';
-      case 'wordle': return '🔤';
-      case 'quickquiz': return '⚡';
-      default: return '🎮';
-    }
-  };
-
-  const getGameRoute = (game) => {
-    switch (game.gameType) {
-      case 'crossword': return `/games/crossword/${game._id}`;
-      case 'wordle': return `/games/wordle/${game._id}`;
-      case 'quickquiz': return `/games/quickquiz/${game._id}`;
-      default: return '/games';
-    }
-  };
-
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'easy': return 'var(--success-green)';
-      case 'medium': return 'var(--orange-accent)';
-      case 'hard': return 'var(--error-red)';
-      default: return 'var(--text-medium)';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAMES...</div>
-      </div>
-    );
+{/* Games Routes */}
+<Route
+  path="/games"
+  element={
+    <ProtectedRoute>
+      <Games />
+    </ProtectedRoute>
   }
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <div className="scanlines"></div>
-
-      <motion.h1
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="neon-text"
-        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
-      >
-        🎮 GAMES ARCADE
-      </motion.h1>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ marginBottom: '30px' }}
-      >
-        <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-dark)', textAlign: 'center' }}>
-          Test your IMS knowledge with fun and interactive games! Earn XP while learning.
-        </p>
-      </motion.div>
-
-      {games.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="retro-card"
-          style={{ textAlign: 'center', padding: '60px 20px' }}
-        >
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎮</div>
-          <h2 style={{ fontSize: '18px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-            No Games Available
-          </h2>
-          <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>
-            Check back later for new games!
-          </p>
-        </motion.div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-          {games.map((game, index) => (
-            <motion.div
-              key={game._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.03 }}
-              className="retro-card"
-              style={{
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-              onClick={() => navigate(getGameRoute(game))}
-            >
-              {/* Game Icon */}
-              <div style={{
-                fontSize: '64px',
-                textAlign: 'center',
-                marginBottom: '20px'
-              }}>
-                {getGameIcon(game.gameType)}
-              </div>
-
-              {/* Title */}
-              <h3 style={{
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: 'var(--primary-navy)',
-                marginBottom: '10px',
-                textAlign: 'center',
-                minHeight: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                {game.title}
-              </h3>
-
-              {/* Description */}
-              <p style={{
-                fontSize: '11px',
-                color: 'var(--text-medium)',
-                marginBottom: '20px',
-                textAlign: 'center',
-                minHeight: '40px'
-              }}>
-                {game.description}
-              </p>
-
-              {/* Stats */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '10px',
-                marginBottom: '20px'
-              }}>
-                <div style={{
-                  padding: '10px',
-                  background: 'var(--bg-light)',
-                  border: '2px solid var(--border-color)',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                    DIFFICULTY
-                  </div>
-                  <div style={{
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    color: getDifficultyColor(game.difficulty),
-                    textTransform: 'uppercase'
-                  }}>
-                    {game.difficulty}
-                  </div>
-                </div>
-                <div style={{
-                  padding: '10px',
-                  background: 'var(--bg-light)',
-                  border: '2px solid var(--border-color)',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                    MAX XP
-                  </div>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
-                    {game.maxXP}
-                  </div>
-                </div>
-              </div>
-
-              {/* Time Limit */}
-              {game.timeLimit > 0 && (
-                <div style={{
-                  padding: '8px',
-                  background: 'var(--orange-accent)',
-                  color: 'white',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  marginBottom: '15px'
-                }}>
-                  ⏱️ {Math.floor(game.timeLimit / 60)}:{(game.timeLimit % 60).toString().padStart(2, '0')} Time Limit
-                </div>
-              )}
-
-              {/* Play Button */}
-              <button
-                className="retro-btn"
-                style={{ width: '100%', fontSize: '12px' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(getGameRoute(game));
-                }}
-              >
-                PLAY NOW
-              </button>
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Games;
-
-
-crossword
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-
-const Crossword = () => {
-  const navigate = useNavigate();
-  const { gameId } = useParams();
-  const [game, setGame] = useState(null);
-  const [grid, setGrid] = useState([]);
-  const [clues, setClues] = useState({ across: [], down: [] });
-  const [selectedCell, setSelectedCell] = useState(null);
-  const [direction, setDirection] = useState('across');
-  const [gameComplete, setGameComplete] = useState(false);
-  const [score, setScore] = useState(0);
-  const [startTime] = useState(Date.now());
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchGame();
-  }, [gameId]);
-
-  const fetchGame = async () => {
-    try {
-      const response = await api.get(`/games/${gameId}`);
-      const gameData = response.data;
-      setGame(gameData);
-      initializeGrid(gameData.content);
-    } catch (error) {
-      console.error('Error fetching game:', error);
-      alert('Error loading game');
-      navigate('/games');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const initializeGrid = (content) => {
-    const userGrid = content.grid.map(row =>
-      row.map(cell => ({
-        correct: cell,
-        user: cell === null ? null : '',
-        isBlack: cell === null
-      }))
-    );
-    setGrid(userGrid);
-    setClues(content.clues);
-  };
-
-  const handleCellClick = (row, col) => {
-    if (grid[row][col].isBlack) return;
-    
-    if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
-      setDirection(d => d === 'across' ? 'down' : 'across');
-    } else {
-      setSelectedCell({ row, col });
-    }
-  };
-
-  const handleInput = (e, row, col) => {
-    const value = e.target.value.toUpperCase();
-    if (value.length > 1) return;
-
-    const newGrid = [...grid];
-    newGrid[row][col] = { ...newGrid[row][col], user: value };
-    setGrid(newGrid);
-
-    if (value && direction === 'across') {
-      if (col < 9 && !newGrid[row][col + 1]?.isBlack) {
-        setSelectedCell({ row, col: col + 1 });
-      }
-    } else if (value && direction === 'down') {
-      if (row < 9 && !newGrid[row + 1]?.[col]?.isBlack) {
-        setSelectedCell({ row: row + 1, col });
-      }
-    }
-  };
-
-  const handleKeyDown = (e, row, col) => {
-    if (e.key === 'Backspace' && !grid[row][col].user) {
-      if (direction === 'across' && col > 0) {
-        setSelectedCell({ row, col: col - 1 });
-      } else if (direction === 'down' && row > 0) {
-        setSelectedCell({ row: row - 1, col });
-      }
-    }
-  };
-
-  const checkAnswers = async () => {
-    let correct = 0;
-    let total = 0;
-
-    grid.forEach((row, r) => {
-      row.forEach((cell, c) => {
-        if (!cell.isBlack) {
-          total++;
-          if (cell.user === cell.correct) {
-            correct++;
-          }
-        }
-      });
-    });
-
-    const percentage = Math.round((correct / total) * 100);
-    const earnedXP = Math.round((percentage / 100) * game.maxXP);
-    setScore(earnedXP);
-
-    if (percentage === 100) {
-      setGameComplete(true);
-      await submitScore(earnedXP);
-    } else {
-      alert(`You got ${correct}/${total} correct (${percentage}%). Keep trying!`);
-    }
-  };
-
-  const submitScore = async (earnedXP) => {
-    try {
-      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-      await api.post('/games/submit-score', {
-        gameId: game._id,
-        gameType: 'crossword',
-        score: earnedXP,
-        timeSpent: timeTaken
-      });
-    } catch (error) {
-      console.error('Error submitting score:', error);
-    }
-  };
-
-  const revealAnswers = () => {
-    const newGrid = grid.map(row =>
-      row.map(cell => ({
-        ...cell,
-        user: cell.correct || ''
-      }))
-    );
-    setGrid(newGrid);
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAME...</div>
-      </div>
-    );
+/>
+<Route
+  path="/games/crossword/:id"
+  element={
+    <ProtectedRoute>
+      <Crossword />
+    </ProtectedRoute>
   }
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        ← BACK TO GAMES
-      </button>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-      >
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
-          🧩 {game?.title || 'CROSSWORD'}
-        </h1>
-        <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '30px' }}>
-          {game?.description}
-        </p>
-
-        {!gameComplete ? (
-          <>
-            {/* Grid */}
-            <div style={{ marginBottom: '30px', overflowX: 'auto' }}>
-              <div style={{
-                display: 'inline-grid',
-                gridTemplateColumns: 'repeat(10, 40px)',
-                gap: '2px',
-                padding: '20px',
-                background: 'var(--bg-light)',
-                border: '3px solid var(--primary-navy)'
-              }}>
-                {grid.map((row, r) =>
-                  row.map((cell, c) => (
-                    <div
-                      key={`${r}-${c}`}
-                      onClick={() => handleCellClick(r, c)}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        background: cell.isBlack ? 'var(--primary-navy)' : 'white',
-                        border: cell.isBlack ? 'none' : '2px solid var(--border-color)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: cell.isBlack ? 'default' : 'pointer',
-                        position: 'relative',
-                        boxShadow: selectedCell?.row === r && selectedCell?.col === c
-                          ? '0 0 0 3px var(--bright-blue)'
-                          : 'none'
-                      }}
-                    >
-                      {!cell.isBlack && (
-                        <input
-                          ref={el => {
-                            if (selectedCell?.row === r && selectedCell?.col === c) {
-                              el?.focus();
-                            }
-                          }}
-                          type="text"
-                          maxLength="1"
-                          value={cell.user}
-                          onChange={(e) => handleInput(e, r, c)}
-                          onKeyDown={(e) => handleKeyDown(e, r, c)}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            border: 'none',
-                            background: 'transparent',
-                            textAlign: 'center',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            color: 'var(--primary-navy)',
-                            textTransform: 'uppercase',
-                            outline: 'none',
-                            cursor: 'pointer'
-                          }}
-                        />
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Clues */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
-              {/* Across */}
-              <div>
-                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
-                  ACROSS
-                </h3>
-                {clues.across.map((clue, idx) => (
-                  <div key={idx} style={{ fontSize: '11px', marginBottom: '10px', lineHeight: '1.6' }}>
-                    <strong>{clue.number}.</strong> {clue.clue}
-                  </div>
-                ))}
-              </div>
-
-              {/* Down */}
-              <div>
-                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
-                  DOWN
-                </h3>
-                {clues.down.map((clue, idx) => (
-                  <div key={idx} style={{ fontSize: '11px', marginBottom: '10px', lineHeight: '1.6' }}>
-                    <strong>{clue.number}.</strong> {clue.clue}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Controls */}
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button onClick={checkAnswers} className="retro-btn">
-                ✓ CHECK ANSWERS
-              </button>
-              <button onClick={revealAnswers} className="retro-btn secondary">
-                💡 REVEAL ANSWERS
-              </button>
-              <button onClick={() => fetchGame()} className="retro-btn secondary">
-                🔄 RESET
-              </button>
-            </div>
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
-            <h2 style={{ fontSize: '24px', color: 'var(--success-green)', marginBottom: '20px' }}>
-              PERFECT!
-            </h2>
-            <div style={{ fontSize: '14px', marginBottom: '30px' }}>
-              You earned <strong style={{ color: 'var(--bright-blue)' }}>{score} XP</strong>!
-            </div>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => navigate('/games')} className="retro-btn">
-                BACK TO GAMES
-              </button>
-              <button onClick={() => window.location.reload()} className="retro-btn secondary">
-                PLAY AGAIN
-              </button>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-};
-
-export default Crossword;
-
-
-wordle
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-
-const Wordle = () => {
-  const navigate = useNavigate();
-  const { gameId } = useParams();
-  const [game, setGame] = useState(null);
-  const [targetWord, setTargetWord] = useState('');
-  const [hint, setHint] = useState('');
-  const [guesses, setGuesses] = useState([]);
-  const [currentGuess, setCurrentGuess] = useState('');
-  const [gameOver, setGameOver] = useState(false);
-  const [won, setWon] = useState(false);
-  const [maxAttempts] = useState(6);
-  const [loading, setLoading] = useState(true);
-  const [startTime] = useState(Date.now());
-
-  useEffect(() => {
-    fetchGame();
-  }, [gameId]);
-
-  const fetchGame = async () => {
-    try {
-      const response = await api.get(`/games/${gameId}`);
-      const gameData = response.data;
-      setGame(gameData);
-      
-      // Pick random word from the list
-      const words = gameData.content.words;
-      const randomWord = words[Math.floor(Math.random() * words.length)];
-      setTargetWord(randomWord.word.toUpperCase());
-      setHint(randomWord.hint);
-      setGuesses([]);
-      setCurrentGuess('');
-      setGameOver(false);
-      setWon(false);
-    } catch (error) {
-      console.error('Error fetching game:', error);
-      alert('Error loading game');
-      navigate('/games');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeyPress = (letter) => {
-    if (gameOver) return;
-    
-    if (letter === 'BACKSPACE') {
-      setCurrentGuess(prev => prev.slice(0, -1));
-    } else if (letter === 'ENTER') {
-      submitGuess();
-    } else if (currentGuess.length < targetWord.length) {
-      setCurrentGuess(prev => prev + letter);
-    }
-  };
-
-  const submitGuess = async () => {
-    if (currentGuess.length !== targetWord.length) {
-      alert(`Word must be ${targetWord.length} letters`);
-      return;
-    }
-
-    const newGuesses = [...guesses, currentGuess];
-    setGuesses(newGuesses);
-    setCurrentGuess('');
-
-    if (currentGuess === targetWord) {
-      setWon(true);
-      setGameOver(true);
-      await submitScore(true, newGuesses.length);
-    } else if (newGuesses.length >= maxAttempts) {
-      setGameOver(true);
-      await submitScore(false, newGuesses.length);
-    }
-  };
-
-  const submitScore = async (won, attempts) => {
-    try {
-      let score = 0;
-      if (won) {
-        // More XP for fewer attempts
-        const baseXP = game.maxXP || 150;
-        score = Math.round(baseXP * (1 - (attempts - 1) / maxAttempts));
-      }
-
-      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-      await api.post('/games/submit-score', {
-        gameId: game._id,
-        gameType: 'wordle',
-        score,
-        timeSpent: timeTaken
-      });
-    } catch (error) {
-      console.error('Error submitting score:', error);
-    }
-  };
-
-  const getLetterColor = (letter, index, guess) => {
-    if (guess[index] === targetWord[index]) {
-      return 'var(--success-green)'; // Correct position
-    } else if (targetWord.includes(letter)) {
-      return 'var(--orange-accent)'; // Wrong position
-    } else {
-      return 'var(--text-medium)'; // Not in word
-    }
-  };
-
-  const renderGuess = (guess, isActive = false) => {
-    const letters = guess.split('');
-    const emptySlots = targetWord.length - letters.length;
-
-    return (
-      <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '10px' }}>
-        {letters.map((letter, idx) => (
-          <div
-            key={idx}
-            style={{
-              width: '50px',
-              height: '50px',
-              border: '3px solid var(--primary-navy)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: 'white',
-              background: isActive ? 'var(--bright-blue)' : getLetterColor(letter, idx, guess)
-            }}
-          >
-            {letter}
-          </div>
-        ))}
-        {isActive && Array(emptySlots).fill(0).map((_, idx) => (
-          <div
-            key={`empty-${idx}`}
-            style={{
-              width: '50px',
-              height: '50px',
-              border: '3px solid var(--border-color)',
-              background: 'white'
-            }}
-          />
-        ))}
-      </div>
-    );
-  };
-
-  const renderKeyboard = () => {
-    const rows = [
-      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-      ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE']
-    ];
-
-    return (
-      <div style={{ marginTop: '30px' }}>
-        {rows.map((row, rowIdx) => (
-          <div key={rowIdx} style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '5px' }}>
-            {row.map(key => (
-              <button
-                key={key}
-                onClick={() => handleKeyPress(key)}
-                className="retro-btn secondary"
-                style={{
-                  padding: key.length > 1 ? '10px 8px' : '10px 15px',
-                  fontSize: '10px',
-                  minWidth: key.length > 1 ? '80px' : '40px'
-                }}
-              >
-                {key === 'BACKSPACE' ? '⌫' : key}
-              </button>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAME...</div>
-      </div>
-    );
+/>
+<Route
+  path="/games/wordle/:id"
+  element={
+    <ProtectedRoute>
+      <Wordle />
+    </ProtectedRoute>
   }
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        ← BACK TO GAMES
-      </button>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ maxWidth: '600px', margin: '0 auto' }}
-      >
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px', textAlign: 'center' }}>
-          🔤 {game?.title || 'WORDLE'}
-        </h1>
-        <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '20px', textAlign: 'center' }}>
-          {game?.description}
-        </p>
-
-        {!gameOver ? (
-          <>
-            {/* Hint */}
-            <div style={{
-              padding: '15px',
-              background: 'var(--bg-light)',
-              border: '2px solid var(--border-color)',
-              marginBottom: '30px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                HINT
-              </div>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)' }}>
-                {hint}
-              </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginTop: '5px' }}>
-                ({targetWord.length} letters)
-              </div>
-            </div>
-
-            {/* Previous Guesses */}
-            {guesses.map((guess, idx) => (
-              <div key={idx}>{renderGuess(guess)}</div>
-            ))}
-
-            {/* Current Guess */}
-            {!gameOver && guesses.length < maxAttempts && renderGuess(currentGuess, true)}
-
-            {/* Empty Rows */}
-            {Array(maxAttempts - guesses.length - (gameOver ? 0 : 1)).fill(0).map((_, idx) => (
-              <div key={`empty-row-${idx}`} style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '10px' }}>
-                {Array(targetWord.length).fill(0).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      border: '2px solid var(--border-color)',
-                      background: 'white'
-                    }}
-                  />
-                ))}
-              </div>
-            ))}
-
-            {/* Attempts Counter */}
-            <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '11px', color: 'var(--text-medium)' }}>
-              Attempts: {guesses.length} / {maxAttempts}
-            </div>
-
-            {/* Keyboard */}
-            {renderKeyboard()}
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>
-              {won ? '🎉' : '😢'}
-            </div>
-            <h2 style={{ fontSize: '24px', color: won ? 'var(--success-green)' : 'var(--error-red)', marginBottom: '20px' }}>
-              {won ? 'YOU WON!' : 'GAME OVER'}
-            </h2>
-            <div style={{ fontSize: '14px', marginBottom: '10px' }}>
-              The word was: <strong style={{ color: 'var(--primary-navy)' }}>{targetWord}</strong>
-            </div>
-            {won && (
-              <div style={{ fontSize: '12px', marginBottom: '30px', color: 'var(--text-medium)' }}>
-                Solved in {guesses.length} {guesses.length === 1 ? 'attempt' : 'attempts'}!
-              </div>
-            )}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => navigate('/games')} className="retro-btn">
-                BACK TO GAMES
-              </button>
-              <button onClick={() => window.location.reload()} className="retro-btn secondary">
-                PLAY AGAIN
-              </button>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-};
-
-export default Wordle;
-
-AdminGames
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-import ConfirmModal from '../../components/ConfirmModal';
-
-const AdminGames = () => {
-  const navigate = useNavigate();
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingGame, setEditingGame] = useState(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    gameType: 'crossword',
-    difficulty: 'medium',
-    maxXP: 200,
-    timeLimit: 0,
-    content: {}
-  });
-  const [confirmModal, setConfirmModal] = useState({
-    isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: null
-  });
-
-  useEffect(() => {
-    fetchGames();
-  }, []);
-
-  const fetchGames = async () => {
-    try {
-      const response = await api.get('/games/admin/all');
-      setGames(response.data);
-    } catch (error) {
-      console.error('Error fetching games:', error);
-      alert('Error loading games');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreate = () => {
-    setEditingGame(null);
-    setFormData({
-      title: '',
-      description: '',
-      gameType: 'crossword',
-      difficulty: 'medium',
-      maxXP: 200,
-      timeLimit: 0,
-      content: {}
-    });
-    setShowModal(true);
-  };
-
-  const handleEdit = (game) => {
-    setEditingGame(game);
-    setFormData({
-      title: game.title,
-      description: game.description,
-      gameType: game.gameType,
-      difficulty: game.difficulty,
-      maxXP: game.maxXP,
-      timeLimit: game.timeLimit,
-      content: game.content,
-      isActive: game.isActive
-    });
-    setShowModal(true);
-  };
-
-  const handleDelete = (game) => {
-    setConfirmModal({
-      isOpen: true,
-      title: 'Delete Game',
-      message: `Are you sure you want to delete "${game.title}"? This action cannot be undone.`,
-      onConfirm: () => confirmDelete(game._id)
-    });
-  };
-
-  const confirmDelete = async (gameId) => {
-    try {
-      await api.delete(`/games/admin/${gameId}`);
-      setConfirmModal({ ...confirmModal, isOpen: false });
-      fetchGames();
-      alert('Game deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting game:', error);
-      alert('Error deleting game');
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      if (editingGame) {
-        await api.put(`/games/admin/${editingGame._id}`, formData);
-        alert('Game updated successfully!');
-      } else {
-        await api.post('/games/admin/create', formData);
-        alert('Game created successfully!');
-      }
-      setShowModal(false);
-      fetchGames();
-    } catch (error) {
-      console.error('Error saving game:', error);
-      alert('Error saving game');
-    }
-  };
-
-  const renderContentEditor = () => {
-    const contentStr = JSON.stringify(formData.content, null, 2);
-    
-    return (
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-          Game Content (JSON)
-        </label>
-        <textarea
-          value={contentStr}
-          onChange={(e) => {
-            try {
-              const parsed = JSON.parse(e.target.value);
-              setFormData({ ...formData, content: parsed });
-            } catch (err) {
-              // Allow invalid JSON while typing
-              setFormData({ ...formData, content: e.target.value });
-            }
-          }}
-          style={{
-            width: '100%',
-            minHeight: '300px',
-            padding: '10px',
-            fontSize: '11px',
-            fontFamily: 'monospace',
-            border: '2px solid var(--border-color)',
-            background: 'var(--bg-light)'
-          }}
-          placeholder={getContentTemplate(formData.gameType)}
-        />
-        <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginTop: '5px' }}>
-          {getContentHelp(formData.gameType)}
-        </div>
-      </div>
-    );
-  };
-
-  const getContentTemplate = (gameType) => {
-    switch (gameType) {
-      case 'crossword':
-        return JSON.stringify({
-          grid: [
-            ['Q', 'U', 'A', 'L', 'I', 'T', 'Y', null, null, null]
-          ],
-          clues: {
-            across: [{ number: 1, row: 0, col: 0, answer: 'QUALITY', clue: 'ISO 9001 focus (7)' }],
-            down: []
-          }
-        }, null, 2);
-      case 'wordle':
-        return JSON.stringify({
-          words: [
-            { word: 'AUDIT', hint: 'Systematic examination' },
-            { word: 'RISKS', hint: 'Uncertainties' }
-          ]
-        }, null, 2);
-      case 'quickquiz':
-        return JSON.stringify({
-          questions: [
-            {
-              question: 'What does IMS stand for?',
-              options: ['Integrated Management System', 'Other', 'Other', 'Other'],
-              correctAnswer: 0,
-              points: 10
-            }
-          ]
-        }, null, 2);
-      default:
-        return '{}';
-    }
-  };
-
-  const getContentHelp = (gameType) => {
-    switch (gameType) {
-      case 'crossword':
-        return 'Grid: 10x10 array, use null for black cells. Clues: across/down arrays with number, row, col, answer, clue';
-      case 'wordle':
-        return 'Words: array of {word, hint}. Words can be 4-6 letters.';
-      case 'quickquiz':
-        return 'Questions: array of {question, options (4 items), correctAnswer (0-3 index), points}';
-      default:
-        return '';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING...</div>
-      </div>
-    );
+/>
+<Route
+  path="/games/quickquiz/:id"
+  element={
+    <ProtectedRoute>
+      <QuickQuiz />
+    </ProtectedRoute>
   }
+/>
 
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)' }}>
-          🎮 MANAGE GAMES
-        </h1>
-        <button onClick={handleCreate} className="retro-btn">
-          + CREATE GAME
-        </button>
-      </div>
-
-      {/* Games Table */}
-      <div className="retro-card" style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', fontSize: '11px' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-              <th style={{ padding: '15px', textAlign: 'left' }}>Title</th>
-              <th style={{ padding: '15px', textAlign: 'left' }}>Type</th>
-              <th style={{ padding: '15px', textAlign: 'left' }}>Difficulty</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Max XP</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Time Limit</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Status</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {games.map(game => (
-              <tr key={game._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td style={{ padding: '15px' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{game.title}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>{game.description}</div>
-                </td>
-                <td style={{ padding: '15px', textTransform: 'capitalize' }}>{game.gameType}</td>
-                <td style={{ padding: '15px', textTransform: 'capitalize' }}>{game.difficulty}</td>
-                <td style={{ padding: '15px', textAlign: 'center', color: 'var(--bright-blue)', fontWeight: 'bold' }}>
-                  {game.maxXP}
-                </td>
-                <td style={{ padding: '15px', textAlign: 'center' }}>
-                  {game.timeLimit > 0 ? `${Math.floor(game.timeLimit / 60)}:${(game.timeLimit % 60).toString().padStart(2, '0')}` : 'None'}
-                </td>
-                <td style={{ padding: '15px', textAlign: 'center' }}>
-                  <span style={{
-                    padding: '5px 10px',
-                    background: game.isActive ? 'var(--success-green)' : 'var(--text-medium)',
-                    color: 'white',
-                    fontSize: '9px',
-                    fontWeight: 'bold',
-                    borderRadius: '3px'
-                  }}>
-                    {game.isActive ? 'ACTIVE' : 'INACTIVE'}
-                  </span>
-                </td>
-                <td style={{ padding: '15px', textAlign: 'center' }}>
-                  <button
-                    onClick={() => handleEdit(game)}
-                    className="retro-btn secondary"
-                    style={{ fontSize: '10px', padding: '8px 12px', marginRight: '5px' }}
-                  >
-                    EDIT
-                  </button>
-                  <button
-                    onClick={() => handleDelete(game)}
-                    className="retro-btn secondary"
-                    style={{ fontSize: '10px', padding: '8px 12px' }}
-                  >
-                    DELETE
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {games.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-medium)' }}>
-            No games found. Create your first game!
-          </div>
-        )}
-      </div>
-
-      {/* Create/Edit Modal */}
-      {showModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.7)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="retro-card"
-            style={{
-              maxWidth: '800px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              margin: '20px'
-            }}
-          >
-            <h2 style={{ fontSize: '18px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-              {editingGame ? 'EDIT GAME' : 'CREATE GAME'}
-            </h2>
-
-            <form onSubmit={handleSubmit}>
-              {/* Title */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    fontSize: '12px',
-                    border: '2px solid var(--border-color)'
-                  }}
-                />
-              </div>
-
-              {/* Description */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                  Description *
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  required
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    fontSize: '12px',
-                    border: '2px solid var(--border-color)'
-                  }}
-                />
-              </div>
-
-              {/* Game Type */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                  Game Type *
-                </label>
-                <select
-                  value={formData.gameType}
-                  onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    fontSize: '12px',
-                    border: '2px solid var(--border-color)'
-                  }}
-                >
-                  <option value="crossword">Crossword</option>
-                  <option value="wordle">Wordle</option>
-                  <option value="quickquiz">Quick Quiz</option>
-                </select>
-              </div>
-
-              {/* Difficulty, Max XP, Time Limit */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Difficulty
-                  </label>
-                  <select
-                    value={formData.difficulty}
-                    onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      fontSize: '12px',
-                      border: '2px solid var(--border-color)'
-                    }}
-                  >
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Max XP
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.maxXP}
-                    onChange={(e) => setFormData({ ...formData, maxXP: parseInt(e.target.value) })}
-                    min="0"
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      fontSize: '12px',
-                      border: '2px solid var(--border-color)'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Time Limit (sec)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.timeLimit}
-                    onChange={(e) => setFormData({ ...formData, timeLimit: parseInt(e.target.value) })}
-                    min="0"
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      fontSize: '12px',
-                      border: '2px solid var(--border-color)'
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Active Status (only for edit) */}
-              {editingGame && (
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 'bold' }}>
-                    <input
-                      type="checkbox"
-                      checked={formData.isActive}
-                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                      style={{ marginRight: '10px' }}
-                    />
-                    Active
-                  </label>
-                </div>
-              )}
-
-              {/* Content Editor */}
-              {renderContentEditor()}
-
-              {/* Buttons */}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="submit" className="retro-btn" style={{ flex: 1 }}>
-                  {editingGame ? 'UPDATE GAME' : 'CREATE GAME'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="retro-btn secondary"
-                  style={{ flex: 1 }}
-                >
-                  CANCEL
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Confirm Modal */}
-      <ConfirmModal
-        isOpen={confirmModal.isOpen}
-        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-        onConfirm={confirmModal.onConfirm}
-        title={confirmModal.title}
-        message={confirmModal.message}
-      />
-    </div>
-  );
-};
-
-export default AdminGames;
-
-quickquiz
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-
-const QuickQuiz = () => {
-  const navigate = useNavigate();
-  const { gameId } = useParams();
-  const [game, setGame] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [score, setScore] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [startTime, setStartTime] = useState(null);
-
-  useEffect(() => {
-    fetchGame();
-  }, [gameId]);
-
-  useEffect(() => {
-    if (gameStarted && timeLeft > 0 && !gameOver) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (gameStarted && timeLeft === 0 && !gameOver) {
-      endGame();
-    }
-  }, [timeLeft, gameStarted, gameOver]);
-
-  const fetchGame = async () => {
-    try {
-      const response = await api.get(`/games/${gameId}`);
-      const gameData = response.data;
-      setGame(gameData);
-      setQuestions(gameData.content.questions);
-      setTimeLeft(gameData.timeLimit || 120);
-    } catch (error) {
-      console.error('Error fetching game:', error);
-      alert('Error loading game');
-      navigate('/games');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const startGame = () => {
-    setGameStarted(true);
-    setStartTime(Date.now());
-    setCurrentQuestionIndex(0);
-    setAnswers([]);
-    setScore(0);
-    setGameOver(false);
-    setSelectedAnswer(null);
-  };
-
-  const handleAnswerSelect = (answerIndex) => {
-    if (gameOver) return;
-    setSelectedAnswer(answerIndex);
-  };
-
-  const handleNextQuestion = () => {
-    const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
-    
-    const newAnswers = [...answers, {
-      questionIndex: currentQuestionIndex,
-      selectedAnswer,
-      correct: isCorrect,
-      points: isCorrect ? (currentQuestion.points || 10) : 0
-    }];
-    
-    setAnswers(newAnswers);
-
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(null);
-    } else {
-      endGame(newAnswers);
-    }
-  };
-
-  const endGame = async (finalAnswers = answers) => {
-    setGameOver(true);
-    
-    const totalScore = finalAnswers.reduce((sum, answer) => sum + answer.points, 0);
-    const maxScore = questions.reduce((sum, q) => sum + (q.points || 10), 0);
-    const cappedScore = Math.min(totalScore, game.maxXP);
-    
-    setScore(cappedScore);
-
-    try {
-      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-      await api.post('/games/submit-score', {
-        gameId: game._id,
-        gameType: 'quickquiz',
-        score: cappedScore,
-        timeSpent: timeTaken
-      });
-    } catch (error) {
-      console.error('Error submitting score:', error);
-    }
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAME...</div>
-      </div>
-    );
+{/* Admin Games Route */}
+<Route
+  path="/admin/games"
+  element={
+    <ProtectedRoute adminOnly>
+      <AdminGames />
+    </ProtectedRoute>
   }
-
-  const currentQuestion = questions[currentQuestionIndex];
-  const correctAnswers = answers.filter(a => a.correct).length;
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        ← BACK TO GAMES
-      </button>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ maxWidth: '700px', margin: '0 auto' }}
-      >
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
-          ⚡ {game?.title || 'QUICK QUIZ'}
-        </h1>
-        <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '30px' }}>
-          {game?.description}
-        </p>
-
-        {!gameStarted ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏱️</div>
-            <h2 style={{ fontSize: '20px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-              READY TO START?
-            </h2>
-            <div style={{ fontSize: '12px', marginBottom: '30px', lineHeight: '1.8' }}>
-              <p>• {questions.length} questions</p>
-              <p>• {formatTime(game.timeLimit || 120)} time limit</p>
-              <p>• {game.maxXP} XP maximum</p>
-            </div>
-            <button onClick={startGame} className="retro-btn" style={{ fontSize: '14px', padding: '15px 30px' }}>
-              START QUIZ
-            </button>
-          </div>
-        ) : !gameOver ? (
-          <>
-            {/* Timer and Progress */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-              <div style={{
-                padding: '10px 20px',
-                background: timeLeft <= 10 ? 'var(--error-red)' : 'var(--bright-blue)',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '16px',
-                borderRadius: '3px'
-              }}>
-                ⏱️ {formatTime(timeLeft)}
-              </div>
-              <div style={{
-                padding: '10px 20px',
-                background: 'var(--primary-navy)',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '16px',
-                borderRadius: '3px'
-              }}>
-                {currentQuestionIndex + 1} / {questions.length}
-              </div>
-            </div>
-
-            {/* Question */}
-            <div style={{
-              padding: '30px',
-              background: 'var(--bg-light)',
-              border: '3px solid var(--primary-navy)',
-              marginBottom: '30px'
-            }}>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-                {currentQuestion.question}
-              </div>
-
-              <div style={{ display: 'grid', gap: '10px' }}>
-                {currentQuestion.options.map((option, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleAnswerSelect(idx)}
-                    className={selectedAnswer === idx ? 'retro-btn' : 'retro-btn secondary'}
-                    style={{
-                      textAlign: 'left',
-                      padding: '15px',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {String.fromCharCode(65 + idx)}. {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Next Button */}
-            <button
-              onClick={handleNextQuestion}
-              disabled={selectedAnswer === null}
-              className="retro-btn"
-              style={{
-                width: '100%',
-                fontSize: '14px',
-                opacity: selectedAnswer === null ? 0.5 : 1,
-                cursor: selectedAnswer === null ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {currentQuestionIndex < questions.length - 1 ? 'NEXT QUESTION →' : 'FINISH QUIZ'}
-            </button>
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>
-              {correctAnswers === questions.length ? '🏆' : correctAnswers >= questions.length * 0.7 ? '🎉' : '📊'}
-            </div>
-            <h2 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-              QUIZ COMPLETE!
-            </h2>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-              gap: '20px',
-              marginBottom: '30px'
-            }}>
-              <div>
-                <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                  CORRECT
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--success-green)' }}>
-                  {correctAnswers}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                  TOTAL
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary-navy)' }}>
-                  {questions.length}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                  XP EARNED
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
-                  {score}
-                </div>
-              </div>
-            </div>
-
-            {/* Review Answers */}
-            <div style={{
-              textAlign: 'left',
-              marginBottom: '30px',
-              maxHeight: '300px',
-              overflowY: 'auto',
-              padding: '20px',
-              background: 'var(--bg-light)',
-              border: '2px solid var(--border-color)'
-            }}>
-              <h3 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '15px' }}>
-                REVIEW ANSWERS
-              </h3>
-              {answers.map((answer, idx) => {
-                const question = questions[answer.questionIndex];
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      marginBottom: '15px',
-                      padding: '10px',
-                      background: 'white',
-                      border: `2px solid ${answer.correct ? 'var(--success-green)' : 'var(--error-red)'}`
-                    }}
-                  >
-                    <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '5px' }}>
-                      Question {idx + 1}
-                    </div>
-                    <div style={{ fontSize: '11px', marginBottom: '5px' }}>
-                      {question.question}
-                    </div>
-                    <div style={{ fontSize: '10px', color: answer.correct ? 'var(--success-green)' : 'var(--error-red)' }}>
-                      {answer.correct ? '✓ Correct' : `✗ Wrong - Correct: ${question.options[question.correctAnswer]}`}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => navigate('/games')} className="retro-btn">
-                BACK TO GAMES
-              </button>
-              <button onClick={() => window.location.reload()} className="retro-btn secondary">
-                PLAY AGAIN
-              </button>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-};
-
-export default QuickQuiz;
-
+/>

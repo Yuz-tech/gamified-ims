@@ -1,11 +1,20 @@
-Error fetching game:  CastError: Cast to ObjectId failed for value ":69e0437d1701c13c39687cc9" (type string) at path "_id" for model "Game"
+server/modles/Topic.js
 
-at async file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/routes/games.js:134:22 {
-  stringValue: '":69e0437d1701c13c39687cc9"',
-  messageFormat: undefined,
-  kind: 'ObjectId',
-  value: ':69e0437d1701c13c39687cc9',
-  path: '_id',
-  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
-
+const topicSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  // ... existing fields ...
   
+  // ✅ ADD THIS NEW FIELD
+  isNew: {
+    type: Boolean,
+    default: false
+  },
+  
+  isActive: { type: Boolean, default: true },
+  priority: { type: Number, default: 999 }
+}, {
+  timestamps: true
+});
+
+
