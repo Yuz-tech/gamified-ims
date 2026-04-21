@@ -10,7 +10,8 @@ const Footer = () => {
             padding: '40px 20px',
             background: 'var(--primary-navy)',
             borderTop: '3px solid var(--bright-blue)',
-            textAlign: 'center'
+            textAlign: 'center',
+            zIndex: -9999
         }}>
             <div className="retro-container">
                 <div style={{
@@ -25,7 +26,7 @@ const Footer = () => {
                             ABOUT
                         </h4>
                         <p style={{ fontSize: '10px', color: '#55e8f2', lineHeight: '1.6' }}>
-                            IMS Awareness Training for Advanced World Solutions | Systems, Inc.
+                            IMS Awareness Training for Advanced World Solutions & Advanced World Systems, Inc.
                         </p>
                     </div>
 

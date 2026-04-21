@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import api from '../../utils/api';
+import getImageUrl from '../../utils/getImageUrl';
 
 const Topics = () => {
   const [topics, setTopics] = useState([]);
@@ -201,6 +202,21 @@ const Topics = () => {
       alert('Failed to disable all topics');
     }
   };
+
+  const handleToggleNew = async (topicId, currentStatus) => {
+    try {
+      const response = await api.patch(`/admin/topics/${topicId}/toggle-new`);
+
+      fetchTopics();
+
+      alert(response.data.message);
+    } catch (error) {
+      console.error('Error toggling new status: ', error);
+      alert('Error updating topic');
+    }
+  };
+
+
 
   const resetForm = () => {
     setFormData({
@@ -600,6 +616,7 @@ const Topics = () => {
                   <th style = {{ padding: '15px', textAlign: 'left' }}>TITLE</th>
                   <th style = {{ padding: '15px', textAlign: 'center' }}>BADGE</th>
                   <th style = {{ padding: '15px', textAlign: 'center' }}>STATUS</th>
+                  <th style = {{ padding: '15px', textAlign: 'center' }}>CONDITION</th>
                   <th style = {{ padding: '15px', textAlign: 'center' }}>ACTIONS</th>
                 </tr>
               </thead>
@@ -611,11 +628,16 @@ const Topics = () => {
                     </td>
                     <td style = {{ padding: '10px', textAlign: 'center' }}>
                       {topic.badgeImage && (
-                        <img src = {topic.badgeImage.startsWith('/uploads/')
-                          ? `http://localhost:5000${topic.badgeImage}`
-                          : topic.badgeImage}
-                          alt="Badge"
-                          style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                        <img src={getImageUrl(topic.badgeImage)}
+                          alt={topic.badgeImage.name}
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            objectFit: 'contain'
+                          }}
+                          onError={(e) => {
+                            e.target.src = '/uploads/badges/default.png';
+                          }}
                         />
                       )}
                     </td>
@@ -630,6 +652,21 @@ const Topics = () => {
                         {topic.isActive ? 'Active' : 'Disabled'}
                       </span>
                     </td>
+
+                    <td style={{ padding: '10px', textAlign: 'center' }}>
+                      {topic.isNew && (
+                        <span style = {{ 
+                        padding: '3px 8px',
+                        background: topic.isNew ? 'var(--success-green)' : 'var(--error-red)',
+                        color: 'white',
+                        fontSize: '8px',
+                        fontWeight: 'bold'
+                      }}>
+                        {topic.isNew ? 'NEW' : 'OLD'}
+                      </span>
+                      )}
+                    </td>
+
                     <td style = {{ padding: '10px', textAlign: 'center' }}>
                       <button onClick={() => handleEdit(topic)} className="retro-btn secondary" style = {{
                         fontSize: '8px',
@@ -641,10 +678,25 @@ const Topics = () => {
                       <button onClick={() => handleToggle(topic._id)} className="retro-btn" style = {{
                         fontSize: '8px',
                         padding: '5px 10px',
+                        marginRight: '5px',
                         background: topic.isActive ? 'var(--error-red)' : 'var(--success-green)'
                       }}>
                         {topic.isActive ? 'DISABLE' : 'ENABLE'}
                       </button>
+                      
+                      <button onClick={() => handleToggleNew(topic._id)} className='retro-btn' style={{ 
+                        fontSize: '8px',
+                        padding: '5px 10px',
+                        marginRight: '5px',
+                        background: topic.isNew ? '#ef4444' : undefined,
+                        color: topic.isNew ? 'white' : undefined,
+                        border: topic.isNew ? '2px solid #ef4444' : undefined
+                      }}
+                      title={topic.isNew ? 'Mark as NOT new' : 'Mark As New'}
+                      >
+                        {topic.isNew ? 'NEW' : 'MAN'}
+                      </button>
+
                     </td>
                   </tr>
                 ))}

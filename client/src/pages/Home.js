@@ -274,7 +274,7 @@ const Home = () => {
         style={{ marginBottom: '40px' }}
       >
         <h3 style = {{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          Recently acquired badges
+          UNLOCKED BADGES
         </h3>
 
         {userBadges.length > 0 ? (
@@ -352,7 +352,7 @@ const Home = () => {
             className="retro-btn"
             style={{ marginTop: '20px', width: '100%' }}
           >
-            View All Achievements
+            VIEW ALL BADGES
           </button>
         )}
       </motion.div>
@@ -365,7 +365,7 @@ const Home = () => {
         className="retro-card"
       >
         <h3 style = {{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-          Top Performers
+          TOP ACTIVE PLAYERS
         </h3>
 
         {leaderboard.length > 0 ? (
@@ -380,7 +380,7 @@ const Home = () => {
                   display: 'flex',
                   alignItems: 'center',
                   padding: '15px',
-                  border: index === 0 ? '3px solid var(--warning-yellow)' : '2px solid var(--border-color)',
+                  border: index === 0 ? '3px solid #ffd700' : '2px solid var(--border-color)',
                   background: index === 0 ? 'rgba(249, 115, 22, 0.05)' : 'var(--bg-light)',
                   boxShadow: index === 0 ? '3px 3px 0 var(--primary-navy)' : 'none'
                 }}

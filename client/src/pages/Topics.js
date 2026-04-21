@@ -182,6 +182,50 @@ const Topics = () => {
               }}
               onClick={() => navigate(`/topics/${topic._id}`)}
             >
+
+              {/* New Mark */}
+              {topic.isNew && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  zIndex: 9999,
+                  animation: 'pulse 4s infinite'
+                }}>
+                  <div style={{ 
+                    background: 'linear-gradient(135deg, #ff2828 0%, #ff1515 100%)',
+                    color: 'white',
+                    padding: '5px 15px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
+                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)',
+                    border: '2px solid white',
+                    borderRadius: '0%',
+                    transform: 'rotate(3deg)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    <span style={{ fontSize: '12px', animation: 'sparkle 1.5s infinite' }}>🌟</span>
+                    NEW TOPIC
+                    <span style={{ fontSize: '12px', animation: 'sparkle 1.5s infinite' }}>✨</span>
+                  </div>
+                  {/* Ribbon Tail */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-8px',
+                    right: '0',
+                    width: '0',
+                    height: '0',
+                    borderLeft: '10px solid transparent',
+                    borderRight: '10px solid transparent',
+                    borderTop: '8px solid #991b1b'
+                  }}></div>
+                </div>
+              )}
+
+
               {/* Title */}
               <h3 style={{
                 fontSize: '14px',

@@ -76,6 +76,12 @@ const TopicDetail = () => {
     window.scrollTo({
       top: 0
     });
+
+    const noteEl = document.getElementById("note");
+    if (noteEl) {
+      noteEl.style.display = "none"; 
+    }
+
   };
 
   const handleStartBonus = () => {
@@ -192,12 +198,13 @@ const TopicDetail = () => {
           BACK TO TOPICS
         </button>
 
-        <h1 className="neon-text" style={{ fontSize: '28px', marginBottom: '15px', color: 'var(--primary-navy)' }}>
+        <h1 className="neon-text" style={{ fontSize: '28px', marginBottom: '15px', color: 'var(--primary-navy)', textAlign: 'center' }}>
           {topic.title}
         </h1>
-        <p style={{ fontSize: '12px', color: 'var(--text-medium)', lineHeight: '1.6' }}>
+        <p id="note" style={{ fontSize: '12px', color: 'var(--text-medium)', lineHeight: '1.6' }}>
           {topic.description}
         </p>
+
       </motion.div>
 
       {/* Completion Status */}
@@ -213,11 +220,11 @@ const TopicDetail = () => {
             textAlign: 'center'
           }}
         >
-          <div style={{ fontSize: '14px', color: 'var(--success-green)', marginBottom: '10px', fontWeight: 'bold' }}>
-            Mandatory Question Completed
+          <div style={{ fontSize: '18px', color: 'var(--success-green)', marginBottom: '10px', fontWeight: 'bold' }}>
+            Topic Completed!
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>
-            You earned 100 XP and a badge! {!topic.bonusCompleted && 'You can still take bonus questions for extra XP.'}
+          <div style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
+            You earned 100 XP and a badge! {!topic.bonusCompleted && 'You can still take the bonus round for more XP.'}
           </div>
         </motion.div>
       )}
@@ -233,10 +240,10 @@ const TopicDetail = () => {
           <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
             TRAINING MATERIALS
           </h3>
-
           <div style={{ marginBottom: '20px' }}>
-            <p style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '15px', lineHeight: '1.6' }}>
-              Review the training materials before taking the quiz.
+
+            <p id="note" style={{ fontSize: '14px', color: 'var(--text-medium)', marginBottom: '15px', lineHeight: '1.6' }}>
+              Please review the provided materials before taking the quiz.
             </p>
 
             {/* Document */}
@@ -361,17 +368,17 @@ const TopicDetail = () => {
                   className="retro-card"
                   style={{ background: 'rgba(59, 130, 246, 0.05)', borderColor: 'var(--bright-blue)' }}
                 >
-                  <h3 style={{ fontSize: '14px', color: 'var(--bright-blue)', marginBottom: '20px' }}>
-                    💎 BONUS QUESTIONS
+                  <h3 style={{ fontSize: '14px', color: 'var(--bright-blue)', paddingTop: '15px', marginBottom: '20px', textAlign: 'center'  }}>
+                    BONUS ROUND
                   </h3>
 
                   <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
-                      Answer 4 bonus questions. Each correct answer earns <strong>50 XP</strong> (up to 200 XP total).
+                    <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6', justifyContent: 'center' }}>
+                      Correct answers grant <strong>50 XP</strong> (4 questions).
                     </div>
 
-                    <button onClick={handleStartBonus} className="retro-btn" style={{ width: '100%' }}>
-                      START BONUS
+                    <button onClick={handleStartBonus} className="retro-btn" style={{ width: '100%', backgroundColor: '#0890e5' }}>
+                      PLAY ON!
                     </button>
                   </div>
                 </motion.div>
@@ -384,16 +391,16 @@ const TopicDetail = () => {
                 className="retro-card"
                 style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'var(--success-green)' }}
               >
-                <h3 style={{ fontSize: '14px', color: 'var(--success-green)', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '14px', color: 'var(--success-green)', paddingTop: '15px', marginBottom: '20px', textAlign: 'center'  }}>
                   REVIEW ANSWERS
                 </h3>
 
                 <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
+                  <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6', textAlign: 'center' }}>
                     Review the {topic.bonusCompleted ? 'bonus questions and mandatory' : 'mandatory'} question.
                   </div>
 
-                  <button onClick={handleStartReview} className="retro-btn" style={{ width: '100%' }}>
+                  <button onClick={handleStartReview} className="retro-btn" style={{ width: '100%', backgroundColor: 'yellow', textAlign: 'center' }}>
                     REVIEW
                   </button>
                 </div>
@@ -408,27 +415,25 @@ const TopicDetail = () => {
               animate={{ opacity: 1 }}
               className="retro-card"
             >
-              <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-                NEXT TOPIC
+              <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', paddingTop: '15px', marginBottom: '20px', textAlign: 'center' }}>
+                CONTINUE TRAINING!
               </h3>
 
               <div style={{ textAlign: 'center', padding: '20px' }}>
                 {nextTopic ? (
                   <>
-                    <div style={{ fontSize: '12px', marginBottom: '20px', lineHeight: '1.6' }}>
-                      Continue training:
-                    </div>
                     <button 
                       onClick={handleNextTopicClick} 
                       className="retro-btn" 
-                      style={{ width: '100%', marginBottom: '10px' }}
+                      style={{ width: '100%', height: '50px', marginBottom: '10px', backgroundColor: '#24a600', color: 'white', fontSize: '20px' }}
                     >
-                      {nextTopic.title}
+                      {/* {nextTopic.title} */}
+                      NEXT TOPIC
                     </button>
                     <button 
                       onClick={() => navigate('/topics')} 
                       className="retro-btn secondary" 
-                      style={{ width: '100%', fontSize: '10px' }}
+                      style={{ width: '100%', fontSize: '10px', marginTop: '15px' }}
                     >
                       VIEW ALL TOPICS
                     </button>
@@ -539,7 +544,9 @@ const TopicDetail = () => {
         >
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <div style={{ fontSize: '72px', marginBottom: '20px' }}>
-              {mandatoryResult.correctAnswer ? ' •̀ ᗜ •́ ' : '🫵🤣'}
+              {mandatoryResult.correctAnswer 
+                ? <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExYnB5eHNjaTd0NWhicDAwa2w3dnQxdTRpY3l2ZWQ5a24xczZwYXhteiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VSLIjK1WyV3GbT5m9G/giphy.gif" alt="cat.gif" style={{ width: '100px', height: '100px' }}/> 
+                : '🫵🤣'}
             </div>
             <div style={{
               fontSize: '24px',

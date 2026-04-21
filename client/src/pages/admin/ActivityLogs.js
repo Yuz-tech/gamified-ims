@@ -16,20 +16,18 @@ const ActivityLogs = () => {
     'login',
     'logout',
     'password_change',
-    'video_watched',
-    'quiz_started',
-    'quiz_completed',
-    'badge_earned',
-    'topic_updated',
-    'topic_completed',
     'profile_updated',
     'password_reset_by_admin',
     'settings_updated',
+    'quiz_completed',
     'xp_awarded',
     'game_completed',
     'game_created',
     'game_updated',
-    'game_deleted'
+    'game_deleted',
+    'topics_bulk_toggle',
+    'topic_new_toggled',
+    'yearly-reset'
   ];
 
   useEffect(() => {
