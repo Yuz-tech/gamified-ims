@@ -1,36 +1,63 @@
-https://docs.google.com/forms/d/e/1FAIpQLScSPvxLKhtVr8y1Gsw_BNxM1NzIpepj3_JBk4IQY254qoYGHg/viewform
-
-1. Update server/index.js
-Add games routes:
-import gamesRoutes from './routes/games.js';
-
-// Add with other routes
-app.use('/api/games', gamesRoutes);
-2. Update client/src/App.js
-Add game routes with FIXED paths:
-import Games from './pages/Games';
-import Crossword from './pages/games/Crossword';
-
-// Add these routes
-<Route
-  path="/games"
-  element={
-    <ProtectedRoute>
-      <Games />
-    </ProtectedRoute>
+yearly-reset
+// Replace the entire yearly reset function with:
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const users = await User.find();
+    let resetCount = 0;
+    
+    for (const user of users) {
+      if (user.role !== 'admin') {
+        const currentBadgeCount = user.badgeCount || 0; // Store current count
+        
+        user.completedTopics = [];
+        user.xp = 0;
+        user.level = 1;
+        user.badges = [];
+        user.badgeCount = currentBadgeCount; // Retain badge count
+        
+        await user.save();
+        resetCount++;
+      }
+    }
+    
+    await logActivity(req.user._id, 'yearly_reset_performed', {
+      usersReset: resetCount,
+      timestamp: new Date()
+    }, req);
+    
+    res.json({
+      message: 'Yearly reset completed successfully',
+      usersReset: resetCount,
+      note: 'Badge counts have been retained'
+    });
+  } catch (error) {
+    console.error('Error performing yearly reset:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-/>
-<Route
-  path="/games/crossword/:id"
-  element={
-    <ProtectedRoute>
-      <Crossword />
-    </ProtectedRoute>
-  }
-/>
+});
 
-model/games
+game model
 import mongoose from 'mongoose';
+
+const gameCompletionSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  score: {
+    type: Number,
+    required: true
+  },
+  timeSpent: {
+    type: Number,
+    required: true
+  },
+  completedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
 
 const gameSchema = new mongoose.Schema({
   title: {
@@ -44,7 +71,7 @@ const gameSchema = new mongoose.Schema({
   gameType: {
     type: String,
     required: true,
-    enum: ['crossword', 'wordle', 'quickquiz']
+    enum: ['texttwist', 'wordle', 'quickquiz', 'hangman']
   },
   difficulty: {
     type: String,
@@ -66,22 +93,34 @@ const gameSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
+  },
+  // Track who has completed this game
+  completions: [gameCompletionSchema]
 }, {
   timestamps: true
 });
 
+// Method to check if user has completed this game
+gameSchema.methods.hasUserCompleted = function(userId) {
+  return this.completions.some(
+    completion => completion.userId.toString() === userId.toString()
+  );
+};
+
+// Method to add completion
+gameSchema.methods.addCompletion = function(userId, score, timeSpent) {
+  this.completions.push({
+    userId,
+    score,
+    timeSpent
+  });
+  return this.save();
+};
+
 export default mongoose.model('Game', gameSchema);
 
-App.js
-import Games from './pages/Games';
-import Crossword from './pages/games/Crossword';
-import Wordle from './pages/games/Wordle';
-import QuickQuiz from './pages/games/QuickQuiz';
-import AdminGames from './pages/admin/AdminGames';
 
-
-routes/games
+server/routes/game
 import express from 'express';
 import Game from '../models/Game.js';
 import User from '../models/User.js';
@@ -92,14 +131,24 @@ const router = express.Router();
 
 // ==================== USER ROUTES ====================
 
-// Get all active games
+// Get all active games with completion status
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const games = await Game.find({ isActive: true })
       .select('title description gameType difficulty maxXP timeLimit')
       .sort({ createdAt: -1 });
 
-    res.json(games);
+    // Add completion status for current user
+    const gamesWithStatus = games.map(game => {
+      const hasCompleted = game.hasUserCompleted(req.user._id);
+      return {
+        ...game.toObject(),
+        hasCompleted,
+        canPlay: !hasCompleted
+      };
+    });
+
+    res.json(gamesWithStatus);
   } catch (error) {
     console.error('Error fetching games:', error);
     res.status(500).json({ message: 'Server error' });
@@ -110,8 +159,6 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/play/:id', authenticateToken, async (req, res) => {
   try {
     const gameId = req.params.id;
-    console.log('Fetching game with ID:', gameId); // Debug log
-
     const game = await Game.findById(gameId);
 
     if (!game) {
@@ -122,14 +169,28 @@ router.get('/play/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ message: 'This game is not active' });
     }
 
-    res.json(game);
+    // Check if user has already completed this game
+    const hasCompleted = game.hasUserCompleted(req.user._id);
+    
+    if (hasCompleted) {
+      return res.status(403).json({ 
+        message: 'You have already completed this game and earned XP from it',
+        hasCompleted: true
+      });
+    }
+
+    res.json({
+      ...game.toObject(),
+      hasCompleted: false,
+      canPlay: true
+    });
   } catch (error) {
     console.error('Error fetching game:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Submit game score
+// Submit game score (only once per game per user)
 router.post('/submit-score', authenticateToken, async (req, res) => {
   try {
     const { gameId, gameType, score, timeSpent } = req.body;
@@ -139,16 +200,21 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Invalid score' });
     }
 
-    // Get game to verify maxXP
-    let game;
-    if (gameId) {
-      game = await Game.findById(gameId);
-      if (!game) {
-        return res.status(404).json({ message: 'Game not found' });
-      }
+    // Get game
+    const game = await Game.findById(gameId);
+    if (!game) {
+      return res.status(404).json({ message: 'Game not found' });
     }
 
-    const maxXP = game ? game.maxXP : 200;
+    // Check if user has already completed this game
+    if (game.hasUserCompleted(userId)) {
+      return res.status(403).json({ 
+        message: 'You have already completed this game',
+        alreadyCompleted: true
+      });
+    }
+
+    const maxXP = game.maxXP;
     const cappedScore = Math.min(score, maxXP);
 
     // Award XP to user
@@ -171,9 +237,12 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
 
     await user.save();
 
+    // Mark game as completed for this user
+    await game.addCompletion(userId, cappedScore, timeSpent);
+
     // Log activity
     await logActivity(userId, 'game_completed', {
-      gameId: gameId || null,
+      gameId: game._id,
       gameType,
       score: cappedScore,
       timeSpent,
@@ -184,7 +253,8 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
       xpEarned: cappedScore,
       totalXP: user.xp,
       leveledUp,
-      newLevel: user.level
+      newLevel: user.level,
+      completed: true
     });
   } catch (error) {
     console.error('Error submitting game score:', error);
@@ -198,7 +268,14 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
 router.get('/admin/all', authenticateToken, isAdmin, async (req, res) => {
   try {
     const games = await Game.find().sort({ createdAt: -1 });
-    res.json(games);
+    
+    // Add completion count
+    const gamesWithStats = games.map(game => ({
+      ...game.toObject(),
+      completionCount: game.completions.length
+    }));
+    
+    res.json(gamesWithStats);
   } catch (error) {
     console.error('Error fetching all games:', error);
     res.status(500).json({ message: 'Server error' });
@@ -242,14 +319,13 @@ router.post('/admin/create', authenticateToken, isAdmin, async (req, res) => {
 router.put('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
   try {
     const gameId = req.params.id;
-    const { title, description, gameType, difficulty, maxXP, timeLimit, content, isActive } = req.body;
+    const { title, description, difficulty, maxXP, timeLimit, content, isActive } = req.body;
 
     const game = await Game.findByIdAndUpdate(
       gameId,
       {
         title,
         description,
-        gameType,
         difficulty,
         maxXP,
         timeLimit,
@@ -303,8 +379,751 @@ router.delete('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
 
 export default router;
 
+src/pages/AdminGames
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../utils/api';
 
-pages/games
+const AdminGames = () => {
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingGame, setEditingGame] = useState(null);
+  const [currentTab, setCurrentTab] = useState('texttwist');
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    gameType: 'texttwist',
+    difficulty: 'medium',
+    maxXP: 200,
+    timeLimit: 120,
+    isActive: true
+  });
+
+  // Game-specific content
+  const [textTwistWords, setTextTwistWords] = useState([]);
+  const [wordleWords, setWordleWords] = useState([]);
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [hangmanWords, setHangmanWords] = useState([]);
+
+  useEffect(() => {
+    fetchGames();
+  }, []);
+
+  const fetchGames = async () => {
+    try {
+      const response = await api.get('/games/admin/all');
+      setGames(response.data);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      alert('Error loading games');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = () => {
+    setEditingGame(null);
+    setFormData({
+      title: '',
+      description: '',
+      gameType: 'texttwist',
+      difficulty: 'medium',
+      maxXP: 200,
+      timeLimit: 120,
+      isActive: true
+    });
+    setTextTwistWords([]);
+    setWordleWords([]);
+    setQuizQuestions([]);
+    setHangmanWords([]);
+    setCurrentTab('texttwist');
+    setShowModal(true);
+  };
+
+  const handleEdit = (game) => {
+    setEditingGame(game);
+    setFormData({
+      title: game.title,
+      description: game.description,
+      gameType: game.gameType,
+      difficulty: game.difficulty,
+      maxXP: game.maxXP,
+      timeLimit: game.timeLimit,
+      isActive: game.isActive
+    });
+    
+    // Load game-specific content
+    setCurrentTab(game.gameType);
+    
+    switch (game.gameType) {
+      case 'texttwist':
+        setTextTwistWords(game.content.words || []);
+        break;
+      case 'wordle':
+        setWordleWords(game.content.words || []);
+        break;
+      case 'quickquiz':
+        setQuizQuestions(game.content.questions || []);
+        break;
+      case 'hangman':
+        setHangmanWords(game.content.words || []);
+        break;
+    }
+    
+    setShowModal(true);
+  };
+
+  const handleDelete = async (gameId) => {
+    if (window.confirm('Are you sure you want to delete this game? This will remove all player completion data.')) {
+      try {
+        await api.delete(`/games/admin/${gameId}`);
+        fetchGames();
+        alert('Game deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting game:', error);
+        alert('Error deleting game');
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    let content = {};
+    
+    switch (formData.gameType) {
+      case 'texttwist':
+        if (textTwistWords.length === 0) {
+          alert('Please add at least one word for Text Twist');
+          return;
+        }
+        content = { words: textTwistWords };
+        break;
+        
+      case 'wordle':
+        if (wordleWords.length === 0) {
+          alert('Please add at least one word for Wordle');
+          return;
+        }
+        content = { words: wordleWords };
+        break;
+        
+      case 'quickquiz':
+        if (quizQuestions.length === 0) {
+          alert('Please add at least one question for Quick Quiz');
+          return;
+        }
+        content = { questions: quizQuestions };
+        break;
+        
+      case 'hangman':
+        if (hangmanWords.length === 0) {
+          alert('Please add at least one word for Hangman');
+          return;
+        }
+        content = { words: hangmanWords };
+        break;
+    }
+
+    const gameData = {
+      ...formData,
+      content
+    };
+
+    try {
+      if (editingGame) {
+        await api.put(`/games/admin/${editingGame._id}`, gameData);
+        alert('Game updated successfully!');
+      } else {
+        await api.post('/games/admin/create', gameData);
+        alert('Game created successfully!');
+      }
+      setShowModal(false);
+      fetchGames();
+    } catch (error) {
+      console.error('Error saving game:', error);
+      alert('Error saving game');
+    }
+  };
+
+  // Text Twist Editor
+  const renderTextTwistEditor = () => (
+    <div>
+      <h3 style={{ fontSize: '14px', marginBottom: '15px' }}>Text Twist Words</h3>
+      
+      {textTwistWords.map((wordObj, idx) => (
+        <div key={idx} style={{ 
+          padding: '15px', 
+          background: 'var(--bg-light)', 
+          border: '2px solid var(--border-color)',
+          marginBottom: '10px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Word {idx + 1}</span>
+            <button
+              type="button"
+              onClick={() => setTextTwistWords(textTwistWords.filter((_, i) => i !== idx))}
+              className="retro-btn secondary"
+              style={{ fontSize: '10px', padding: '5px 10px' }}
+            >
+              Remove
+            </button>
+          </div>
+          
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Main Word (6-8 letters)
+            </label>
+            <input
+              type="text"
+              value={wordObj.mainWord}
+              onChange={(e) => {
+                const updated = [...textTwistWords];
+                updated[idx].mainWord = e.target.value.toUpperCase();
+                setTextTwistWords(updated);
+              }}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+            />
+          </div>
+          
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Valid Subwords (comma-separated, 3+ letters)
+            </label>
+            <textarea
+              value={wordObj.subwords.join(', ')}
+              onChange={(e) => {
+                const updated = [...textTwistWords];
+                updated[idx].subwords = e.target.value.split(',').map(w => w.trim().toUpperCase()).filter(w => w);
+                setTextTwistWords(updated);
+              }}
+              rows={3}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+              placeholder="WORD, TEST, STAR..."
+            />
+          </div>
+        </div>
+      ))}
+      
+      <button
+        type="button"
+        onClick={() => setTextTwistWords([...textTwistWords, { mainWord: '', subwords: [] }])}
+        className="retro-btn secondary"
+        style={{ width: '100%' }}
+      >
+        + Add Word
+      </button>
+    </div>
+  );
+
+  // Wordle Editor
+  const renderWordleEditor = () => (
+    <div>
+      <h3 style={{ fontSize: '14px', marginBottom: '15px' }}>Wordle Words</h3>
+      
+      {wordleWords.map((wordObj, idx) => (
+        <div key={idx} style={{ 
+          padding: '15px', 
+          background: 'var(--bg-light)', 
+          border: '2px solid var(--border-color)',
+          marginBottom: '10px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Word {idx + 1}</span>
+            <button
+              type="button"
+              onClick={() => setWordleWords(wordleWords.filter((_, i) => i !== idx))}
+              className="retro-btn secondary"
+              style={{ fontSize: '10px', padding: '5px 10px' }}
+            >
+              Remove
+            </button>
+          </div>
+          
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Word (5 letters)
+            </label>
+            <input
+              type="text"
+              maxLength={5}
+              value={wordObj.word}
+              onChange={(e) => {
+                const updated = [...wordleWords];
+                updated[idx].word = e.target.value.toUpperCase();
+                setWordleWords(updated);
+              }}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+            />
+          </div>
+          
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Hint
+            </label>
+            <input
+              type="text"
+              value={wordObj.hint}
+              onChange={(e) => {
+                const updated = [...wordleWords];
+                updated[idx].hint = e.target.value;
+                setWordleWords(updated);
+              }}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+              placeholder="A clue about this word..."
+            />
+          </div>
+        </div>
+      ))}
+      
+      <button
+        type="button"
+        onClick={() => setWordleWords([...wordleWords, { word: '', hint: '' }])}
+        className="retro-btn secondary"
+        style={{ width: '100%' }}
+      >
+        + Add Word
+      </button>
+    </div>
+  );
+
+  // Quick Quiz Editor
+  const renderQuizEditor = () => (
+    <div>
+      <h3 style={{ fontSize: '14px', marginBottom: '15px' }}>Quiz Questions</h3>
+      
+      {quizQuestions.map((q, idx) => (
+        <div key={idx} style={{ 
+          padding: '15px', 
+          background: 'var(--bg-light)', 
+          border: '2px solid var(--border-color)',
+          marginBottom: '10px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Question {idx + 1}</span>
+            <button
+              type="button"
+              onClick={() => setQuizQuestions(quizQuestions.filter((_, i) => i !== idx))}
+              className="retro-btn secondary"
+              style={{ fontSize: '10px', padding: '5px 10px' }}
+            >
+              Remove
+            </button>
+          </div>
+          
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Question
+            </label>
+            <input
+              type="text"
+              value={q.question}
+              onChange={(e) => {
+                const updated = [...quizQuestions];
+                updated[idx].question = e.target.value;
+                setQuizQuestions(updated);
+              }}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+            />
+          </div>
+          
+          {[0, 1, 2, 3].map(optIdx => (
+            <div key={optIdx} style={{ marginBottom: '10px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                Option {String.fromCharCode(65 + optIdx)} {q.correctAnswer === optIdx && '✓ (Correct)'}
+              </label>
+              <input
+                type="text"
+                value={q.options[optIdx] || ''}
+                onChange={(e) => {
+                  const updated = [...quizQuestions];
+                  updated[idx].options[optIdx] = e.target.value;
+                  setQuizQuestions(updated);
+                }}
+                style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+              />
+            </div>
+          ))}
+          
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Correct Answer
+            </label>
+            <select
+              value={q.correctAnswer}
+              onChange={(e) => {
+                const updated = [...quizQuestions];
+                updated[idx].correctAnswer = parseInt(e.target.value);
+                setQuizQuestions(updated);
+              }}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+            >
+              <option value={0}>A</option>
+              <option value={1}>B</option>
+              <option value={2}>C</option>
+              <option value={3}>D</option>
+            </select>
+          </div>
+        </div>
+      ))}
+      
+      <button
+        type="button"
+        onClick={() => setQuizQuestions([...quizQuestions, { 
+          question: '', 
+          options: ['', '', '', ''], 
+          correctAnswer: 0,
+          points: 10
+        }])}
+        className="retro-btn secondary"
+        style={{ width: '100%' }}
+      >
+        + Add Question
+      </button>
+    </div>
+  );
+
+  // Hangman Editor
+  const renderHangmanEditor = () => (
+    <div>
+      <h3 style={{ fontSize: '14px', marginBottom: '15px' }}>Hangman Words</h3>
+      
+      {hangmanWords.map((wordObj, idx) => (
+        <div key={idx} style={{ 
+          padding: '15px', 
+          background: 'var(--bg-light)', 
+          border: '2px solid var(--border-color)',
+          marginBottom: '10px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Word {idx + 1}</span>
+            <button
+              type="button"
+              onClick={() => setHangmanWords(hangmanWords.filter((_, i) => i !== idx))}
+              className="retro-btn secondary"
+              style={{ fontSize: '10px', padding: '5px 10px' }}
+            >
+              Remove
+            </button>
+          </div>
+          
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Word or Phrase
+            </label>
+            <input
+              type="text"
+              value={wordObj.word}
+              onChange={(e) => {
+                const updated = [...hangmanWords];
+                updated[idx].word = e.target.value.toUpperCase();
+                setHangmanWords(updated);
+              }}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+            />
+          </div>
+          
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Hint
+            </label>
+            <input
+              type="text"
+              value={wordObj.hint}
+              onChange={(e) => {
+                const updated = [...hangmanWords];
+                updated[idx].hint = e.target.value;
+                setHangmanWords(updated);
+              }}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+              placeholder="A clue about this word..."
+            />
+          </div>
+          
+          <div>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Category
+            </label>
+            <input
+              type="text"
+              value={wordObj.category}
+              onChange={(e) => {
+                const updated = [...hangmanWords];
+                updated[idx].category = e.target.value;
+                setHangmanWords(updated);
+              }}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+              placeholder="e.g., IMS Terms, Quality Concepts..."
+            />
+          </div>
+        </div>
+      ))}
+      
+      <button
+        type="button"
+        onClick={() => setHangmanWords([...hangmanWords, { word: '', hint: '', category: '' }])}
+        className="retro-btn secondary"
+        style={{ width: '100%' }}
+      >
+        + Add Word
+      </button>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className="loading neon-text">LOADING...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="retro-container" style={{ paddingTop: '40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)' }}>🎮 MANAGE GAMES</h1>
+        <button onClick={handleCreate} className="retro-btn">+ CREATE GAME</button>
+      </div>
+
+      {/* Games Table */}
+      <div className="retro-card" style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', fontSize: '11px' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+              <th style={{ padding: '15px', textAlign: 'left' }}>Game</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Type</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Difficulty</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Max XP</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Completions</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Status</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {games.map(game => (
+              <tr key={game._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td style={{ padding: '15px' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{game.title}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>{game.description}</div>
+                </td>
+                <td style={{ padding: '15px', textAlign: 'center', textTransform: 'capitalize' }}>
+                  {game.gameType.replace('texttwist', 'Text Twist').replace('quickquiz', 'Quick Quiz')}
+                </td>
+                <td style={{ padding: '15px', textAlign: 'center', textTransform: 'capitalize' }}>{game.difficulty}</td>
+                <td style={{ padding: '15px', textAlign: 'center', color: 'var(--bright-blue)', fontWeight: 'bold' }}>
+                  {game.maxXP}
+                </td>
+                <td style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold' }}>
+                  {game.completionCount || 0}
+                </td>
+                <td style={{ padding: '15px', textAlign: 'center' }}>
+                  <span style={{
+                    padding: '5px 10px',
+                    background: game.isActive ? 'var(--success-green)' : 'var(--text-medium)',
+                    color: 'white',
+                    fontSize: '9px',
+                    fontWeight: 'bold',
+                    borderRadius: '3px'
+                  }}>
+                    {game.isActive ? 'ACTIVE' : 'INACTIVE'}
+                  </span>
+                </td>
+                <td style={{ padding: '15px', textAlign: 'center' }}>
+                  <button
+                    onClick={() => handleEdit(game)}
+                    className="retro-btn secondary"
+                    style={{ fontSize: '10px', padding: '8px 12px', marginRight: '5px' }}
+                  >
+                    EDIT
+                  </button>
+                  <button
+                    onClick={() => handleDelete(game._id)}
+                    className="retro-btn secondary"
+                    style={{ fontSize: '10px', padding: '8px 12px' }}
+                  >
+                    DELETE
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {games.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-medium)' }}>
+            No games found. Create your first game!
+          </div>
+        )}
+      </div>
+
+      {/* Create/Edit Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px',
+            overflowY: 'auto'
+          }}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="retro-card"
+              style={{ maxWidth: '900px', width: '100%', maxHeight: '90vh', overflowY: 'auto', margin: '20px' }}
+            >
+              <h2 style={{ fontSize: '18px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
+                {editingGame ? 'EDIT GAME' : 'CREATE GAME'}
+              </h2>
+
+              <form onSubmit={handleSubmit}>
+                {/* Basic Info */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                    Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                    style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                    Description *
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    required
+                    rows={2}
+                    style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                      Game Type *
+                    </label>
+                    <select
+                      value={formData.gameType}
+                      onChange={(e) => {
+                        setFormData({ ...formData, gameType: e.target.value });
+                        setCurrentTab(e.target.value);
+                      }}
+                      disabled={!!editingGame}
+                      style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+                    >
+                      <option value="texttwist">Text Twist</option>
+                      <option value="wordle">Wordle</option>
+                      <option value="quickquiz">Quick Quiz</option>
+                      <option value="hangman">Hangman</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                      Difficulty
+                    </label>
+                    <select
+                      value={formData.difficulty}
+                      onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+                      style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+                    >
+                      <option value="easy">Easy</option>
+                      <option value="medium">Medium</option>
+                      <option value="hard">Hard</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                      Max XP
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.maxXP}
+                      onChange={(e) => setFormData({ ...formData, maxXP: parseInt(e.target.value) })}
+                      min="0"
+                      style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                      Time (sec)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.timeLimit}
+                      onChange={(e) => setFormData({ ...formData, timeLimit: parseInt(e.target.value) })}
+                      min="0"
+                      style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
+                    />
+                  </div>
+                </div>
+
+                {editingGame && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 'bold' }}>
+                      <input
+                        type="checkbox"
+                        checked={formData.isActive}
+                        onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                        style={{ marginRight: '10px' }}
+                      />
+                      Active
+                    </label>
+                  </div>
+                )}
+
+                {/* Game Content Editor */}
+                <div style={{ marginBottom: '20px', padding: '20px', background: 'var(--bg-light)', border: '2px solid var(--border-color)' }}>
+                  {currentTab === 'texttwist' && renderTextTwistEditor()}
+                  {currentTab === 'wordle' && renderWordleEditor()}
+                  {currentTab === 'quickquiz' && renderQuizEditor()}
+                  {currentTab === 'hangman' && renderHangmanEditor()}
+                </div>
+
+                {/* Submit Buttons */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button type="submit" className="retro-btn" style={{ flex: 1 }}>
+                    {editingGame ? 'UPDATE GAME' : 'CREATE GAME'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="retro-btn secondary"
+                    style={{ flex: 1 }}
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default AdminGames;
+
+
+pages/Games
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -332,15 +1151,29 @@ const Games = () => {
 
   const getGameIcon = (gameType) => {
     switch (gameType) {
-      case 'crossword': return '🧩';
-      case 'wordle': return '🔤';
+      case 'texttwist': return '🔤';
+      case 'wordle': return '📝';
       case 'quickquiz': return '⚡';
+      case 'hangman': return '🎯';
       default: return '🎮';
     }
   };
 
+  const getGameName = (gameType) => {
+    switch (gameType) {
+      case 'texttwist': return 'Text Twist';
+      case 'wordle': return 'Wordle';
+      case 'quickquiz': return 'Quick Quiz';
+      case 'hangman': return 'Hangman';
+      default: return gameType;
+    }
+  };
+
   const handlePlayGame = (game) => {
-    // Navigate to game with ID
+    if (game.hasCompleted) {
+      alert('You have already completed this game and earned XP from it. You cannot replay it.');
+      return;
+    }
     navigate(`/games/${game.gameType}/${game._id}`);
   };
 
@@ -380,6 +1213,8 @@ const Games = () => {
       >
         <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-dark)', textAlign: 'center' }}>
           Test your IMS knowledge with fun and interactive games! Earn XP while learning.
+          <br />
+          <strong style={{ color: 'var(--orange-accent)' }}>Note: Each game can only be played once for XP.</strong>
         </p>
       </motion.div>
 
@@ -406,13 +1241,48 @@ const Games = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.03 }}
+              whileHover={{ scale: game.hasCompleted ? 1 : 1.03 }}
               className="retro-card"
-              style={{ cursor: 'pointer' }}
+              style={{
+                cursor: game.hasCompleted ? 'not-allowed' : 'pointer',
+                opacity: game.hasCompleted ? 0.6 : 1,
+                position: 'relative',
+                border: game.hasCompleted ? '2px solid var(--text-medium)' : '2px solid var(--border-color)'
+              }}
               onClick={() => handlePlayGame(game)}
             >
+              {/* Completed Badge */}
+              {game.hasCompleted && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  padding: '5px 12px',
+                  background: 'var(--success-green)',
+                  color: 'white',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  borderRadius: '3px',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  zIndex: 10
+                }}>
+                  ✓ COMPLETED
+                </div>
+              )}
+
               <div style={{ fontSize: '64px', textAlign: 'center', marginBottom: '20px' }}>
                 {getGameIcon(game.gameType)}
+              </div>
+
+              <div style={{
+                fontSize: '10px',
+                color: 'var(--text-medium)',
+                textAlign: 'center',
+                marginBottom: '5px',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}>
+                {getGameName(game.gameType)}
               </div>
 
               <h3 style={{
@@ -494,13 +1364,19 @@ const Games = () => {
 
               <button
                 className="retro-btn"
-                style={{ width: '100%', fontSize: '12px' }}
+                style={{ 
+                  width: '100%', 
+                  fontSize: '12px',
+                  opacity: game.hasCompleted ? 0.5 : 1,
+                  cursor: game.hasCompleted ? 'not-allowed' : 'pointer'
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   handlePlayGame(game);
                 }}
+                disabled={game.hasCompleted}
               >
-                PLAY NOW
+                {game.hasCompleted ? '✓ COMPLETED' : 'PLAY NOW'}
               </button>
             </motion.div>
           ))}
@@ -512,690 +1388,3 @@ const Games = () => {
 
 export default Games;
 
-
-crossword.js
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-
-const Crossword = () => {
-  const navigate = useNavigate();
-  const { id } = useParams(); // Get game ID from URL
-  const [game, setGame] = useState(null);
-  const [grid, setGrid] = useState([]);
-  const [clues, setClues] = useState({ across: [], down: [] });
-  const [selectedCell, setSelectedCell] = useState(null);
-  const [direction, setDirection] = useState('across');
-  const [gameComplete, setGameComplete] = useState(false);
-  const [score, setScore] = useState(0);
-  const [startTime] = useState(Date.now());
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchGame();
-  }, [id]);
-
-  const fetchGame = async () => {
-    try {
-      console.log('Fetching game with ID:', id);
-      const response = await api.get(`/games/play/${id}`);
-      const gameData = response.data;
-      setGame(gameData);
-      initializeGrid(gameData.content);
-    } catch (error) {
-      console.error('Error fetching game:', error);
-      alert('Error loading game. Please try again.');
-      navigate('/games');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const initializeGrid = (content) => {
-    const userGrid = content.grid.map(row =>
-      row.map(cell => ({
-        correct: cell,
-        user: cell === null ? null : '',
-        isBlack: cell === null
-      }))
-    );
-    setGrid(userGrid);
-    setClues(content.clues);
-  };
-
-  const handleCellClick = (row, col) => {
-    if (grid[row][col].isBlack) return;
-    
-    if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
-      setDirection(d => d === 'across' ? 'down' : 'across');
-    } else {
-      setSelectedCell({ row, col });
-    }
-  };
-
-  const handleInput = (e, row, col) => {
-    const value = e.target.value.toUpperCase();
-    if (value.length > 1) return;
-
-    const newGrid = [...grid];
-    newGrid[row][col] = { ...newGrid[row][col], user: value };
-    setGrid(newGrid);
-
-    if (value && direction === 'across') {
-      if (col < 9 && !newGrid[row][col + 1]?.isBlack) {
-        setSelectedCell({ row, col: col + 1 });
-      }
-    } else if (value && direction === 'down') {
-      if (row < 9 && !newGrid[row + 1]?.[col]?.isBlack) {
-        setSelectedCell({ row: row + 1, col });
-      }
-    }
-  };
-
-  const handleKeyDown = (e, row, col) => {
-    if (e.key === 'Backspace' && !grid[row][col].user) {
-      if (direction === 'across' && col > 0 && !grid[row][col - 1]?.isBlack) {
-        setSelectedCell({ row, col: col - 1 });
-      } else if (direction === 'down' && row > 0 && !grid[row - 1]?.[col]?.isBlack) {
-        setSelectedCell({ row: row - 1, col });
-      }
-    }
-  };
-
-  const checkAnswers = async () => {
-    let correct = 0;
-    let total = 0;
-
-    grid.forEach((row, r) => {
-      row.forEach((cell, c) => {
-        if (!cell.isBlack) {
-          total++;
-          if (cell.user === cell.correct) {
-            correct++;
-          }
-        }
-      });
-    });
-
-    const percentage = Math.round((correct / total) * 100);
-    const earnedXP = Math.round((percentage / 100) * game.maxXP);
-    setScore(earnedXP);
-
-    if (percentage === 100) {
-      setGameComplete(true);
-      await submitScore(earnedXP);
-    } else {
-      alert(`You got ${correct}/${total} correct (${percentage}%). Keep trying!`);
-    }
-  };
-
-  const submitScore = async (earnedXP) => {
-    try {
-      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-      await api.post('/games/submit-score', {
-        gameId: game._id,
-        gameType: 'crossword',
-        score: earnedXP,
-        timeSpent: timeTaken
-      });
-    } catch (error) {
-      console.error('Error submitting score:', error);
-    }
-  };
-
-  const revealAnswers = () => {
-    const newGrid = grid.map(row =>
-      row.map(cell => ({
-        ...cell,
-        user: cell.correct || ''
-      }))
-    );
-    setGrid(newGrid);
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAME...</div>
-      </div>
-    );
-  }
-
-  if (!game) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: 'var(--error-red)' }}>Game Not Found</h2>
-          <button onClick={() => navigate('/games')} className="retro-btn">
-            BACK TO GAMES
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        ← BACK TO GAMES
-      </button>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-      >
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px' }}>
-          🧩 {game.title}
-        </h1>
-        <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '30px' }}>
-          {game.description}
-        </p>
-
-        {!gameComplete ? (
-          <>
-            {/* Grid */}
-            <div style={{ marginBottom: '30px', overflowX: 'auto' }}>
-              <div style={{
-                display: 'inline-grid',
-                gridTemplateColumns: 'repeat(10, 40px)',
-                gap: '2px',
-                padding: '20px',
-                background: 'var(--bg-light)',
-                border: '3px solid var(--primary-navy)'
-              }}>
-                {grid.map((row, r) =>
-                  row.map((cell, c) => (
-                    <div
-                      key={`${r}-${c}`}
-                      onClick={() => handleCellClick(r, c)}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        background: cell.isBlack ? 'var(--primary-navy)' : 'white',
-                        border: cell.isBlack ? 'none' : '2px solid var(--border-color)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: cell.isBlack ? 'default' : 'pointer',
-                        position: 'relative',
-                        boxShadow: selectedCell?.row === r && selectedCell?.col === c
-                          ? '0 0 0 3px var(--bright-blue)'
-                          : 'none'
-                      }}
-                    >
-                      {!cell.isBlack && (
-                        <input
-                          ref={el => {
-                            if (selectedCell?.row === r && selectedCell?.col === c) {
-                              el?.focus();
-                            }
-                          }}
-                          type="text"
-                          maxLength="1"
-                          value={cell.user}
-                          onChange={(e) => handleInput(e, r, c)}
-                          onKeyDown={(e) => handleKeyDown(e, r, c)}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            border: 'none',
-                            background: 'transparent',
-                            textAlign: 'center',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            color: 'var(--primary-navy)',
-                            textTransform: 'uppercase',
-                            outline: 'none',
-                            cursor: 'pointer'
-                          }}
-                        />
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Clues */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
-              <div>
-                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
-                  ACROSS
-                </h3>
-                {clues.across.map((clue, idx) => (
-                  <div key={idx} style={{ fontSize: '11px', marginBottom: '10px', lineHeight: '1.6' }}>
-                    <strong>{clue.number}.</strong> {clue.clue}
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <h3 style={{ fontSize: '14px', color: 'var(--secondary-pink)', marginBottom: '15px' }}>
-                  DOWN
-                </h3>
-                {clues.down.map((clue, idx) => (
-                  <div key={idx} style={{ fontSize: '11px', marginBottom: '10px', lineHeight: '1.6' }}>
-                    <strong>{clue.number}.</strong> {clue.clue}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Controls */}
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button onClick={checkAnswers} className="retro-btn">
-                ✓ CHECK ANSWERS
-              </button>
-              <button onClick={revealAnswers} className="retro-btn secondary">
-                💡 REVEAL ANSWERS
-              </button>
-              <button onClick={() => fetchGame()} className="retro-btn secondary">
-                🔄 RESET
-              </button>
-            </div>
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
-            <h2 style={{ fontSize: '24px', color: 'var(--success-green)', marginBottom: '20px' }}>
-              PERFECT!
-            </h2>
-            <div style={{ fontSize: '14px', marginBottom: '30px' }}>
-              You earned <strong style={{ color: 'var(--bright-blue)' }}>{score} XP</strong>!
-            </div>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => navigate('/games')} className="retro-btn">
-                BACK TO GAMES
-              </button>
-              <button onClick={() => window.location.reload()} className="retro-btn secondary">
-                PLAY AGAIN
-              </button>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-};
-
-export default Crossword;
-
-
-seedGames
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import Game from './models/Game.js';
-
-dotenv.config();
-
-const gamesData = [
-  // ==================== CROSSWORD ====================
-  {
-    title: 'IMS Crossword Challenge',
-    description: 'Test your IMS knowledge with this crossword puzzle',
-    gameType: 'crossword',
-    difficulty: 'medium',
-    maxXP: 200,
-    timeLimit: 0,
-    content: {
-      grid: [
-        ['Q', 'U', 'A', 'L', 'I', 'T', 'Y', null, null, null],
-        [null, null, 'U', null, null, null, null, null, null, null],
-        [null, null, 'D', null, null, null, null, null, null, null],
-        [null, null, 'I', null, null, null, null, null, null, null],
-        ['P', 'R', 'O', 'C', 'E', 'S', 'S', null, null, null],
-        [null, null, null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null, null, null],
-        ['R', 'I', 'S', 'K', null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null, null, null]
-      ],
-      clues: {
-        across: [
-          { number: 1, row: 0, col: 0, answer: 'QUALITY', clue: 'ISO 9001 focuses on this management system (7)' },
-          { number: 2, row: 4, col: 0, answer: 'PROCESS', clue: 'Set of interrelated activities that transform inputs to outputs (7)' },
-          { number: 3, row: 7, col: 0, answer: 'RISK', clue: 'Effect of uncertainty on objectives (4)' }
-        ],
-        down: [
-          { number: 1, row: 0, col: 2, answer: 'AUDIT', clue: 'Systematic examination to verify IMS effectiveness (5)' }
-        ]
-      }
-    },
-    isActive: true
-  },
-  
-  // ==================== WORDLE ====================
-  {
-    title: 'IMS Word Puzzle',
-    description: 'Guess the 5-letter IMS term in 6 tries',
-    gameType: 'wordle',
-    difficulty: 'medium',
-    maxXP: 150,
-    timeLimit: 0,
-    content: {
-      words: [
-        { word: 'AUDIT', hint: 'Systematic examination' },
-        { word: 'RISKS', hint: 'Uncertainties that affect objectives' },
-        { word: 'SCOPE', hint: 'Boundaries of the management system' },
-        { word: 'PDCA', hint: 'Plan-Do-Check-Act cycle (4 letters)' },
-        { word: 'TRACE', hint: 'Ability to track something through records' },
-        { word: 'VALID', hint: 'Confirmed through evidence' },
-        { word: 'POLICY', hint: 'Statement of intent from management (6 letters)' },
-        { word: 'METRIC', hint: 'Quantifiable measure of performance (6 letters)' }
-      ]
-    },
-    isActive: true
-  },
-  
-  // ==================== QUICK QUIZ ====================
-  {
-    title: 'IMS Speed Quiz',
-    description: 'Answer as many questions correctly as you can in 2 minutes',
-    gameType: 'quickquiz',
-    difficulty: 'easy',
-    maxXP: 200,
-    timeLimit: 120, // 2 minutes
-    content: {
-      questions: [
-        {
-          question: 'What does IMS stand for?',
-          options: [
-            'Integrated Management System',
-            'Internal Monitoring Service',
-            'Information Management Software',
-            'International Marketing Strategy'
-          ],
-          correctAnswer: 0,
-          points: 10
-        },
-        {
-          question: 'What does PDCA stand for?',
-          options: [
-            'Plan-Design-Create-Approve',
-            'Plan-Do-Check-Act',
-            'Process-Document-Control-Audit',
-            'Prepare-Deploy-Complete-Assess'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is the primary focus of ISO 9001?',
-          options: [
-            'Environmental Management',
-            'Quality Management',
-            'Information Security',
-            'Health and Safety'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What does CIA stand for in information security?',
-          options: [
-            'Central Intelligence Agency',
-            'Confidentiality, Integrity, Availability',
-            'Computer Information Access',
-            'Critical Information Assets'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is a nonconformity?',
-          options: [
-            'A suggestion for improvement',
-            'Non-fulfillment of a requirement',
-            'A good practice',
-            'An optional standard'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is the purpose of internal audits?',
-          options: [
-            'To punish employees',
-            'To verify IMS effectiveness',
-            'To create paperwork',
-            'To satisfy external auditors only'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is corrective action?',
-          options: [
-            'Punishment for mistakes',
-            'Action to eliminate cause of nonconformity',
-            'Temporary fix',
-            'Blame assignment'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is continual improvement?',
-          options: [
-            'One-time effort',
-            'Recurring activity to enhance performance',
-            'Random updates',
-            'Annual review'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is risk-based thinking?',
-          options: [
-            'Ignoring all risks',
-            'Considering risks when planning',
-            'Only thinking about problems',
-            'Avoiding all changes'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What makes a good quality objective?',
-          options: [
-            'Vague and general',
-            'SMART (Specific, Measurable, Achievable, Relevant, Time-bound)',
-            'Impossible to achieve',
-            'Not documented'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is competence?',
-          options: [
-            'Just having a degree',
-            'Ability to apply knowledge and skills effectively',
-            'Years of service',
-            'Job title'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is documented information?',
-          options: [
-            'Random files',
-            'Information required to be controlled and maintained',
-            'Only emails',
-            'Only verbal instructions'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is process control?',
-          options: [
-            'Micromanaging people',
-            'Ensuring processes operate under controlled conditions',
-            'Random checks',
-            'Ignoring procedures'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is management review?',
-          options: [
-            'Employee evaluation',
-            'Top management evaluation of IMS',
-            'Customer survey',
-            'Financial audit'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is root cause analysis?',
-          options: [
-            'Finding someone to blame',
-            'Identifying fundamental reason for problem',
-            'Treating symptoms only',
-            'Ignoring the problem'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'Who is responsible for quality?',
-          options: [
-            'Only the quality department',
-            'Everyone in the organization',
-            'Only top management',
-            'Only external auditors'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is the purpose of management review?',
-          options: [
-            'To criticize employees',
-            'To evaluate IMS effectiveness and plan improvements',
-            'To delay decisions',
-            'To create reports for storage'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is interested party?',
-          options: [
-            'Only customers',
-            'Anyone affected by or affecting the organization',
-            'Only shareholders',
-            'Only employees'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is operational planning?',
-          options: [
-            'Random activities',
-            'Planning processes to meet requirements',
-            'Daily schedules only',
-            'Vacation planning'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'Why evaluate performance?',
-          options: [
-            'To punish people',
-            'To determine if objectives are achieved',
-            'To create reports',
-            'To compare employees'
-          ],
-          correctAnswer: 1,
-          points: 10
-        }
-      ]
-    },
-    isActive: true
-  }
-];
-
-const seedGames = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('📁 Connected to MongoDB');
-
-    // Clear existing games
-    await Game.deleteMany({});
-    console.log('🗑️  Cleared existing games');
-
-    // Insert new games
-    const games = await Game.insertMany(gamesData);
-    console.log(`✅ Created ${games.length} games`);
-
-    games.forEach(game => {
-      console.log(`\n🎮 ${game.title}`);
-      console.log(`   Type: ${game.gameType}`);
-      console.log(`   Difficulty: ${game.difficulty}`);
-      console.log(`   Max XP: ${game.maxXP}`);
-      console.log(`   Time Limit: ${game.timeLimit || 'None'}`);
-      console.log(`   ID: ${game._id}`);
-    });
-
-    process.exit(0);
-  } catch (error) {
-    process.exit(1);
-  }
-};
-
-seedGames();
-
-
-{/* Games Routes */}
-<Route
-  path="/games"
-  element={
-    <ProtectedRoute>
-      <Games />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/games/crossword/:id"
-  element={
-    <ProtectedRoute>
-      <Crossword />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/games/wordle/:id"
-  element={
-    <ProtectedRoute>
-      <Wordle />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/games/quickquiz/:id"
-  element={
-    <ProtectedRoute>
-      <QuickQuiz />
-    </ProtectedRoute>
-  }
-/>
-
-{/* Admin Games Route */}
-<Route
-  path="/admin/games"
-  element={
-    <ProtectedRoute adminOnly>
-      <AdminGames />
-    </ProtectedRoute>
-  }
-/>
