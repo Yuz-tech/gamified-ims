@@ -1388,3 +1388,300 @@ const Games = () => {
 
 export default Games;
 
+
+
+server/utils/BadgeHelper
+
+// Create this file: server/utils/badgeHelper.js
+
+import User from '../models/User.js';
+import Badge from '../models/Badge.js';
+
+/**
+ * Award badge to user
+ * - If user already has badge for this topic: increment badgeCount
+ * - If user doesn't have badge: create new entry with badgeCount: 1
+ * - Also updates Badge model's badgeCount for current year
+ */
+async function awardBadgeToUser(userId, topicId, badgeName, badgeImage) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Check if user already has this badge (from a previous year)
+    const existingBadgeIndex = user.badges.findIndex(
+      badge => badge.topicId.toString() === topicId.toString()
+    );
+
+    if (existingBadgeIndex !== -1) {
+      // ✅ User already has this badge - INCREMENT badgeCount
+      user.badges[existingBadgeIndex].badgeCount += 1;
+      user.badges[existingBadgeIndex].earnedAt = new Date(); // Update earned date
+      
+      console.log(`✨ User ${user.username} re-earned badge for topic ${topicId}. New count: ${user.badges[existingBadgeIndex].badgeCount}`);
+    } else {
+      // ✅ First time earning this badge - ADD new entry
+      user.badges.push({
+        topicId,
+        badgeName,
+        badgeImage,
+        earnedAt: new Date(),
+        badgeCount: 1
+      });
+      
+      console.log(`🏆 User ${user.username} earned badge for topic ${topicId} for the first time`);
+    }
+
+    await user.save();
+
+    // ✅ Also increment the Badge model's badgeCount
+    // This tracks total instances of this badge earned across all users
+    const currentYear = new Date().getFullYear();
+    const badge = await Badge.findOne({ topicId, year: currentYear });
+    
+    if (badge) {
+      badge.badgeCount += 1;
+      await badge.save();
+      console.log(`📊 Badge ${badgeName} total count for ${currentYear}: ${badge.badgeCount}`);
+    } else {
+      // Create badge record for current year if it doesn't exist
+      await Badge.create({
+        name: badgeName,
+        description: `Badge earned by completing topic`,
+        imageUrl: badgeImage,
+        topicId,
+        year: currentYear,
+        badgeCount: 1,
+        isActive: true
+      });
+      console.log(`🆕 Created badge record for ${badgeName} in year ${currentYear}`);
+    }
+
+    return {
+      success: true,
+      isReEarned: existingBadgeIndex !== -1,
+      badgeCount: existingBadgeIndex !== -1 
+        ? user.badges[existingBadgeIndex].badgeCount 
+        : 1
+    };
+  } catch (error) {
+    console.error('Error awarding badge:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get user's badge count for a specific topic
+ */
+async function getUserBadgeCount(userId, topicId) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return 0;
+
+    const badge = user.badges.find(
+      b => b.topicId.toString() === topicId.toString()
+    );
+
+    return badge ? badge.badgeCount : 0;
+  } catch (error) {
+    console.error('Error getting user badge count:', error);
+    return 0;
+  }
+}
+
+/**
+ * Get total badge count across all users for a topic in a specific year
+ */
+async function getTotalBadgeCount(topicId, year = new Date().getFullYear()) {
+  try {
+    const badge = await Badge.findOne({ topicId, year });
+    return badge ? badge.badgeCount : 0;
+  } catch (error) {
+    console.error('Error getting total badge count:', error);
+    return 0;
+  }
+}
+
+export { 
+  awardBadgeToUser, 
+  getUserBadgeCount,
+  getTotalBadgeCount
+};
+
+
+yearly-reset
+// Update this in server/routes/admin.js
+
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const users = await User.find();
+    
+    let resetCount = 0;
+    
+    for (const user of users) {
+      if (user.role !== 'admin') {
+        // ✅ PRESERVE BADGES ARRAY - Don't clear it!
+        // Only reset progress-related fields
+        user.completedTopics = [];
+        user.xp = 0;
+        user.level = 1;
+        
+        // badges array stays intact with all badgeCounts preserved
+        
+        await user.save();
+        resetCount++;
+      }
+    }
+    
+    await logActivity(req.user._id, 'yearly_reset_performed', {
+      usersReset: resetCount,
+      timestamp: new Date()
+    }, req);
+    
+    res.json({
+      message: 'Yearly reset completed successfully',
+      usersReset: resetCount,
+      note: 'User badges and badge counts have been preserved. Users can now re-earn badges to increment their counts.'
+    });
+  } catch (error) {
+    console.error('Error performing yearly reset:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+server/routes/topics 
+
+// Update this in server/routes/topics.js
+// This is the endpoint where users submit their quiz answers
+
+import { awardBadgeToUser } from '../utils/badgeHelper.js'; // Import the helper
+
+router.post('/:topicId/submit-answers', authenticateToken, async (req, res) => {
+  try {
+    const { topicId } = req.params;
+    const { answers } = req.body;
+    const userId = req.user._id;
+
+    // Get topic
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    // Get user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check answers
+    let correctCount = 0;
+    let mandatoryCorrect = false;
+    let bonusCorrect = 0;
+
+    answers.forEach((answer, index) => {
+      const question = topic.questions[index];
+      if (question && answer === question.correctAnswer) {
+        correctCount++;
+        if (question.isMandatory) {
+          mandatoryCorrect = true;
+        } else {
+          bonusCorrect++;
+        }
+      }
+    });
+
+    const mandatoryCompleted = mandatoryCorrect;
+    const bonusCompleted = bonusCorrect === 4; // All 4 bonus questions correct
+
+    // Calculate XP
+    let xpEarned = 0;
+    if (mandatoryCompleted) xpEarned += 50;
+    if (bonusCompleted) xpEarned += 50;
+
+    const oldLevel = user.level;
+    user.xp += xpEarned;
+
+    // Calculate new level
+    const { calculateLevel } = await import('../utils/levelSystem.js');
+    const newLevel = calculateLevel(user.xp);
+    const leveledUp = newLevel > oldLevel;
+    if (leveledUp) {
+      user.level = newLevel;
+    }
+
+    // Update or add completion record
+    const existingCompletion = user.completedTopics.find(
+      ct => ct.topicId.toString() === topicId.toString()
+    );
+
+    if (existingCompletion) {
+      existingCompletion.mandatoryCompleted = mandatoryCompleted;
+      existingCompletion.bonusCompleted = bonusCompleted;
+      existingCompletion.bonusCorrect = bonusCorrect;
+      existingCompletion.completedAt = new Date();
+    } else {
+      user.completedTopics.push({
+        topicId,
+        mandatoryCompleted,
+        bonusCompleted,
+        bonusCorrect,
+        completedAt: new Date()
+      });
+    }
+
+    await user.save();
+
+    // ✅ AWARD BADGE using new logic (if mandatory completed)
+    let badgeInfo = null;
+    if (mandatoryCompleted) {
+      const badgeResult = await awardBadgeToUser(
+        userId,
+        topicId,
+        topic.badgeName,
+        topic.badgeImage
+      );
+      
+      badgeInfo = {
+        earned: true,
+        isReEarned: badgeResult.isReEarned,
+        badgeCount: badgeResult.badgeCount,
+        badgeName: topic.badgeName,
+        badgeImage: topic.badgeImage
+      };
+    }
+
+    // Log activity
+    await logActivity(userId, 'topic_completed', {
+      topicId,
+      topicTitle: topic.title,
+      score: correctCount,
+      mandatoryCompleted,
+      bonusCompleted,
+      xpEarned,
+      leveledUp,
+      badgeEarned: mandatoryCompleted,
+      badgeReEarned: badgeInfo?.isReEarned,
+      badgeCount: badgeInfo?.badgeCount
+    }, req);
+
+    res.json({
+      correctCount,
+      totalQuestions: topic.questions.length,
+      mandatoryCompleted,
+      bonusCompleted,
+      bonusCorrect,
+      xpEarned,
+      totalXP: user.xp,
+      leveledUp,
+      newLevel: user.level,
+      badge: badgeInfo
+    });
+  } catch (error) {
+    console.error('Error submitting answers:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});

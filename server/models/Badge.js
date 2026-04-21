@@ -30,10 +30,6 @@ const badgeSchema = new mongoose.Schema({
   badgeCount: {
     type: Number,
     default: 0
-  },
-  yearlyEarned: {
-    type: Boolean,
-    default: false
   }
 }, {
   timestamps: true
