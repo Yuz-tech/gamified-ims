@@ -13,8 +13,8 @@ router.use(authenticateToken);
 router.get('/', async (req, res) => {
   try {
     const topics = await Topic.find({ isActive: true })
-      .select('title description documentUrl videoUrl badgeName badgeImage questions priority')
-      .sort({ priority: 1, title: 1 });
+      .select('title description documentUrl videoUrl badgeName badgeImage questions priority isNew')
+      .sort({ priority: 1, isNew: -1, title: 1 });
     
     const user = await User.findById(req.user._id);
     

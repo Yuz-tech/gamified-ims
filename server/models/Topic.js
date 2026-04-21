@@ -56,6 +56,10 @@ const topicSchema = new mongoose.Schema({
     type: Number,
     default: 999
   },
+  isNew: {
+    type: Boolean,
+    default: false
+  },
   isActive: {
     type: Boolean,
     default: true

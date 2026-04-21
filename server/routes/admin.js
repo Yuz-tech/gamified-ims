@@ -108,12 +108,8 @@ router.delete('/users/:userId', async (req, res) => {
 // Get all topics (admin)
 router.get('/topics', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const topics = await Topic.find({});
-    
-    // Sort in JavaScript
-    topics.sort((a, b) => {
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
+    const topics = await Topic.find({})
+      .sort({ title: 1 });
     
     res.json(topics);
   } catch (error) {
@@ -134,7 +130,7 @@ router.post('/topics', async (req, res) => {
 });
 
 // Toggle topic active/inactive (instead of delete)
-router.put('/topics/:topicId/toggle', async (req, res) => {
+router.put('/topics/:topicId/toggle', authenticateToken, isAdmin, async (req, res) => {
   try {
     const topic = await Topic.findById(req.params.topicId);
     if (!topic) {
@@ -474,6 +470,93 @@ router.put('/settings', authenticateToken, isAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Toggle topic as "new"
+router.patch('/topics/:topicId/toggle-new', authenticateToken, isAdmin, async(req,res) => {
+  try {
+    const { topicId } = req.params;
+    const topic = await Topic.findById(topicId);
+
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    topic.isNew = !topic.isNew;
+    await topic.save();
+
+    await logActivity(req.user._id, 'topic_new_toggled', {
+      topicId: topic._id,
+      topicTitle: topic.title,
+      isNew: topic.isNew
+    }, req);
+
+    res.json({
+      message: `Topic marked as ${topic.isNew ? 'new' : 'not new'}`,
+      topic: {
+        _id: topic._id,
+        title: topic.title,
+        isNew: topic.isNew
+      }
+    });
+  } catch (error) {
+    console.error('Error toggling topic new status: ', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update existing topic endpoint
+router.put('/topics/:topicId', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { topicId } = req.params;
+    const {
+      title,
+      description,
+      documentUrl,
+      videoUrl,
+      badgeName,
+      badgeImage,
+      questions,
+      priority,
+      isActive,
+      isNew
+    } = req.body;
+
+    const topic = await Topic.findByIdAndUpdate(
+      topicId,
+      {
+        title,
+        description,
+        documentUrl,
+        videoUrl,
+        badgeName,
+        badgeImage,
+        questions,
+        priority,
+        isActive,
+        isNew
+      },
+      {
+        new: true, runValidators: true
+      }
+    );
+
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    await logActivity(req.user._id, 'topic_updated', {
+      topicId: topic._id,
+      title: topic.title
+    }, req);
+
+    res.json({
+      message: 'Topic updated', topic
+    });
+  } catch (error) {
+    console.error('Error updating topic: ', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
