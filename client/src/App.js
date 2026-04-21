@@ -11,6 +11,9 @@ import Achievements from './pages/Achievements';
 import Players from './pages/Players';
 import Games from './pages/Games';
 import Crossword from './pages/games/Crossword';
+import Wordle from './pages/games/Wordle';
+import QuickQuiz from './pages/games/QuickQuiz';
+import AdminGames from './pages/admin/AdminGames';
 import Footer from './components/Footer';
 import Profile from './pages/Profile';
 import Dashboard from './pages/admin/Dashboard';
@@ -111,6 +114,15 @@ const AdminLayout = ({ children }) => {
             </button>
           )}
         </NavLink>
+
+        <NavLink to = "/admin/games" style={({ isActive }) => ({ textDecoration: 'none' })}>
+          {({ isActive }) => (
+            <button className={isActive ? "retro-btn" : "retro-btn secondary"} style={{ fontSize: '10px', padding: '8px 15px' }}>
+              GAMES
+            </button>
+          )}
+        </NavLink>
+
       </div>
       {children}
     </div>
@@ -166,6 +178,30 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
                 <Games />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/games/crossword/:id"
+          element={
+            <ProtectedRoute>
+              <Crossword />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/games/wordle/:id"
+          element={
+            <ProtectedRoute>
+              <Wordle />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/games/quickquiz/:id"
+          element={
+            <ProtectedRoute>
+              <QuickQuiz />
             </ProtectedRoute>
           }
         />
@@ -274,6 +310,16 @@ const AppRoutes = () => {
               </AdminLayout>
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/admin/games"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminLayout>
+                <AdminGames />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

@@ -27,12 +27,12 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5000',
-      'http://localhost:5173',
-      'http://localhost:27017',
+      'http://192.168.232.247:3000',
+      'http://192.168.232.247:5000',
+      'http://192.168.232.247:5173',
+      'http://192.168.232.247:27017',
       process.env.FRONTEND_URL,
-      'localhost:3000'
+      '192.168.232.247:3000'
     ].filter(Boolean);
 
     if (allowedOrigins.includes(origin)) {
@@ -78,7 +78,7 @@ app.use('/api/topics', topicRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/games',gamesRoutes);
+app.use('/api/games', gamesRoutes);
 app.use('/api/activity', activityRoutes);
 
 // Health check

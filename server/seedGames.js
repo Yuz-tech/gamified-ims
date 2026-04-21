@@ -302,16 +302,27 @@ const gamesData = [
 const seedGames = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
+    console.log('📁 Connected to MongoDB');
 
     // Clear existing games
     await Game.deleteMany({});
+    console.log('🗑️  Cleared existing games');
 
     // Insert new games
     const games = await Game.insertMany(gamesData);
+    console.log(`✅ Created ${games.length} games`);
+
+    games.forEach(game => {
+      console.log(`\n🎮 ${game.title}`);
+      console.log(`   Type: ${game.gameType}`);
+      console.log(`   Difficulty: ${game.difficulty}`);
+      console.log(`   Max XP: ${game.maxXP}`);
+      console.log(`   Time Limit: ${game.timeLimit || 'None'}`);
+      console.log(`   ID: ${game._id}`);
+    });
 
     process.exit(0);
   } catch (error) {
-    console.error('error:', error);
     process.exit(1);
   }
 };

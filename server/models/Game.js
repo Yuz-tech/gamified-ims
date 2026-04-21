@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import { isAdmin } from "../middleware/auth.js";
 
 const gameSchema = new mongoose.Schema({
     title: {
@@ -17,11 +18,11 @@ const gameSchema = new mongoose.Schema({
     difficulty: {
         type: String,
         enum: ['easy', 'medium', 'hard'],
-        default: 'easy'
+        default: 'medium'
     },
     maxXP: {
         type: Number,
-        default: 100
+        default: 200
     },
     timeLimit: {
         type: Number,

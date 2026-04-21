@@ -24,7 +24,8 @@ const activityLogSchema = new mongoose.Schema({
       'game_created',
       'game_updated',
       'game_deleted',
-      'game_completed'
+      'game_completed',
+      'settings_updated'
     ]
   },
   details: {

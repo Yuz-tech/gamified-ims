@@ -20,11 +20,16 @@ const ActivityLogs = () => {
     'quiz_started',
     'quiz_completed',
     'badge_earned',
+    'topic_updated',
     'topic_completed',
     'profile_updated',
     'password_reset_by_admin',
     'settings_updated',
-    'xp_awarded'
+    'xp_awarded',
+    'game_completed',
+    'game_created',
+    'game_updated',
+    'game_deleted'
   ];
 
   useEffect(() => {
