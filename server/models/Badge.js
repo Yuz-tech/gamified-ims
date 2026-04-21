@@ -26,6 +26,14 @@ const badgeSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  badgeCount: {
+    type: Number,
+    default: 0
+  },
+  yearlyEarned: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

@@ -282,14 +282,33 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
 
     console.log('Starting yearly reset...');
 
-    const result = await User.updateMany({ role: 'employee' }, 
-      {
-        $set: {
-          completedTopics: [],
-          badges: []
+    const result = await User.updateMany(
+      { role: 'employee' },
+      [
+        {
+          $set: {
+            completedTopics: [],
+            badges: {
+              $map: {
+                input: "$badges",
+                as: "b",
+                in: {
+                  topicId: "$$b.topicId",
+                  badgeName: "$$b.name",
+                  badgeImage: "$$b.description",
+                  imageUrl: "$$b.imageUrl",
+                  year: new Date().getFullYear(),
+                  isActive: true,
+                  badgeCount: { $add: ["$$b.badgeCount", 1]},
+                  yearlyEarned: false
+                }
+              }
+            }
+          }
         }
-      }
+      ]
     );
+
     await ActivityLog.deleteMany({});
     await logActivity(req.user._id, 'yearly-reset', {
       usersReset: result.modifiedCount,

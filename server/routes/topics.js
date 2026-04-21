@@ -123,10 +123,12 @@ router.post('/:topicId/submit-mandatory', async (req, res) => {
         );
         
         if (!hasBadge) {
+          const newCount = (topic.badgeCount || 0) + 1;
           user.badges.push({
             topicId,
             badgeName: topic.badgeName || topic.title,
-            badgeImage: topic.badgeImage
+            badgeImage: topic.badgeImage,
+            badgeCount: newCount
           });
         }
       } 
