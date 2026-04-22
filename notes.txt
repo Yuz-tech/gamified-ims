@@ -1,0 +1,1 @@
+1. no src/pages/games/texttwist, quickquiz, wordle, and hangman.js
