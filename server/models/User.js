@@ -81,8 +81,7 @@ const userSchema = new mongoose.Schema({
     },
     badgeCount: {
       type: Number,
-      default: 1,
-      min: 1
+      default: 0
     }
   }]
 }, {

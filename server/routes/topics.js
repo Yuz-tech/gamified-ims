@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { logActivity } from '../utils/logger.js';
 import { calculateLevel } from '../utils/levelSystem.js';
+import Badge from '../models/Badge.js';
 
 const router = express.Router();
 
@@ -118,20 +119,25 @@ router.post('/:topicId/submit-mandatory', async (req, res) => {
       user.level = calculateLevel(user.xp);
 
       if (topic.badgeImage) {
-        const hasBadge = user.badges.some(
+
+        // Update user badge record
+        const userBadge = user.badges.find(
           b => b.topicId && b.topicId.toString() === topicId
         );
-        
-        if (!hasBadge) {
-          const newCount = (topic.badgeCount || 0) + 1;
+
+        if (userBadge) {
+          userBadge.badgeCount += 1;
+          userBadge.earnedAt = new Date();
+        } else {
           user.badges.push({
             topicId,
-            badgeName: topic.badgeName || topic.title,
-            badgeImage: topic.badgeImage,
-            badgeCount: newCount
+            badgeName: topic.badgeName,
+            badgeImage: topic.badgeImage,   
+            earnedAt: new Date(),
+            badgeCount: 1
           });
         }
-      } 
+      }
 
       await user.save();
 
@@ -149,7 +155,7 @@ router.post('/:topicId/submit-mandatory', async (req, res) => {
         xpEarned: 100,
         newLevel: user.level,
         newXP: user.xp,
-        badgeEarned: topic.badgeName || topic.title,
+        badgeEarned: topic.badgeName,
         badgeImage: topic.badgeImage
       });
     } else {

@@ -77,10 +77,10 @@ const TopicDetail = () => {
       top: 0
     });
 
-    const noteEl = document.getElementById("note");
-    if (noteEl) {
-      noteEl.style.display = "none"; 
-    }
+    // const noteEl = document.getElementById("note");
+    // if (noteEl) {
+    //   noteEl.style.display = "none"; 
+    // }
 
   };
 

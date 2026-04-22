@@ -43,11 +43,14 @@ const Achievements = () => {
     return 'BRONZE';
   };
 
+  const currentYear = new Date().getFullYear();
+
   const badges = allTopics.map(topic => {
     const userBadge = user?.badges?.find(b => b.topicId === topic._id);
-    const isEarned = !!userBadge;
     const badgeCount = userBadge?.badgeCount || 0;
     const isCompleted = user?.completedTopics?.some(ct => ct.topicId === topic._id);
+    // const isEarned = userBadge?.earnedAt && new Date(userBadge.earnedAt).getFullYear === currentYear;
+    const isEarned = userBadge; // old one
 
     return {
       topicId: topic._id,
@@ -186,9 +189,9 @@ const Achievements = () => {
 
         {/* Badges Card */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-          {filteredBadges.map((badge, index) => (
+          {filteredBadges.map((badges, index) => (
             <motion.div
-              key={badge.topicId}
+              key={badges.topicId}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
@@ -197,15 +200,15 @@ const Achievements = () => {
               style={{
                 textAlign: 'center',
                 cursor: 'pointer',
-                opacity: badge.isEarned ? 1 : 0.5,
+                opacity: badges.isEarned ? 1 : 0.5,
                 position: 'relative',
-                border: `4px solid ${badge.borderColor}`,
-                background: badge.isEarned ? 'white' : 'var(--bg-light)'
+                border: `4px solid ${badges.borderColor}`,
+                background: badges.isEarned ? 'white' : 'var(--bg-light)'
               }}
-              onClick={() => navigate(`/topics/${badge.topicId}`)}
+              onClick={() => navigate(`/topics/${badges.topicId}`)}
             >
               {/* Badge count indicator */}
-              {badge.badgeCount > 0 && (
+              {badges.badgeCount > 0 && (
                 <div style={{
                   position: 'absolute',
                   top: '-10px',
@@ -213,7 +216,7 @@ const Achievements = () => {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  background: badge.borderColor,
+                  background: badges.borderColor,
                   border: '3px solid white',
                   display: 'flex',
                   alignItems: 'center',
@@ -224,7 +227,7 @@ const Achievements = () => {
                   zIndex: 10,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                 }}>
-                  {badge.badgeCount}
+                  {badges.badgeCount}
                 </div>
               )}
 
@@ -238,9 +241,9 @@ const Achievements = () => {
                 justifyContent: 'center',
                 position: 'relative'
               }}>
-                {badge.isEarned ? (
-                  <img src={getImageUrl(badge.image)}
-                    alt={badge.name}
+                {badges.isEarned && badges.isCompleted ? (
+                  <img src={getImageUrl(badges.image)}
+                    alt={badges.name}
                     style={{
                       width: '100%',
                       height: '100%',
@@ -271,7 +274,7 @@ const Achievements = () => {
               <h3 style={{
                 fontSize: '15px',
                 fontWeight: 'bold',
-                color: badge.isEarned ? 'var(--text-medium)' : 'var(--text-light)',
+                color: badges.isEarned ? 'var(--text-medium)' : 'var(--text-light)',
                 marginBottom: '10px',
                 minHeight: '36px',
                 display: 'flex',
@@ -279,49 +282,30 @@ const Achievements = () => {
                 justifyContent: 'center',
                 padding: '0 10px'
               }}>
-                {badge.name}
+                {badges.name}
               </h3>
 
               {/* Badge Tier */}
-              {badge.badgeCount > 0 && (
+              {badges.badgeCount > 0 && (
                 <div style={{
                   fontSize: '9px',
                   fontWeight: 'bold',
-                  color: badge.borderColor,
+                  color: badges.borderColor,
                   marginBottom: '10px',
                   textTransform: 'uppercase'
                 }}>
-                  {badge.borderName} TIER
+                  {badges.borderName} TIER
                 </div>
               )}
-
-              {/* Progress Bar */}
-              <div style={{ padding: '0 15px', marginBottom: '15px' }}>
-                <div style={{
-                  width: '100%',
-                  height: '8px',
-                  background: 'var(--bg-medium)',
-                  border: '2px solid var(--border-color)',
-                  borderRadius: '4px',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    width: badge.isCompleted ? '100%' : '0%',
-                    height: '100%',
-                    background: badge.borderColor,
-                    transition: 'width 0.3s ease'
-                  }} />
-                </div>
-              </div>
 
               {/* Status */}
               <div style={{
                 fontSize: '9px',
-                color: badge.isEarned ? 'var(--success-green)' : 'var(--text-light)',
+                color: badges.isCompleted ? 'var(--success-green)' : 'var(--text-light)',
                 fontWeight: 'bold',
                 marginBottom: '10px'
               }}>
-                {badge.isEarned ? (badge.isCompleted ? 'Completed' : 'RETAKE AVAILABLE') : 'LOCKED'}
+                {badges.isEarned ? (badges.isCompleted ? 'COMPLETED' : '') : 'LOCKED'}
               </div>
             </motion.div>
           ))}

@@ -294,13 +294,7 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
                 as: "b",
                 in: {
                   topicId: "$$b.topicId",
-                  badgeName: "$$b.name",
-                  badgeImage: "$$b.description",
-                  imageUrl: "$$b.imageUrl",
-                  year: new Date().getFullYear(),
-                  isActive: true,
-                  badgeCount: { $add: ["$$b.badgeCount", 1]},
-                  yearlyEarned: false
+                  badgeCount: "$$b.badgeCount",
                 }
               }
             }
@@ -320,7 +314,7 @@ router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
       usersReset: result.modifiedCount, 
       details: {
         completedTopicsCleared: true,
-        badgesPreserved: true,
+        badgeCountPreserved: true,
         xpPreserved: true,
         levelsPreserved: true,
         activityLogsCleared: true

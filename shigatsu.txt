@@ -1,2 +1,275 @@
-1. Improve games
-2. New seedData
+Yearly-reset logic:
+When admin resets, the following are preserved: employees' level, xp, and badgeCount. The following are reset topic completion progress or status.
+
+Currently working Models and functions related:
+
+models/User.js
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    enum: ['employee', 'admin'],
+    default: 'employee'
+  },
+  isApproved: {
+    type: Boolean,
+    default: true
+  },
+  avatar: {
+    type: String,
+    default: null
+  },
+  xp: {
+    type: Number,
+    default: 0
+  },
+  level: {
+    type: Number,
+    default: 1
+  },
+  completedTopics: [{
+    topicId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Topic'
+    },
+    mandatoryCompleted: {
+      type: Boolean,
+      default: false
+    },
+    bonusCompleted: {
+      type: Boolean,
+      default: false
+    },
+    bonusCorrect: {
+      type: Number,
+      default: 0
+    },
+    completedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  badges: [{
+    topicId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Topic'
+    },
+    badgeName: {
+      type: String,
+      default: ''
+    },
+    badgeImage: {
+      type: String,
+      default: ''
+    },
+    earnedAt: {
+      type: Date,
+      default: Date.now
+    },
+    badgeCount: {
+      type: Number,
+      default: 1,
+      min: 1
+    }
+  }]
+}, {
+  timestamps: true
+});
+
+// Hash Password using bcrypt
+userSchema.pre('save', async function(next) {
+  if(!this.isModified('password')) return next();
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Compare password
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+
+export default User;
+
+
+routes/admin.js
+// Yearly Reset
+router.post('/yearly-reset', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { confirmCode } = req.body;
+
+    if (confirmCode !== 'RESET_ALL_DATA') {
+      return res.status(400).json({ message: 'Invalid confirmation code' });
+    }
+
+    console.log('Starting yearly reset...');
+
+    const result = await User.updateMany(
+      { role: 'employee' },
+      [
+        {
+          $set: {
+            completedTopics: [],
+            badges: {
+              $map: {
+                input: "$badges",
+                as: "b",
+                in: {
+                  topicId: "$$b.topicId",
+                  badgeName: "$$b.name",
+                  badgeImage: "$$b.description",
+                  imageUrl: "$$b.imageUrl",
+                  year: new Date().getFullYear(),
+                  isActive: true,
+                  badgeCount: { $add: ["$$b.badgeCount", 1]},
+                  yearlyEarned: false
+                }
+              }
+            }
+          }
+        }
+      ]
+    );
+
+    await ActivityLog.deleteMany({});
+    await logActivity(req.user._id, 'yearly-reset', {
+      usersReset: result.modifiedCount,
+      timestamp: new Date()
+    }, req);
+
+    res.json({
+      message: 'Yearly reset completed',
+      usersReset: result.modifiedCount, 
+      details: {
+        completedTopicsCleared: true,
+        badgesPreserved: true,
+        xpPreserved: true,
+        levelsPreserved: true,
+        activityLogsCleared: true
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Reset failed',
+      error: error.message
+    });
+  }
+});
+
+
+routes/topics.js
+
+
+// Submit mandatory question
+router.post('/:topicId/submit-mandatory', async (req, res) => {
+  try {
+    const { answer } = req.body;
+    const topicId = req.params.topicId;
+
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    const mandatoryQuestion = topic.questions[0];
+    const isCorrect = answer === mandatoryQuestion.correctAnswer;
+
+    if (!isCorrect) {
+      return res.json({
+        passed: false,
+        correctAnswer: false,
+        correctAnswerIndex: mandatoryQuestion.correctAnswer,
+        explanation: mandatoryQuestion.explanation
+      });
+    }
+
+    let completion = user.completedTopics.find(
+      ct => ct.topicId && ct.topicId.toString() === topicId
+    );
+
+    if (!completion) {   
+      user.completedTopics.push({
+        topicId,
+        mandatoryCompleted: true,
+        bonusCompleted: false,
+        bonusCorrect: 0
+      });
+
+      user.xp += 100;
+      user.level = calculateLevel(user.xp);
+
+      if (topic.badgeImage) {
+        const hasBadge = user.badges.some(
+          b => b.topicId && b.topicId.toString() === topicId
+        );
+        
+        if (!hasBadge) {
+          const newCount = (topic.badgeCount || 0) + 1;
+          user.badges.push({
+            topicId,
+            badgeName: topic.badgeName || topic.title,
+            badgeImage: topic.badgeImage,
+            badgeCount: newCount
+          });
+        }
+      } 
+
+      await user.save();
+
+      await logActivity(user._id, 'quiz_completed', { 
+        topicId, 
+        stage: 'mandatory',
+        passed: true,
+        xpEarned: 100
+      }, req);
+
+      res.json({
+        passed: true,
+        correctAnswer: true,
+        firstTime: true,
+        xpEarned: 100,
+        newLevel: user.level,
+        newXP: user.xp,
+        badgeEarned: topic.badgeName || topic.title,
+        badgeImage: topic.badgeImage
+      });
+    } else {
+      res.json({
+        passed: true,
+        correctAnswer: true,
+        firstTime: false,
+        message: 'Already completed'
+      });
+    }
+  } catch (error) {
+    console.error(' ERROR submitting mandatory:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});

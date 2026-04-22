@@ -26,10 +26,6 @@ const badgeSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  },
-  badgeCount: {
-    type: Number,
-    default: 0
   }
 }, {
   timestamps: true

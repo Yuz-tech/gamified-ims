@@ -1,1 +1,2 @@
 1. no src/pages/games/texttwist, quickquiz, wordle, and hangman.js
+2. sa topicdetail, hide the topic description when starting a quiz
