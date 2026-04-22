@@ -6,21 +6,30 @@ import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
 
-// Get all games
+// GET all games w/ completion status
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const games = await Game.find({ isActive: true })
             .select('title description gameType difficulty maxXP timeLimit')
             .sort({ createdAt: -1 });
+        
+        const gamesWithStatus = games.map(game => {
+            const hasCompleted = game.hasUserCompleted(req.user._id);
+            return {
+                ...game.toObject(),
+                hasCompleted,
+                canPlay: !hasCompleted
+            };
+        });
 
-        res.json(games);
+        res.json(gamesWithStatus);
     } catch (error) {
         console.error('Error fetching games: ', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Get single game by ID
+// GET single game 
 router.get('/play/:id', authenticateToken, async (req, res) => {
     try {
         const gameId = req.params.id;
@@ -34,14 +43,28 @@ router.get('/play/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ message: 'This game is not active' });
         }
 
-        res.json(game);
+        const hasCompleted = game.hasUserCompleted(req.user._id);
+
+        if (hasCompleted) {
+            return res.status(403).json({
+                message: 'You have already completed this game and earned XP from it',
+                hasCompleted: true
+            });
+        }
+
+        res.json({
+            ...game.toObject(),
+            hasCompleted: false,
+            canPlay: true
+        });
     } catch (error) {
-        console.error('Error fetching game:', error);
+        console.error('Error fetching game: ', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
 // Submit score
+// Player can only play the game once to avoid XP farming hehe
 router.post('/submit-score', authenticateToken, async (req, res) => {
     try {
         const { gameId, gameType, score, timeSpent } = req.body;
@@ -51,15 +74,16 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
             return res.status(400).json({ message: 'Invalid score' });
         }
 
-        let game;
-        if (gameId) {
-            game = await Game.findById(gameId);
-            if (!game) {
-                return res.status(404).json({ message: 'Game not found' });
-            }
+        const game = await Game.findById(gameId);
+        if (!game) {
+            return res.status(404).json({ message: 'Game not found' });
         }
 
-        const maxXP = game ? game.maxXP : 200;
+        if (game.hasUserCompleted(userId)) {
+            return res.status(403).json({ message: 'You have already completed this game', alreadyCompleted: true });
+        }
+
+        const maxXP = game.maxXP;
         const cappedScore = Math.min(score, maxXP);
 
         const user = await User.findById(userId);
@@ -80,8 +104,10 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
 
         await user.save();
 
+        await game.addCompletion(userId, cappedScore, timeSpent);
+
         await logActivity(userId, 'game_completed', {
-            gameId: gameId || null,
+            gameId: game._id,
             gameType,
             score: cappedScore,
             timeSpent,
@@ -92,7 +118,8 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
             xpEarned: cappedScore,
             totalXP: user.xp,
             leveledUp,
-            newLevel: user.level
+            newLevel: user.level,
+            completed: true
         });
     } catch (error) {
         console.error('Error submitting game score: ', error);
@@ -100,25 +127,31 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
     }
 });
 
-// ==========ADMIN ROUTES==============
+// ======= ADMIN ROUTES ===========
 
-// Get all games (admin)
+// GET all
 router.get('/admin/all', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const games = (await Game.find());
-        res.json(games);
+        const games = (await Game.find()).toSorted({ createdAt: -1 });
+
+        const gamesWithStats = games.map(game => ({
+            ...game.toObject(),
+            completionCount: game.completions.length
+        }));
+
+        res.json(gamesWithStats);
     } catch (error) {
         console.error('Error fetching all games: ', error);
-        res.status(500).json({ message: 'Server error' })
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Create Game
+// CREATE game
 router.post('/admin/create', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const { title, description, gameType, difficulty, maxXp, timeLimit, content } = req.body;
+        const { title, description, gameType, difficulty, maxXP, timeLimit, content } = req.body;
 
-        const game = new Game ({
+        const game = new Game({
             title,
             description,
             gameType,
@@ -136,25 +169,27 @@ router.post('/admin/create', authenticateToken, isAdmin, async (req, res) => {
             gameType: game.gameType
         }, req);
 
-        res.json({ message: 'Game created successfully', game });
+        res.json({
+            message: 'Game created successfully',
+            game
+        });
     } catch (error) {
         console.error('Error creating game: ', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Update Game
+// UPDATE game
 router.put('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const gameId = req.params.id;
-        const { title, description, gameType, difficulty, maxXP, timeLimit, content, isActive } = req.body;
+        const { title, description, difficulty, maxXP, timeLimit, content, isActive } = req.body;
 
         const game = await Game.findByIdAndUpdate(
             gameId,
             {
                 title,
                 description,
-                gameType,
                 difficulty,
                 maxXP,
                 timeLimit,
@@ -183,7 +218,7 @@ router.put('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
-// Delete game
+// DELETE game
 router.delete('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const gameId = req.params.id;

@@ -1,5 +1,24 @@
-import mongoose from "mongoose";
-import { isAdmin } from "../middleware/auth.js";
+import mongoose, { mongo } from 'mongoose';
+
+const gameCompletionSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    score: {
+        type: Number,
+        required: true
+    },
+    timeSpent: {
+        type: Number,
+        required: true
+    },
+    completedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
 
 const gameSchema = new mongoose.Schema({
     title: {
@@ -13,7 +32,7 @@ const gameSchema = new mongoose.Schema({
     gameType: {
         type: String,
         required: true,
-        enum: ['crossword', 'wordle', 'quickquiz']
+        enum: ['texttwist', 'wordle', 'quickquiz', 'hangman']
     },
     difficulty: {
         type: String,
@@ -35,9 +54,27 @@ const gameSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    }
+    },
+    completions: [gameCompletionSchema]
 }, {
     timestamps: true
 });
+
+// Check user completed game
+gameSchema.methods.hasUserCompleted = function(userId) {
+    return this.completions.some(
+        completion => completion.userId.toString() === userId.toString()
+    );
+};
+
+// add completion
+gameSchema.methods.addCompletion = function(userId, score, timeSpent) {
+    this.completions.push({
+        userId,
+        score,
+        timeSpent
+    });
+    return this.save();
+};
 
 export default mongoose.model('Game', gameSchema);
