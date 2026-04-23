@@ -4,303 +4,475 @@ import Game from './models/Game.js';
 
 dotenv.config();
 
-const gamesData = [
-  // ==================== CROSSWORD ====================
+const games = [
+  // ==================== TEXT TWIST GAMES ====================
   {
-    title: 'IMS Crossword Challenge',
-    description: 'Test your IMS knowledge with this crossword puzzle',
-    gameType: 'crossword',
-    difficulty: 'medium',
+    title: "IMS Word Builder - Quality",
+    description: "Form words from IMS quality management terms",
+    gameType: "texttwist",
+    difficulty: "medium",
     maxXP: 200,
-    timeLimit: 0,
-    content: {
-      grid: [
-        ['Q', 'U', 'A', 'L', 'I', 'T', 'Y', null, null, null],
-        [null, null, 'U', null, null, null, null, null, null, null],
-        [null, null, 'D', null, null, null, null, null, null, null],
-        [null, 'R', 'I', 'S', 'K', null, null, null, null, null],
-        [null, null, 'T', null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null, null, null],
-        ['R', 'I', 'S', 'K', null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null, null, null]
-      ],
-      clues: {
-        across: [
-          { number: 1, row: 0, col: 0, answer: 'QUALITY', clue: 'ISO 9001 focuses on this management system (7)' },
-          { number: 2, row: 4, col: 0, answer: 'PROCESS', clue: 'Set of interrelated activities that transform inputs to outputs (7)' },
-          { number: 3, row: 7, col: 0, answer: 'RISK', clue: 'Effect of uncertainty on objectives (4)' }
-        ],
-        down: [
-          { number: 1, row: 0, col: 2, answer: 'AUDIT', clue: 'Systematic examination to verify IMS effectiveness (5)' }
-        ]
-      }
-    },
-    isActive: true
-  },
-  
-  // ==================== WORDLE ====================
-  {
-    title: 'IMS Word Puzzle',
-    description: 'Guess the 5-letter IMS term in 6 tries',
-    gameType: 'wordle',
-    difficulty: 'medium',
-    maxXP: 150,
-    timeLimit: 0,
+    timeLimit: 180,
+    isActive: true,
     content: {
       words: [
-        { word: 'AUDIT', hint: 'Systematic examination' },
-        { word: 'RISKS', hint: 'Uncertainties that affect objectives' },
-        { word: 'SCOPE', hint: 'Boundaries of the management system' },
-        { word: 'PDCA', hint: 'Plan-Do-Check-Act cycle (4 letters)' },
-        { word: 'TRACE', hint: 'Ability to track something through records' },
-        { word: 'VALID', hint: 'Confirmed through evidence' },
-        { word: 'POLICY', hint: 'Statement of intent from management (6 letters)' },
-        { word: 'METRIC', hint: 'Quantifiable measure of performance (6 letters)' }
+        {
+          mainWord: "QUALITY",
+          subwords: ["QUILT", "QUIT", "LIT", "ALT", "QUA", "TAIL", "QUAY", "CLAY"]
+        },
+        {
+          mainWord: "STANDARD",
+          subwords: ["STAND", "STAR", "DARTS", "RANTS", "SAND", "TANS", "ANTS", "DART"]
+        },
+        {
+          mainWord: "PROCESS",
+          subwords: ["PRESS", "SCORE", "ROPES", "PORE", "CORE", "ROSE", "SORE", "ROPE"]
+        }
       ]
-    },
-    isActive: true
+    }
   },
-  
-  // ==================== QUICK QUIZ ====================
   {
-    title: 'IMS Speed Quiz',
-    description: 'Answer as many questions correctly as you can in 2 minutes',
-    gameType: 'quickquiz',
-    difficulty: 'easy',
+    title: "IMS Word Builder - Management",
+    description: "Form words from IMS management terminology",
+    gameType: "texttwist",
+    difficulty: "hard",
+    maxXP: 250,
+    timeLimit: 180,
+    isActive: true,
+    content: {
+      words: [
+        {
+          mainWord: "IMPROVEMENT",
+          subwords: ["PROVE", "TEMPO", "PRIME", "MERIT", "TROVE", "MOVIE", "IMPORT", "REMOVE"]
+        },
+        {
+          mainWord: "OBJECTIVES",
+          subwords: ["OBJECT", "BISECT", "OBESE", "ECTIVE", "SECT", "JEST", "BEST", "VEST"]
+        }
+      ]
+    }
+  },
+
+  // ==================== WORDLE GAMES ====================
+  {
+    title: "IMS Wordle Challenge",
+    description: "Guess IMS-related 5-letter words",
+    gameType: "wordle",
+    difficulty: "medium",
+    maxXP: 150,
+    timeLimit: 0,
+    isActive: true,
+    content: {
+      words: [
+        { word: "AUDIT", hint: "Systematic examination of processes" },
+        { word: "RISKS", hint: "Potential uncertainties affecting objectives" },
+        { word: "SCOPE", hint: "Boundaries and extent of the system" },
+        { word: "GOALS", hint: "Objectives to be achieved" },
+        { word: "TRACK", hint: "Monitor and measure progress" },
+        { word: "CLAIM", hint: "Assertion of conformity" },
+        { word: "PROOF", hint: "Evidence of conformity" },
+        { word: "VALID", hint: "Confirmed through evidence" },
+        { word: "ISSUE", hint: "Problem requiring attention" },
+        { word: "ALIGN", hint: "Bring into agreement" }
+      ]
+    }
+  },
+  {
+    title: "ISO Standards Wordle",
+    description: "Guess words related to ISO standards",
+    gameType: "wordle",
+    difficulty: "hard",
+    maxXP: 175,
+    timeLimit: 0,
+    isActive: true,
+    content: {
+      words: [
+        { word: "HAZRD", hint: "Source of potential harm (5 letters)" },
+        { word: "WASTE", hint: "Unwanted or unusable material" },
+        { word: "CHART", hint: "Visual display of data" },
+        { word: "PLANS", hint: "Documented arrangements" },
+        { word: "FORMS", hint: "Documents for data collection" },
+        { word: "STAFF", hint: "Employees and personnel" },
+        { word: "LEGAL", hint: "Required by law" },
+        { word: "OWNER", hint: "Person responsible" },
+        { word: "RULES", hint: "Established guidelines" },
+        { word: "BATCH", hint: "Group of items produced together" }
+      ]
+    }
+  },
+
+  // ==================== QUICK QUIZ GAMES ====================
+  {
+    title: "IMS Fundamentals Quiz",
+    description: "Test your knowledge of IMS basics",
+    gameType: "quickquiz",
+    difficulty: "easy",
     maxXP: 200,
-    timeLimit: 120, // 2 minutes
+    timeLimit: 120,
+    isActive: true,
     content: {
       questions: [
         {
-          question: 'What does IMS stand for?',
+          question: "What does IMS stand for?",
           options: [
-            'Integrated Management System',
-            'Internal Monitoring Service',
-            'Information Management Software',
-            'International Marketing Strategy'
+            "Integrated Management System",
+            "Internal Monitoring Service",
+            "Information Management Software",
+            "International Marketing Strategy"
           ],
           correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What does PDCA stand for?',
+          question: "What is the primary focus of ISO 9001?",
           options: [
-            'Plan-Design-Create-Approve',
-            'Plan-Do-Check-Act',
-            'Process-Document-Control-Audit',
-            'Prepare-Deploy-Complete-Assess'
+            "Quality Management",
+            "Environmental Protection",
+            "Occupational Safety",
+            "Information Security"
           ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What is the primary focus of ISO 9001?',
+          question: "Which ISO standard focuses on environmental management?",
           options: [
-            'Environmental Management',
-            'Quality Management',
-            'Information Security',
-            'Health and Safety'
+            "ISO 14001",
+            "ISO 9001",
+            "ISO 45001",
+            "ISO 27001"
           ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What does CIA stand for in information security?',
+          question: "What does PDCA stand for?",
           options: [
-            'Central Intelligence Agency',
-            'Confidentiality, Integrity, Availability',
-            'Computer Information Access',
-            'Critical Information Assets'
+            "Plan-Do-Check-Act",
+            "Prepare-Deploy-Control-Audit",
+            "Process-Document-Comply-Approve",
+            "Plan-Document-Correct-Assess"
           ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What is a nonconformity?',
+          question: "What is continual improvement?",
           options: [
-            'A suggestion for improvement',
-            'Non-fulfillment of a requirement',
-            'A good practice',
-            'An optional standard'
+            "Recurring activity to enhance performance",
+            "One-time project initiative",
+            "Annual review process",
+            "Corrective action procedure"
           ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What is the purpose of internal audits?',
+          question: "What is a nonconformity?",
           options: [
-            'To punish employees',
-            'To verify IMS effectiveness',
-            'To create paperwork',
-            'To satisfy external auditors only'
+            "Failure to meet a requirement",
+            "Minor documentation error",
+            "Suggestion for improvement",
+            "Observation during audit"
           ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What is corrective action?',
+          question: "What is the purpose of an internal audit?",
           options: [
-            'Punishment for mistakes',
-            'Action to eliminate cause of nonconformity',
-            'Temporary fix',
-            'Blame assignment'
+            "Verify conformity and effectiveness",
+            "Punish employees for mistakes",
+            "Find problems to report externally",
+            "Create more documentation"
           ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What is continual improvement?',
+          question: "What is risk-based thinking?",
           options: [
-            'One-time effort',
-            'Recurring activity to enhance performance',
-            'Random updates',
-            'Annual review'
+            "Considering potential issues when planning",
+            "Avoiding all risky activities",
+            "Only focusing on financial risks",
+            "Documenting past failures"
           ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What is risk-based thinking?',
+          question: "What is a corrective action?",
           options: [
-            'Ignoring all risks',
-            'Considering risks when planning',
-            'Only thinking about problems',
-            'Avoiding all changes'
+            "Action to eliminate cause of nonconformity",
+            "Immediate fix to a problem",
+            "Punishment for error",
+            "Training program"
           ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         },
         {
-          question: 'What makes a good quality objective?',
+          question: "Who is responsible for quality in an organization?",
           options: [
-            'Vague and general',
-            'SMART (Specific, Measurable, Achievable, Relevant, Time-bound)',
-            'Impossible to achieve',
-            'Not documented'
+            "Everyone",
+            "Only the quality manager",
+            "Only top management",
+            "Only auditors"
           ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is competence?',
-          options: [
-            'Just having a degree',
-            'Ability to apply knowledge and skills effectively',
-            'Years of service',
-            'Job title'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is documented information?',
-          options: [
-            'Random files',
-            'Information required to be controlled and maintained',
-            'Only emails',
-            'Only verbal instructions'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is process control?',
-          options: [
-            'Micromanaging people',
-            'Ensuring processes operate under controlled conditions',
-            'Random checks',
-            'Ignoring procedures'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is management review?',
-          options: [
-            'Employee evaluation',
-            'Top management evaluation of IMS',
-            'Customer survey',
-            'Financial audit'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is root cause analysis?',
-          options: [
-            'Finding someone to blame',
-            'Identifying fundamental reason for problem',
-            'Treating symptoms only',
-            'Ignoring the problem'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'Who is responsible for quality?',
-          options: [
-            'Only the quality department',
-            'Everyone in the organization',
-            'Only top management',
-            'Only external auditors'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is the purpose of management review?',
-          options: [
-            'To criticize employees',
-            'To evaluate IMS effectiveness and plan improvements',
-            'To delay decisions',
-            'To create reports for storage'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is interested party?',
-          options: [
-            'Only customers',
-            'Anyone affected by or affecting the organization',
-            'Only shareholders',
-            'Only employees'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'What is operational planning?',
-          options: [
-            'Random activities',
-            'Planning processes to meet requirements',
-            'Daily schedules only',
-            'Vacation planning'
-          ],
-          correctAnswer: 1,
-          points: 10
-        },
-        {
-          question: 'Why evaluate performance?',
-          options: [
-            'To punish people',
-            'To determine if objectives are achieved',
-            'To create reports',
-            'To compare employees'
-          ],
-          correctAnswer: 1,
+          correctAnswer: 0,
           points: 10
         }
       ]
-    },
-    isActive: true
+    }
+  },
+  {
+    title: "ISO 9001 Advanced Quiz",
+    description: "Advanced questions on ISO 9001 requirements",
+    gameType: "quickquiz",
+    difficulty: "hard",
+    maxXP: 250,
+    timeLimit: 180,
+    isActive: true,
+    content: {
+      questions: [
+        {
+          question: "How many clauses are in ISO 9001:2015?",
+          options: ["10", "8", "7", "12"],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "Which clause covers Leadership in ISO 9001?",
+          options: ["Clause 5", "Clause 4", "Clause 6", "Clause 7"],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What does 'context of the organization' refer to?",
+          options: [
+            "Internal and external issues affecting the QMS",
+            "Office location and building",
+            "Company history",
+            "Organizational chart"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What is the purpose of management review?",
+          options: [
+            "Evaluate QMS effectiveness and opportunities",
+            "Review employee performance",
+            "Approve budgets",
+            "Sign off on procedures"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What is interested party in ISO 9001?",
+          options: [
+            "Person or organization that can affect or be affected by decision",
+            "Shareholders only",
+            "Customers only",
+            "Employees only"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "Which is NOT a quality management principle?",
+          options: [
+            "Profit maximization",
+            "Customer focus",
+            "Leadership",
+            "Process approach"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What is documented information?",
+          options: [
+            "Information required to be controlled and maintained",
+            "Only paper documents",
+            "Only electronic files",
+            "Email communications"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What is meant by 'conformity'?",
+          options: [
+            "Fulfillment of a requirement",
+            "Following company culture",
+            "Agreement with auditor",
+            "Matching competitor practices"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What triggers a preventive action in modern ISO 9001?",
+          options: [
+            "Risk-based thinking replaces preventive action",
+            "Customer complaint",
+            "Audit finding",
+            "Management decision"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What is the certification cycle for ISO 9001?",
+          options: [
+            "3 years with surveillance audits",
+            "1 year renewal",
+            "5 years with annual audits",
+            "Permanent once certified"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What does 'competence' mean in ISO 9001?",
+          options: [
+            "Ability to apply knowledge and skills",
+            "Years of experience",
+            "Educational degree",
+            "Job title level"
+          ],
+          correctAnswer: 0,
+          points: 10
+        },
+        {
+          question: "What is required for purchased products/services?",
+          options: [
+            "Verification that requirements are met",
+            "Always choosing cheapest supplier",
+            "Long-term contracts",
+            "Local suppliers only"
+          ],
+          correctAnswer: 0,
+          points: 10
+        }
+      ]
+    }
+  },
+
+  // ==================== HANGMAN GAMES ====================
+  {
+    title: "IMS Hangman Challenge",
+    description: "Guess IMS terms and phrases",
+    gameType: "hangman",
+    difficulty: "medium",
+    maxXP: 150,
+    timeLimit: 0,
+    isActive: true,
+    content: {
+      words: [
+        {
+          word: "QUALITY MANAGEMENT",
+          hint: "Core focus of ISO 9001",
+          category: "IMS Concepts"
+        },
+        {
+          word: "CONTINUAL IMPROVEMENT",
+          hint: "Ongoing enhancement of performance",
+          category: "IMS Principles"
+        },
+        {
+          word: "CUSTOMER SATISFACTION",
+          hint: "Primary goal of quality management",
+          category: "Quality Goals"
+        },
+        {
+          word: "INTERNAL AUDIT",
+          hint: "Systematic examination of QMS",
+          category: "Quality Processes"
+        },
+        {
+          word: "CORRECTIVE ACTION",
+          hint: "Eliminate cause of nonconformity",
+          category: "Quality Tools"
+        },
+        {
+          word: "PROCESS APPROACH",
+          hint: "Understanding and managing interrelated processes",
+          category: "QMS Principles"
+        },
+        {
+          word: "RISK BASED THINKING",
+          hint: "Modern ISO 9001 approach",
+          category: "Quality Methods"
+        },
+        {
+          word: "TOP MANAGEMENT",
+          hint: "Person or group at highest level",
+          category: "Organizational Roles"
+        }
+      ]
+    }
+  },
+  {
+    title: "ISO Standards Hangman",
+    description: "Guess ISO standard-related terms",
+    gameType: "hangman",
+    difficulty: "hard",
+    maxXP: 175,
+    timeLimit: 0,
+    isActive: true,
+    content: {
+      words: [
+        {
+          word: "CERTIFICATION BODY",
+          hint: "Organization that conducts audits",
+          category: "ISO Certification"
+        },
+        {
+          word: "SURVEILLANCE AUDIT",
+          hint: "Annual check to maintain certification",
+          category: "Audit Types"
+        },
+        {
+          word: "NONCONFORMITY REPORT",
+          hint: "Document describing failure to meet requirement",
+          category: "Quality Documents"
+        },
+        {
+          word: "DOCUMENTED INFORMATION",
+          hint: "ISO 9001 term replacing 'documents and records'",
+          category: "ISO Terminology"
+        },
+        {
+          word: "INTERESTED PARTIES",
+          hint: "Stakeholders affecting or affected by organization",
+          category: "ISO Context"
+        },
+        {
+          word: "CONTEXT OF ORGANIZATION",
+          hint: "Internal and external issues affecting QMS",
+          category: "ISO Requirements"
+        },
+        {
+          word: "MANAGEMENT REVIEW",
+          hint: "Top management evaluation of QMS",
+          category: "Management Activities"
+        },
+        {
+          word: "COMPETENCE MATRIX",
+          hint: "Tool showing required skills and training",
+          category: "HR Tools"
+        }
+      ]
+    }
   }
 ];
 
-const seedGames = async () => {
+async function seedGames() {
   try {
+    // Connect to MongoDB
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('📁 Connected to MongoDB');
 
@@ -309,22 +481,46 @@ const seedGames = async () => {
     console.log('🗑️  Cleared existing games');
 
     // Insert new games
-    const games = await Game.insertMany(gamesData);
-    console.log(`✅ Created ${games.length} games`);
-
-    games.forEach(game => {
-      console.log(`\n🎮 ${game.title}`);
+    await Game.insertMany(games);
+    console.log('✅ Successfully seeded games database');
+    
+    console.log('\n📊 Games Summary:');
+    const textTwistCount = games.filter(g => g.gameType === 'texttwist').length;
+    const wordleCount = games.filter(g => g.gameType === 'wordle').length;
+    const quizCount = games.filter(g => g.gameType === 'quickquiz').length;
+    const hangmanCount = games.filter(g => g.gameType === 'hangman').length;
+    
+    console.log(`🔤 Text Twist Games: ${textTwistCount}`);
+    console.log(`📝 Wordle Games: ${wordleCount}`);
+    console.log(`⚡ Quick Quiz Games: ${quizCount}`);
+    console.log(`🎯 Hangman Games: ${hangmanCount}`);
+    console.log(`\n🎮 Total Games: ${games.length}`);
+    
+    console.log('\n📋 Game Details:');
+    games.forEach((game, index) => {
+      console.log(`\n${index + 1}. ${game.title}`);
       console.log(`   Type: ${game.gameType}`);
       console.log(`   Difficulty: ${game.difficulty}`);
       console.log(`   Max XP: ${game.maxXP}`);
-      console.log(`   Time Limit: ${game.timeLimit || 'None'}`);
-      console.log(`   ID: ${game._id}`);
+      console.log(`   Time Limit: ${game.timeLimit > 0 ? game.timeLimit + 's' : 'None'}`);
+      
+      if (game.gameType === 'texttwist') {
+        console.log(`   Words: ${game.content.words.length}`);
+      } else if (game.gameType === 'wordle') {
+        console.log(`   Words: ${game.content.words.length}`);
+      } else if (game.gameType === 'quickquiz') {
+        console.log(`   Questions: ${game.content.questions.length}`);
+      } else if (game.gameType === 'hangman') {
+        console.log(`   Phrases: ${game.content.words.length}`);
+      }
     });
 
-    process.exit(0);
+    await mongoose.disconnect();
+    console.log('\n Database seeding complete!');
   } catch (error) {
+    console.error('Error seeding database:', error);
     process.exit(1);
   }
-};
+}
 
 seedGames();
