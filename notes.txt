@@ -3,3 +3,5 @@
 3. 
 Error fetching games:  TypeError: Cannot read properties of undefined (reading 'some')
     at gameSchema.methods.hasUserCompleted (file:///C:/Users/julius.galejo/Desktop/ims/gamified-ims/server/models/Game.js:65:29)
+4. I have to refresh the page to show achieved badges in badges tab
+5. In wordle, use a free dictionary api perhaps? to check if the word input is actually a real word

@@ -83,7 +83,7 @@ const UserManual = () => {
                             Level 2 ➝ 250 XP <br />
                             Level 3 ➝ 450 XP <br />
                             <p>... </p><br />
-                            <p>level 17 ➝ 7600 XP</p> <br />
+                            <p>Level 17 ➝ 7600 XP</p> <br />
                             <p><strong>Calculation: </strong></p>
                             <p>The last predefined threshold is 7600 XP (level 17). Once you exceed, an increment starts at 1300 and increases by 150 XP per level.</p><br />
                             <p><strong>Formula:</strong> </p>
@@ -124,11 +124,11 @@ const UserManual = () => {
                     <p style={{ marginBottom: '15px' }}>
                     Compete with other players! The leaderboard shows:
                     </p>
-                    <ol style={{ marginLeft: '20px', marginBottom: '15px' }}>
-                    <li>Top 3 players </li>
-                    <li>All players ranked by total XP</li>
-                    <li>Player avatars, levels, and badge counts</li>
-                    <li>Ranks are given as follows: </li>
+                    <ol style={{ marginLeft: '50px', marginBottom: '15px' }}>
+                        <li>Top 3 players </li>
+                        <li>All players ranked by total XP</li>
+                        <li>Player avatars, levels, and badge counts</li>
+                        <li>Ranks are given as follows: </li>
                     <ul>
                         <li>Level 1-9 "Noob"</li>
                         <li>Level 10-14 "Elite"</li>

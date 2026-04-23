@@ -30,7 +30,7 @@ const Wordle = () => {
       } else if (e.key === 'Backspace') {
         setCurrentGuess(prev => prev.slice(0, -1));
       } else if (/^[a-zA-Z]$/.test(e.key)) {
-        if (currentGuess.length < targetWord.length) {
+        if (currentGuess.length < 5) {
           setCurrentGuess(prev => prev + e.key.toUpperCase());
         }
       }
@@ -38,7 +38,7 @@ const Wordle = () => {
 
     window.addEventListener('keydown', handleKeyboard);
     return () => window.removeEventListener('keydown', handleKeyboard);
-  }, [currentGuess, gameOver, targetWord.length]);
+  }, [currentGuess, gameOver]);
 
   const fetchGame = async () => {
     try {
@@ -56,8 +56,13 @@ const Wordle = () => {
       setWon(false);
     } catch (error) {
       console.error('Error fetching game:', error);
-      alert('Error loading game');
-      navigate('/games');
+      if (error.response?.status === 403) {
+        alert('You have already completed this game!');
+        navigate('/games');
+      } else {
+        alert('Error loading game');
+        navigate('/games');
+      }
     } finally {
       setLoading(false);
     }
@@ -70,14 +75,14 @@ const Wordle = () => {
       setCurrentGuess(prev => prev.slice(0, -1));
     } else if (letter === 'ENTER') {
       submitGuess();
-    } else if (currentGuess.length < targetWord.length) {
+    } else if (currentGuess.length < 5) {
       setCurrentGuess(prev => prev + letter);
     }
   };
 
   const submitGuess = async () => {
-    if (currentGuess.length !== targetWord.length) {
-      alert(`Word must be ${targetWord.length} letters`);
+    if (currentGuess.length !== 5) {
+      alert('Word must be 5 letters');
       return;
     }
 
@@ -127,7 +132,7 @@ const Wordle = () => {
 
   const renderGuess = (guess, isActive = false) => {
     const letters = guess.split('');
-    const emptySlots = targetWord.length - letters.length;
+    const emptySlots = 5 - letters.length;
 
     return (
       <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '10px' }}>
@@ -228,7 +233,7 @@ const Wordle = () => {
         style={{ maxWidth: '600px', margin: '0 auto' }}
       >
         <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px', textAlign: 'center' }}>
-          🔤 {game.title}
+          📝 {game.title}
         </h1>
         <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '20px', textAlign: 'center' }}>
           {game.description}
@@ -246,7 +251,7 @@ const Wordle = () => {
               <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>HINT</div>
               <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)' }}>{hint}</div>
               <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginTop: '5px' }}>
-                ({targetWord.length} letters)
+                (5 letters)
               </div>
             </div>
 
@@ -258,7 +263,7 @@ const Wordle = () => {
 
             {Array(maxAttempts - guesses.length - (gameOver ? 0 : 1)).fill(0).map((_, idx) => (
               <div key={`empty-row-${idx}`} style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '10px' }}>
-                {Array(targetWord.length).fill(0).map((_, i) => (
+                {Array(5).fill(0).map((_, i) => (
                   <div
                     key={i}
                     style={{
@@ -294,7 +299,6 @@ const Wordle = () => {
             )}
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button onClick={() => navigate('/games')} className="retro-btn">BACK TO GAMES</button>
-              <button onClick={() => window.location.reload()} className="retro-btn secondary">PLAY AGAIN</button>
             </div>
           </div>
         )}

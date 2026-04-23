@@ -13,6 +13,7 @@ import Games from './pages/Games';
 import TextTwist from './pages/games/TextTwist';
 import Wordle from './pages/games/Wordle';
 import QuickQuiz from './pages/games/QuickQuiz';
+import Hangman from './pages/games/Hangman';
 import AdminGames from './pages/admin/AdminGames';
 import Footer from './components/Footer';
 import Profile from './pages/Profile';
@@ -202,6 +203,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <QuickQuiz />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/games/hangman/:id"
+          element={
+            <ProtectedRoute>
+              <Hangman />
             </ProtectedRoute>
           }
         />

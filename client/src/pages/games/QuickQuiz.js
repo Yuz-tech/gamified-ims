@@ -42,8 +42,13 @@ const QuickQuiz = () => {
       setTimeLeft(gameData.timeLimit || 120);
     } catch (error) {
       console.error('Error fetching game:', error);
-      alert('Error loading game');
-      navigate('/games');
+      if (error.response?.status === 403) {
+        alert('You have already completed this game!');
+        navigate('/games');
+      } else {
+        alert('Error loading game');
+        navigate('/games');
+      }
     } finally {
       setLoading(false);
     }
