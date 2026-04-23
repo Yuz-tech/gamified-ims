@@ -228,7 +228,8 @@ const Topics = () => {
 
               {/* Title */}
               <h3 style={{
-                fontSize: '14px',
+                fontSize: '16px',
+                lineHeight: '20px',
                 color: 'var(--primary-navy)',
                 marginBottom: '20px',
                 fontWeight: 'bold',

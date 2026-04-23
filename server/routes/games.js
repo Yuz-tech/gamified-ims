@@ -132,7 +132,7 @@ router.post('/submit-score', authenticateToken, async (req, res) => {
 // GET all
 router.get('/admin/all', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const games = (await Game.find()).toSorted({ createdAt: -1 });
+        const games = (await Game.find());
 
         const gamesWithStats = games.map(game => ({
             ...game.toObject(),

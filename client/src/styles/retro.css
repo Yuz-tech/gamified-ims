@@ -667,3 +667,21 @@ img[alt*="badge"] {
   100% { transform: translateX(100%)
   translateY(100%) rotate(45deg); }
 }
+
+@keyframes fieryFlicker {
+  0%   { box-shadow: 0 0 6px currentColor, 0 0 12px currentColor; }
+  25%  { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
+  50%  { box-shadow: 0 0 14px currentColor, 0 0 28px currentColor; }
+  75%  { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
+  100% { box-shadow: 0 0 6px currentColor, 0 0 12px currentColor; }
+}
+
+.retro-card--fiery {
+  animation: fieryFlicker 1.5s infinite;
+}
+
+/* Hover intensifier: faster + brighter flames */
+.retro-card--fiery:hover {
+  animation: fieryFlicker 0.8s infinite; /* speed up */
+  box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; /* stronger glow */
+}

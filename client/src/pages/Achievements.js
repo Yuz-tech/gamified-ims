@@ -30,13 +30,13 @@ const Achievements = () => {
   const getBadgeBorderColor = (count) => {
     if (count >=5 ) return '#9333ea';
     if (count === 4) return '#06b6d4';
-    if (count === 3) return '#f5930b';
-    if (count === 2) return '#94a3b8';
-    return '#d1d5db';
+    if (count === 3) return '#FDD017';
+    if (count === 2) return '#A8A9AD';
+    return '#CD7F32';
   };
 
   const getBadgeBorderName = (count) => {
-    if (count >=5 ) return 'ULTRA';
+    if (count >=5 ) return 'PRIME';
     if (count === 4) return 'PLATINUM';
     if (count === 3) return 'GOLD';
     if (count === 2) return 'SILVER';
@@ -183,6 +183,9 @@ const Achievements = () => {
               LOCKED ({totalCount - earnedCount})
             </button>
           </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: '20px', color: 'var(--text-medium)' }}>
+            Note: Tiers are increased each time you complete your annual IMS awareness training.
+          </div>
         </motion.div>
 
         {/* Badges Card */}
@@ -194,7 +197,7 @@ const Achievements = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ scale: 1.05 }}
-              className="retro-card"
+              className={`retro-card ${badges.borderColor === '#9333ea' ? 'retro-card--fiery' : ''}`}
               style={{
                 textAlign: 'center',
                 cursor: 'pointer',
@@ -209,43 +212,52 @@ const Achievements = () => {
               {badges.badgeCount > 0 && (
                 <div style={{
                   position: 'absolute',
-                  top: '1px',
+                  bottom: '1px',
                   right: '1px',
-                  width: '50px',
-                  height: '50px',
-                  borderRadius: '50%',
+                  width: '100%',
+                  height: '30px',
                   background: badges.borderColor,
                   border: '3px solid white',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '16px',
+                  fontSize: '10px',
                   fontWeight: 'bold',
                   color: 'white',
                   zIndex: 10,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                 }}>
-                  {badges.badgeCount}x
+                  {badges.borderName} TIER
                 </div>
               )}
 
               {/* Badge Image */}
-              <div style={{
-                width: '120px',
-                height: '120px',
-                margin: '20px auto',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative'
-              }}>
-                {badges.isEarned && badges.isCompleted ? (
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.6 + index * 0.1, type: 'pulse' }}
+                title={badges.name}
+              >
+                <div style={{
+                  width: '120px',
+                  height: '120px',
+                  margin: '20px auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  background: 'var(--bg-lightest)'
+                  }}>
+                    {badges.isEarned && badges.isCompleted ? (
                   <img src={getImageUrl(badges.image)}
                     alt={badges.name}
                     style={{
                       width: '100%',
                       height: '100%',
-                      objectFit: 'contain'
+                      objectFit: 'contain',
+                      background: 'linear-gradient(45deg, transparent 30% rgba(255, 255, 255, 0.3) 50%, transparent 70%)',
+                      animation: 'shine 3s infinite'
                     }}
                     onError={(e) => {
                       e.target.src = '/uploads/badges/default.png';
@@ -266,7 +278,8 @@ const Achievements = () => {
                     🔒︎
                   </div>
                 )}
-              </div>
+                  </div>
+              </motion.div>
 
               {/* BadgeName */}
               <h3 style={{
@@ -278,23 +291,11 @@ const Achievements = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '0 10px'
+                padding: '0 10px',
+                lineHeight: '20px'
               }}>
                 {badges.name}
               </h3>
-
-              {/* Badge Tier */}
-              {badges.badgeCount > 0 && (
-                <div style={{
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                  color: badges.borderColor,
-                  marginBottom: '10px',
-                  textTransform: 'uppercase'
-                }}>
-                  {badges.borderName} TIER
-                </div>
-              )}
 
               {/* Status */}
               <div style={{

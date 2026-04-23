@@ -95,39 +95,6 @@ const ActivityLogs = () => {
     a.click();
   };
 
-  const getActivityIcon = (action) => {
-    const icons = {
-      login: 'LOGIN',
-      logout: 'LOGOUT',
-      logout_all_devices: 'LOGOUT ALL',
-      password_change: 'CHANGE PASSWORD',
-      video_watched: 'VIDEO WATCHED',
-      quiz_started: 'QUIZ STARTED',
-      quiz_completed: 'QUIZ COMPLETED',
-      badge_earned: 'BADGE EARNED',
-      topic_completed: 'TOPIC COMPLETED',
-      profile_updated: 'PROFILE UPDATED',
-      account_request: 'ACCOUNT REQUEST',
-      account_approved: 'ACCOUNT APPROVED'
-    };
-    return icons[action];
-  };
-
-  const getActivityColor = (action) => {
-    const colors = {
-      login: 'var(--bright-blue)',
-      logout: 'var(--error-red)',
-      logout_all_devices: 'var(--error-red)',
-      password_change: 'var(--warning-yellow)',
-      video_watched: 'var(--light-blue)',
-      quiz_completed: 'var(--success-green)',
-      badge_earned: 'var(--orange-accent)',
-      topic_completed: 'var(--success-green)',
-      account_approved: 'var(--success-green)'
-    };
-    return colors[action] || 'var(--text-medium)';
-  };
-
   return (
     <div style={{ paddingTop: '0' }}>
       <div className="scanlines"></div>
@@ -288,9 +255,6 @@ const ActivityLogs = () => {
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--primary-navy)' }}>
                   <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
-                    
-                  </th>
-                  <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
                     ACTION
                   </th>
                   <th style={{ padding: '10px', color: 'white', textAlign: 'left', background: 'var(--primary-navy)' }}>
@@ -316,13 +280,10 @@ const ActivityLogs = () => {
                     transition={{ delay: index * 0.02 }}
                     style={{ borderBottom: '1px solid var(--border-color)' }}
                   >
-                    <td style={{ padding: '10px', fontSize: '16px' }}>
-                      {getActivityIcon(log.action)}
-                    </td>
                     <td style={{ 
                       padding: '10px', 
-                      color: getActivityColor(log.action),
-                      fontWeight: 'bold'
+                      fontWeight: 'bold',
+                      lineHeight: '14px'
                     }}>
                       {log.action.replace(/_/g, ' ').toUpperCase()}
                     </td>

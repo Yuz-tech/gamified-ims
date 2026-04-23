@@ -177,7 +177,9 @@ const AdminGames = () => {
           padding: '15px',
           background: 'var(--bg-light)',
           border: '2px solid var(--border-color)',
-          marginBottom: '10px'
+          paddingTop: '20px',
+          marginBottom: '10px',
+          zIndex: '9999'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
             <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Word {idx + 1}</span>
