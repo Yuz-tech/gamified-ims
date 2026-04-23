@@ -10,7 +10,7 @@ import TopicDetail from './pages/TopicDetail';
 import Achievements from './pages/Achievements';
 import Players from './pages/Players';
 import Games from './pages/Games';
-import Crossword from './pages/games/Crossword';
+import TextTwist from './pages/games/TextTwist';
 import Wordle from './pages/games/Wordle';
 import QuickQuiz from './pages/games/QuickQuiz';
 import AdminGames from './pages/admin/AdminGames';
@@ -182,10 +182,10 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/games/crossword/:id"
+          path="/games/texttwist/:id"
           element={
             <ProtectedRoute>
-              <Crossword />
+              <TextTwist />
             </ProtectedRoute>
           }
         />

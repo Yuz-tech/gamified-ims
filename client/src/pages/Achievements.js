@@ -43,8 +43,6 @@ const Achievements = () => {
     return 'BRONZE';
   };
 
-  const currentYear = new Date().getFullYear();
-
   const badges = allTopics.map(topic => {
     const userBadge = user?.badges?.find(b => b.topicId === topic._id);
     const badgeCount = userBadge?.badgeCount || 0;
@@ -211,10 +209,10 @@ const Achievements = () => {
               {badges.badgeCount > 0 && (
                 <div style={{
                   position: 'absolute',
-                  top: '-10px',
-                  right: '-10px',
-                  width: '40px',
-                  height: '40px',
+                  top: '1px',
+                  right: '1px',
+                  width: '50px',
+                  height: '50px',
                   borderRadius: '50%',
                   background: badges.borderColor,
                   border: '3px solid white',
@@ -227,7 +225,7 @@ const Achievements = () => {
                   zIndex: 10,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                 }}>
-                  {badges.badgeCount}
+                  {badges.badgeCount}x
                 </div>
               )}
 

@@ -306,7 +306,6 @@ const QuickQuiz = () => {
 
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button onClick={() => navigate('/games')} className="retro-btn">BACK TO GAMES</button>
-              <button onClick={() => window.location.reload()} className="retro-btn secondary">PLAY AGAIN</button>
             </div>
           </div>
         )}
