@@ -7,4 +7,4 @@
 6. Only admins can replay games
 7. In all games, when I refresh the page, the timer resets back. Therefore, a player can cheat
 8. In hangman, when I refresh the page, the game restarts. Therefore, if I am about to lose, I can just refresh the page so I can restart the same game.
-9. Editing games, I cannot add nor edit words & subwords
+9. While editing games, I cannot add nor edit words & subwords
