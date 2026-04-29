@@ -368,7 +368,7 @@ const TopicDetail = () => {
                   className="retro-card"
                   style={{ background: 'rgba(59, 130, 246, 0.05)', borderColor: 'var(--bright-blue)' }}
                 >
-                  <h3 style={{ fontSize: '14px', color: 'var(--bright-blue)', paddingTop: '15px', marginBottom: '20px', textAlign: 'center'  }}>
+                  <h3 style={{ fontSize: '14px', lineHeight: '20px', color: 'var(--bright-blue)', paddingTop: '15px', marginBottom: '20px', textAlign: 'center'  }}>
                     BONUS ROUND
                   </h3>
 
@@ -391,8 +391,8 @@ const TopicDetail = () => {
                 className="retro-card"
                 style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'var(--success-green)' }}
               >
-                <h3 style={{ fontSize: '14px', color: 'var(--success-green)', paddingTop: '15px', marginBottom: '20px', textAlign: 'center'  }}>
-                  REVIEW ANSWERS
+                <h3 style={{ fontSize: '14px', color: 'black', lineHeight: '20px', paddingTop: '15px', marginBottom: '20px', textAlign: 'center'  }}>
+                  REVIEW (OPTIONAL)
                 </h3>
 
                 <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -400,7 +400,7 @@ const TopicDetail = () => {
                     Review the {topic.bonusCompleted ? 'bonus questions and mandatory' : 'mandatory'} question.
                   </div>
 
-                  <button onClick={handleStartReview} className="retro-btn" style={{ width: '100%', backgroundColor: 'yellow', textAlign: 'center' }}>
+                  <button onClick={handleStartReview} className="retro-btn secondary" style={{ width: '100%', textAlign: 'center' }}>
                     REVIEW
                   </button>
                 </div>

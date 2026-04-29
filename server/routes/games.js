@@ -68,61 +68,53 @@ router.get('/play/:id', authenticateToken, async (req, res) => {
 router.post('/submit-score', authenticateToken, async (req, res) => {
     try {
         const { gameId, gameType, score, timeSpent } = req.body;
-        const userId = req.user._id;
-
-        if (typeof score !== 'number' || score < 0) {
-            return res.status(400).json({ message: 'Invalid score' });
-        }
 
         const game = await Game.findById(gameId);
         if (!game) {
             return res.status(404).json({ message: 'Game not found' });
         }
 
-        if (game.hasUserCompleted(userId)) {
-            return res.status(403).json({ message: 'You have already completed this game', alreadyCompleted: true });
+        // Check if already completed
+        if (game.hasUserCompleted(req.user._id) && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'You have already completed this game' });
         }
 
-        const maxXP = game.maxXP;
-        const cappedScore = Math.min(score, maxXP);
+        // Verify user session
+        const sessionKey = `${req.user._id}-${game._id}`;
+        const session = gameSessions.get(sessionKey);
 
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        if (!session) {
+            return res.status(403).json({ message: 'No active game session' });
         }
 
-        const oldLevel = user.level;
-        user.xp += cappedScore;
-
-        const { calculateLevel } = await import('../utils/levelSystem.js');
-        const newLevel = calculateLevel(user.xp);
-        const leveledUp = newLevel > oldLevel;
-
-        if (leveledUp) {
-            user.level = newLevel;
+        const actualTimeSpent = Math.floor((Date.now() - session.startedAt) / 1000);
+        if (game.timeLimit > 0 && actualTimeSpent > game.timeLimit + 5) {
+            gameSessions.delete(sessionKey);
+            return res.status(403).json({ message: 'Time limit exceeded' });
         }
 
-        await user.save();
+        const user = await User.findById(req.user._id);
+        if (!game.hasUserCompleted(req.user._id)) {
+            user.xp += score;
 
-        await game.addCompletion(userId, cappedScore, timeSpent);
+            const { calculateLevel } = await import('../utils/levelSystem.js');
+            user.level = calculateLevel(user.xp);
 
-        await logActivity(userId, 'game_completed', {
-            gameId: game._id,
-            gameType,
-            score: cappedScore,
-            timeSpent,
-            leveledUp
-        }, req);
+            await user.save();
+        }
+
+        await game.addCompletion(req.user._id, score, actualTimeSpent);
+
+        gameSessions.delete(sessionKey);
 
         res.json({
-            xpEarned: cappedScore,
+            message: 'Score submitted',
+            xpAwarded: !game.hasUserCompleted(req.user._id) ? score : 0,
             totalXP: user.xp,
-            leveledUp,
-            newLevel: user.level,
-            completed: true
+            level: user.level
         });
     } catch (error) {
-        console.error('Error submitting game score: ', error);
+        console.error('Error submitting score: ', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
