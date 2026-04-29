@@ -1,1429 +1,98 @@
-pages/games.js
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
 
-const Games = () => {
+const Home = () => {
   const navigate = useNavigate();
-  const [games, setGames] = useState([]);
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchGames();
-  }, []);
-
-  const fetchGames = async () => {
-    try {
-      const response = await api.get('/games');
-      setGames(response.data);
-    } catch (error) {
-      console.error('Error fetching games:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getGameIcon = (gameType) => {
-    switch (gameType) {
-      case 'crossword': return '🧩';
-      case 'wordle': return '🔤';
-      case 'quickquiz': return '⚡';
-      default: return '🎮';
-    }
-  };
-
-  const getGameRoute = (game) => {
-    switch (game.gameType) {
-      case 'crossword': return `/games/crossword/${game._id}`;
-      case 'wordle': return `/games/wordle/${game._id}`;
-      case 'quickquiz': return `/games/quickquiz/${game._id}`;
-      default: return '/games';
-    }
-  };
-
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'easy': return 'var(--success-green)';
-      case 'medium': return 'var(--orange-accent)';
-      case 'hard': return 'var(--error-red)';
-      default: return 'var(--text-medium)';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAMES...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <div className="scanlines"></div>
-
-      <motion.h1
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="neon-text"
-        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
-      >
-        🎮 GAMES ARCADE
-      </motion.h1>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ marginBottom: '30px' }}
-      >
-        <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-dark)', textAlign: 'center' }}>
-          Test your IMS knowledge with fun and interactive games! Earn XP while learning.
-        </p>
-      </motion.div>
-
-      {games.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="retro-card"
-          style={{ textAlign: 'center', padding: '60px 20px' }}
-        >
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎮</div>
-          <h2 style={{ fontSize: '18px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-            No Games Available
-          </h2>
-          <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>
-            Check back later for new games!
-          </p>
-        </motion.div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-          {games.map((game, index) => (
-            <motion.div
-              key={game._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.03 }}
-              className="retro-card"
-              style={{
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-              onClick={() => navigate(getGameRoute(game))}
-            >
-              {/* Game Icon */}
-              <div style={{
-                fontSize: '64px',
-                textAlign: 'center',
-                marginBottom: '20px'
-              }}>
-                {getGameIcon(game.gameType)}
-              </div>
-
-              {/* Title */}
-              <h3 style={{
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: 'var(--primary-navy)',
-                marginBottom: '10px',
-                textAlign: 'center',
-                minHeight: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                {game.title}
-              </h3>
-
-              {/* Description */}
-              <p style={{
-                fontSize: '11px',
-                color: 'var(--text-medium)',
-                marginBottom: '20px',
-                textAlign: 'center',
-                minHeight: '40px'
-              }}>
-                {game.description}
-              </p>
-
-              {/* Stats */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '10px',
-                marginBottom: '20px'
-              }}>
-                <div style={{
-                  padding: '10px',
-                  background: 'var(--bg-light)',
-                  border: '2px solid var(--border-color)',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                    DIFFICULTY
-                  </div>
-                  <div style={{
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    color: getDifficultyColor(game.difficulty),
-                    textTransform: 'uppercase'
-                  }}>
-                    {game.difficulty}
-                  </div>
-                </div>
-                <div style={{
-                  padding: '10px',
-                  background: 'var(--bg-light)',
-                  border: '2px solid var(--border-color)',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                    MAX XP
-                  </div>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
-                    {game.maxXP}
-                  </div>
-                </div>
-              </div>
-
-              {/* Time Limit */}
-              {game.timeLimit > 0 && (
-                <div style={{
-                  padding: '8px',
-                  background: 'var(--orange-accent)',
-                  color: 'white',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  marginBottom: '15px'
-                }}>
-                  ⏱️ {Math.floor(game.timeLimit / 60)}:{(game.timeLimit % 60).toString().padStart(2, '0')} Time Limit
-                </div>
-              )}
-
-              {/* Play Button */}
-              <button
-                className="retro-btn"
-                style={{ width: '100%', fontSize: '12px' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(getGameRoute(game));
-                }}
-              >
-                PLAY NOW
-              </button>
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Games;
-
-texttwist.js
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-
-const TextTwist = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const [game, setGame] = useState(null);
-  const [currentWord, setCurrentWord] = useState(null);
-  const [scrambledLetters, setScrambledLetters] = useState([]);
-  const [currentInput, setCurrentInput] = useState('');
-  const [foundWords, setFoundWords] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [startTime] = useState(Date.now());
-
-  useEffect(() => {
-    fetchGame();
-  }, [id]);
-
-  useEffect(() => {
-    if (gameStarted && timeLeft > 0 && !gameOver) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (gameStarted && timeLeft === 0 && !gameOver) {
-      endGame();
-    }
-  }, [timeLeft, gameStarted, gameOver]);
-
-  const fetchGame = async () => {
-    try {
-      const response = await api.get(`/games/play/${id}`);
-      const gameData = response.data;
-      setGame(gameData);
-      
-      // Pick random word from the list
-      const words = gameData.content.words;
-      const randomWord = words[Math.floor(Math.random() * words.length)];
-      setCurrentWord(randomWord);
-      
-      // Scramble the main word
-      const letters = randomWord.mainWord.split('');
-      setScrambledLetters(shuffleArray([...letters]));
-      
-      setTimeLeft(gameData.timeLimit || 120);
-    } catch (error) {
-      console.error('Error fetching game:', error);
-      if (error.response?.status === 403) {
-        alert('You have already completed this game!');
-        navigate('/games');
-      } else {
-        alert('Error loading game');
-        navigate('/games');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const shuffleArray = (array) => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-  };
-
-  const startGame = () => {
-    setGameStarted(true);
-    setFoundWords([]);
-    setCurrentInput('');
-    setMessage('');
-  };
-
-  const handleLetterClick = (letter, index) => {
-    if (currentInput.length < currentWord.mainWord.length) {
-      setCurrentInput(currentInput + letter);
-      // Remove letter from available (visually)
-      const newLetters = [...scrambledLetters];
-      newLetters[index] = null;
-      setScrambledLetters(newLetters);
-    }
-  };
-
-  const handleClear = () => {
-    setCurrentInput('');
-    // Reshuffle letters instead of showing them in order
-    setScrambledLetters(shuffleArray([...currentWord.mainWord.split('')]));
-  };
-
-  const handleSubmitWord = () => {
-    if (currentInput.length < 3) {
-      setMessage('Word must be at least 3 letters!');
-      setTimeout(() => setMessage(''), 2000);
-      return;
-    }
-
-    const upperInput = currentInput.toUpperCase();
-    
-    // Check if already found
-    if (foundWords.includes(upperInput)) {
-      setMessage('Already found!');
-      setTimeout(() => setMessage(''), 2000);
-      handleClear();
-      return;
-    }
-
-    // Check if valid word
-    const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
-    if (allValidWords.includes(upperInput)) {
-      setFoundWords([...foundWords, upperInput]);
-      setMessage('✓ Correct!');
-      setTimeout(() => setMessage(''), 1000);
-      
-      // Check if found main word
-      if (upperInput === currentWord.mainWord) {
-        endGame(true);
-      }
-    } else {
-      setMessage('✗ Not a valid word!');
-      setTimeout(() => setMessage(''), 2000);
-    }
-    
-    // Always reshuffle after submitting (correct or wrong)
-    handleClear();
-  };
-
-  const handleTwist = () => {
-    setScrambledLetters(shuffleArray([...currentWord.mainWord.split('')]));
-    setCurrentInput('');
-  };
-
-  const endGame = async (foundMainWord = false) => {
-    setGameOver(true);
-    
-    const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
-    const percentage = Math.round((foundWords.length / allValidWords.length) * 100);
-    let score = Math.round((percentage / 100) * game.maxXP);
-    
-    // Bonus if found main word
-    if (foundMainWord || foundWords.includes(currentWord.mainWord)) {
-      score = game.maxXP;
-    }
-
-    try {
-      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-      await api.post('/games/submit-score', {
-        gameId: game._id,
-        gameType: 'texttwist',
-        score,
-        timeSpent: timeTaken
-      });
-    } catch (error) {
-      console.error('Error submitting score:', error);
-    }
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAME...</div>
-      </div>
-    );
-  }
-
-  if (!game || !currentWord) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: 'var(--error-red)' }}>Game Not Found</h2>
-          <button onClick={() => navigate('/games')} className="retro-btn">BACK TO GAMES</button>
-        </div>
-      </div>
-    );
-  }
-
-  const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        ← BACK TO GAMES
-      </button>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ maxWidth: '700px', margin: '0 auto' }}
-      >
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px', textAlign: 'center' }}>
-          🔤 {game.title}
-        </h1>
-        <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '30px', textAlign: 'center' }}>
-          {game.description}
-        </p>
-
-        {!gameStarted ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔤</div>
-            <h2 style={{ fontSize: '20px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-              READY TO PLAY?
-            </h2>
-            <div style={{ fontSize: '12px', marginBottom: '30px', lineHeight: '1.8' }}>
-              <p>• Form words using the scrambled letters</p>
-              <p>• Find the main word ({currentWord.mainWord.length} letters) to win!</p>
-              <p>• {formatTime(game.timeLimit || 120)} time limit</p>
-              <p>• Max {game.maxXP} XP</p>
-            </div>
-            <button onClick={startGame} className="retro-btn" style={{ fontSize: '14px', padding: '15px 30px' }}>
-              START GAME
-            </button>
-          </div>
-        ) : !gameOver ? (
-          <>
-            {/* Timer and Score */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-              <div style={{
-                padding: '10px 20px',
-                background: timeLeft <= 10 ? 'var(--error-red)' : 'var(--bright-blue)',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '16px',
-                borderRadius: '3px'
-              }}>
-                ⏱️ {formatTime(timeLeft)}
-              </div>
-              <div style={{
-                padding: '10px 20px',
-                background: 'var(--success-green)',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '16px',
-                borderRadius: '3px'
-              }}>
-                {foundWords.length} / {allValidWords.length} Words
-              </div>
-            </div>
-
-            {/* Current Input Display */}
-            <div style={{
-              padding: '20px',
-              background: 'var(--bg-light)',
-              border: '3px solid var(--primary-navy)',
-              marginBottom: '20px',
-              textAlign: 'center',
-              minHeight: '60px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary-navy)', letterSpacing: '5px' }}>
-                {currentInput || '_ _ _ _ _ _'}
-              </div>
-            </div>
-
-            {/* Message */}
-            {message && (
-              <div style={{
-                padding: '10px',
-                background: message.includes('✓') ? 'var(--success-green)' : 'var(--orange-accent)',
-                color: 'white',
-                textAlign: 'center',
-                marginBottom: '20px',
-                fontWeight: 'bold'
-              }}>
-                {message}
-              </div>
-            )}
-
-            {/* Letter Buttons */}
-            <div style={{
-              display: 'flex',
-              gap: '10px',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              marginBottom: '20px',
-              padding: '20px',
-              background: 'var(--bg-light)',
-              border: '2px solid var(--border-color)'
-            }}>
-              {scrambledLetters.map((letter, index) => (
-                <button
-                  key={index}
-                  onClick={() => letter && handleLetterClick(letter, index)}
-                  disabled={!letter}
-                  className="retro-btn"
-                  style={{
-                    width: '50px',
-                    height: '50px',
-                    fontSize: '24px',
-                    padding: '0',
-                    opacity: letter ? 1 : 0.3,
-                    cursor: letter ? 'pointer' : 'not-allowed'
-                  }}
-                >
-                  {letter || ''}
-                </button>
-              ))}
-            </div>
-
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
-              <button onClick={handleSubmitWord} className="retro-btn" style={{ flex: 1 }}>
-                ✓ SUBMIT WORD
-              </button>
-              <button onClick={handleClear} className="retro-btn secondary" style={{ flex: 1 }}>
-                CLEAR
-              </button>
-              <button onClick={handleTwist} className="retro-btn secondary" style={{ flex: 1 }}>
-                🔄 TWIST
-              </button>
-            </div>
-
-            {/* Found Words */}
-            <div>
-              <h3 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '10px' }}>
-                FOUND WORDS:
-              </h3>
-              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                {foundWords.map((word, idx) => (
-                  <span
-                    key={idx}
-                    style={{
-                      padding: '5px 10px',
-                      background: word === currentWord.mainWord ? 'var(--success-green)' : 'var(--bright-blue)',
-                      color: 'white',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      borderRadius: '3px'
-                    }}
-                  >
-                    {word}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>
-              {foundWords.includes(currentWord.mainWord) ? '🎉' : '⏰'}
-            </div>
-            <h2 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-              {foundWords.includes(currentWord.mainWord) ? 'EXCELLENT!' : 'TIME\'S UP!'}
-            </h2>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '14px', marginBottom: '10px' }}>
-                You found <strong>{foundWords.length}</strong> out of <strong>{allValidWords.length}</strong> words
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
-                The main word was: <strong style={{ color: 'var(--primary-navy)' }}>{currentWord.mainWord}</strong>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '30px' }}>
-              <h3 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '10px' }}>All valid words:</h3>
-              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {allValidWords.map((word, idx) => (
-                  <span
-                    key={idx}
-                    style={{
-                      padding: '5px 10px',
-                      background: foundWords.includes(word) ? 'var(--success-green)' : 'var(--text-medium)',
-                      color: 'white',
-                      fontSize: '10px',
-                      borderRadius: '3px'
-                    }}
-                  >
-                    {word}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => navigate('/games')} className="retro-btn">
-                BACK TO GAMES
-              </button>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-};
-
-export default TextTwist;
-
-
-models/Game.js
-import mongoose from 'mongoose';
-
-const gameSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  gameType: {
-    type: String,
-    required: true,
-    enum: ['texttwist', 'wordle', 'quickquiz', 'hangman']
-  },
-  difficulty: {
-    type: String,
-    required: true,
-    enum: ['easy', 'medium', 'hard']
-  },
-  maxXP: {
-    type: Number,
-    required: true,
-    default: 100
-  },
-  timeLimit: {
-    type: Number,
-    default: 0
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  content: {
-    type: mongoose.Schema.Types.Mixed,
-    required: true
-  },
-  completions: [{
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+  const carouselSlides = [
+    {
+      title: "Master IMS Knowledge",
+      description: "Learn ISO 9001, 14001, and 45001 standards through interactive modules",
+      icon: "📚",
+      color: "var(--bright-blue)"
     },
-    score: Number,
-    timeSpent: Number,
-    completedAt: {
-      type: Date,
-      default: Date.now
+    {
+      title: "Earn XP & Level Up",
+      description: "Complete topics and quizzes to gain experience points and advance your rank",
+      icon: "⚡",
+      color: "var(--orange-accent)"
+    },
+    {
+      title: "Collect Badges",
+      description: "Unlock achievement badges for completing training modules",
+      icon: "🏆",
+      color: "var(--success-green)"
+    },
+    {
+      title: "Play Games",
+      description: "Test your knowledge with fun word games and quizzes",
+      icon: "🎮",
+      color: "var(--primary-navy)"
     }
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// Check if user has completed this game
-gameSchema.methods.hasUserCompleted = function(userId) {
-  if (!userId) return false;
-  // Ensure completions array exists and is an array
-  if (!this.completions || !Array.isArray(this.completions)) {
-    return false;
-  }
-  return this.completions.some(
-    completion => completion.userId && completion.userId.toString() === userId.toString()
-  );
-};
-
-// Add completion record
-gameSchema.methods.addCompletion = function(userId, score, timeSpent) {
-  // Initialize completions array if it doesn't exist
-  if (!this.completions) {
-    this.completions = [];
-  }
-  
-  this.completions.push({
-    userId,
-    score,
-    timeSpent,
-    completedAt: new Date()
-  });
-  
-  return this.save();
-};
-
-// Virtual for completion count
-gameSchema.virtual('completionCount').get(function() {
-  return this.completions ? this.completions.length : 0;
-});
-
-// Ensure virtuals are included in JSON
-gameSchema.set('toJSON', { virtuals: true });
-gameSchema.set('toObject', { virtuals: true });
-
-const Game = mongoose.model('Game', gameSchema);
-
-export default Game;
-
-
-wordle.js
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-
-const Wordle = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const [game, setGame] = useState(null);
-  const [targetWord, setTargetWord] = useState('');
-  const [hint, setHint] = useState('');
-  const [guesses, setGuesses] = useState([]);
-  const [currentGuess, setCurrentGuess] = useState('');
-  const [gameOver, setGameOver] = useState(false);
-  const [won, setWon] = useState(false);
-  const [maxAttempts] = useState(6);
-  const [loading, setLoading] = useState(true);
-  const [startTime] = useState(Date.now());
-  const [isValidating, setIsValidating] = useState(false);
+  ];
 
   useEffect(() => {
-    fetchGame();
-  }, [id]);
-
-  useEffect(() => {
-    const handleKeyboard = (e) => {
-      if (gameOver) return;
-      
-      if (e.key === 'Enter') {
-        submitGuess();
-      } else if (e.key === 'Backspace') {
-        setCurrentGuess(prev => prev.slice(0, -1));
-      } else if (/^[a-zA-Z]$/.test(e.key)) {
-        if (currentGuess.length < 5) {
-          setCurrentGuess(prev => prev + e.key.toUpperCase());
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyboard);
-    return () => window.removeEventListener('keydown', handleKeyboard);
-  }, [currentGuess, gameOver]);
-
-  const fetchGame = async () => {
-    try {
-      const response = await api.get(`/games/play/${id}`);
-      const gameData = response.data;
-      setGame(gameData);
-      
-      const words = gameData.content.words;
-      const randomWord = words[Math.floor(Math.random() * words.length)];
-      setTargetWord(randomWord.word.toUpperCase());
-      setHint(randomWord.hint);
-      setGuesses([]);
-      setCurrentGuess('');
-      setGameOver(false);
-      setWon(false);
-    } catch (error) {
-      console.error('Error fetching game:', error);
-      if (error.response?.status === 403) {
-        alert('You have already completed this game!');
-        navigate('/games');
-      } else {
-        alert('Error loading game');
-        navigate('/games');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeyPress = (letter) => {
-    if (gameOver) return;
+    fetchUserData();
     
-    if (letter === 'BACKSPACE') {
-      setCurrentGuess(prev => prev.slice(0, -1));
-    } else if (letter === 'ENTER') {
-      submitGuess();
-    } else if (currentGuess.length < 5) {
-      setCurrentGuess(prev => prev + letter);
-    }
-  };
-
-  const submitGuess = async () => {
-    if (currentGuess.length !== 5) {
-      alert('Word must be 5 letters');
-      return;
-    }
-
-    // Validate word using dictionary API
-    setIsValidating(true);
-    const isValidWord = await validateWord(currentGuess);
-    setIsValidating(false);
-
-    if (!isValidWord) {
-      alert('Not a valid English word!');
-      return;
-    }
-
-    const newGuesses = [...guesses, currentGuess];
-    setGuesses(newGuesses);
-    setCurrentGuess('');
-
-    if (currentGuess === targetWord) {
-      setWon(true);
-      setGameOver(true);
-      await submitScore(true, newGuesses.length);
-    } else if (newGuesses.length >= maxAttempts) {
-      setGameOver(true);
-      await submitScore(false, newGuesses.length);
-    }
-  };
-
-  const validateWord = async (word) => {
-    try {
-      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
-      return response.ok;
-    } catch (error) {
-      console.error('Error validating word:', error);
-      // If API fails, allow the word (don't punish user for API issues)
-      return true;
-    }
-  };
-
-  const submitScore = async (won, attempts) => {
-    try {
-      let score = 0;
-      if (won) {
-        const baseXP = game.maxXP || 150;
-        score = Math.round(baseXP * (1 - (attempts - 1) / maxAttempts));
-      }
-
-      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-      await api.post('/games/submit-score', {
-        gameId: game._id,
-        gameType: 'wordle',
-        score,
-        timeSpent: timeTaken
-      });
-    } catch (error) {
-      console.error('Error submitting score:', error);
-    }
-  };
-
-  const getLetterColor = (letter, index, guess) => {
-    if (guess[index] === targetWord[index]) {
-      return 'var(--success-green)';
-    } else if (targetWord.includes(letter)) {
-      return 'var(--orange-accent)';
-    } else {
-      return 'var(--text-medium)';
-    }
-  };
-
-  const renderGuess = (guess, isActive = false) => {
-    const letters = guess.split('');
-    const emptySlots = 5 - letters.length;
-
-    return (
-      <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '10px' }}>
-        {letters.map((letter, idx) => (
-          <div
-            key={idx}
-            style={{
-              width: '50px',
-              height: '50px',
-              border: '3px solid var(--primary-navy)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: 'white',
-              background: isActive ? 'var(--bright-blue)' : getLetterColor(letter, idx, guess)
-            }}
-          >
-            {letter}
-          </div>
-        ))}
-        {isActive && Array(emptySlots).fill(0).map((_, idx) => (
-          <div
-            key={`empty-${idx}`}
-            style={{
-              width: '50px',
-              height: '50px',
-              border: '3px solid var(--border-color)',
-              background: 'white'
-            }}
-          />
-        ))}
-      </div>
-    );
-  };
-
-  const renderKeyboard = () => {
-    const rows = [
-      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-      ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE']
-    ];
-
-    return (
-      <div style={{ marginTop: '30px' }}>
-        {rows.map((row, rowIdx) => (
-          <div key={rowIdx} style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '5px' }}>
-            {row.map(key => (
-              <button
-                key={key}
-                onClick={() => handleKeyPress(key)}
-                className="retro-btn secondary"
-                style={{
-                  padding: key.length > 1 ? '10px 8px' : '10px 15px',
-                  fontSize: '10px',
-                  minWidth: key.length > 1 ? '80px' : '40px'
-                }}
-              >
-                {key === 'BACKSPACE' ? '⌫' : key}
-              </button>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAME...</div>
-      </div>
-    );
-  }
-
-  if (!game) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: 'var(--error-red)' }}>Game Not Found</h2>
-          <button onClick={() => navigate('/games')} className="retro-btn">BACK TO GAMES</button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        ← BACK TO GAMES
-      </button>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ maxWidth: '600px', margin: '0 auto' }}
-      >
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px', textAlign: 'center' }}>
-          📝 {game.title}
-        </h1>
-        <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '20px', textAlign: 'center' }}>
-          {game.description}
-        </p>
-
-        {!gameOver ? (
-          <>
-            <div style={{
-              padding: '15px',
-              background: 'var(--bg-light)',
-              border: '2px solid var(--border-color)',
-              marginBottom: '30px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>HINT</div>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)' }}>{hint}</div>
-              <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginTop: '5px' }}>
-                (5 letters)
-              </div>
-            </div>
-
-            {guesses.map((guess, idx) => (
-              <div key={idx}>{renderGuess(guess)}</div>
-            ))}
-
-            {!gameOver && guesses.length < maxAttempts && renderGuess(currentGuess, true)}
-
-            {Array(maxAttempts - guesses.length - (gameOver ? 0 : 1)).fill(0).map((_, idx) => (
-              <div key={`empty-row-${idx}`} style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '10px' }}>
-                {Array(5).fill(0).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      border: '2px solid var(--border-color)',
-                      background: 'white'
-                    }}
-                  />
-                ))}
-              </div>
-            ))}
-
-            <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '11px', color: 'var(--text-medium)' }}>
-              {isValidating ? (
-                <span style={{ color: 'var(--bright-blue)', fontWeight: 'bold' }}>Validating word...</span>
-              ) : (
-                <>Attempts: {guesses.length} / {maxAttempts}</>
-              )}
-            </div>
-
-            {renderKeyboard()}
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>{won ? '🎉' : '😢'}</div>
-            <h2 style={{ fontSize: '24px', color: won ? 'var(--success-green)' : 'var(--error-red)', marginBottom: '20px' }}>
-              {won ? 'YOU WON!' : 'GAME OVER'}
-            </h2>
-            <div style={{ fontSize: '14px', marginBottom: '10px' }}>
-              The word was: <strong style={{ color: 'var(--primary-navy)' }}>{targetWord}</strong>
-            </div>
-            {won && (
-              <div style={{ fontSize: '12px', marginBottom: '30px', color: 'var(--text-medium)' }}>
-                Solved in {guesses.length} {guesses.length === 1 ? 'attempt' : 'attempts'}!
-              </div>
-            )}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => navigate('/games')} className="retro-btn">BACK TO GAMES</button>
-            </div>
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-};
-
-export default Wordle;
-
-
-routes/anticheat
-import express from 'express';
-import Game from '../models/Game.js';
-import User from '../models/User.js';
-import { authenticateToken, isAdmin } from '../middleware/auth.js';
-
-const router = express.Router();
-
-// In-memory game sessions (use Redis in production)
-const gameSessions = new Map();
-
-// Clean up expired sessions (older than 1 hour)
-setInterval(() => {
-  const oneHourAgo = Date.now() - (60 * 60 * 1000);
-  for (const [key, session] of gameSessions.entries()) {
-    if (session.startedAt < oneHourAgo) {
-      gameSessions.delete(key);
-    }
-  }
-}, 5 * 60 * 1000); // Check every 5 minutes
-
-// Get all games with completion status
-router.get('/', authenticateToken, async (req, res) => {
-  try {
-    const games = await Game.find({ isActive: true });
+    // Auto-advance carousel
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % carouselSlides.length);
+    }, 5000);
     
-    const gamesWithStatus = games.map(game => {
-      const hasCompleted = game.hasUserCompleted(req.user._id);
-      return {
-        _id: game._id,
-        title: game.title,
-        description: game.description,
-        gameType: game.gameType,
-        difficulty: game.difficulty,
-        maxXP: game.maxXP,
-        timeLimit: game.timeLimit,
-        completionCount: game.completionCount,
-        hasCompleted
-      };
-    });
-
-    res.json(gamesWithStatus);
-  } catch (error) {
-    console.error('Error fetching games:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Start or resume a game session
-router.get('/play/:id', authenticateToken, async (req, res) => {
-  try {
-    const game = await Game.findById(req.params.id);
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-
-    // Check if already completed (only block non-admins)
-    if (game.hasUserCompleted(req.user._id) && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'You have already completed this game' });
-    }
-
-    const sessionKey = `${req.user._id}-${game._id}`;
-    let session = gameSessions.get(sessionKey);
-
-    // Create new session if doesn't exist
-    if (!session) {
-      session = {
-        userId: req.user._id,
-        gameId: game._id,
-        startedAt: Date.now(),
-        timeLimit: game.timeLimit
-      };
-      gameSessions.set(sessionKey, session);
-    }
-
-    // Calculate elapsed time
-    const elapsedSeconds = Math.floor((Date.now() - session.startedAt) / 1000);
-    const timeRemaining = game.timeLimit > 0 ? Math.max(0, game.timeLimit - elapsedSeconds) : 0;
-
-    // If time ran out, end the game
-    if (game.timeLimit > 0 && timeRemaining === 0) {
-      gameSessions.delete(sessionKey);
-      return res.status(403).json({ 
-        message: 'Time expired',
-        timeExpired: true 
-      });
-    }
-
-    res.json({
-      ...game.toObject(),
-      session: {
-        startedAt: session.startedAt,
-        elapsedSeconds,
-        timeRemaining
-      }
-    });
-  } catch (error) {
-    console.error('Error starting game:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Submit game score
-router.post('/submit-score', authenticateToken, async (req, res) => {
-  try {
-    const { gameId, gameType, score, timeSpent } = req.body;
-
-    const game = await Game.findById(gameId);
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-
-    // Check if already completed (only block non-admins)
-    if (game.hasUserCompleted(req.user._id) && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'You have already completed this game' });
-    }
-
-    // Verify session
-    const sessionKey = `${req.user._id}-${game._id}`;
-    const session = gameSessions.get(sessionKey);
-    
-    if (!session) {
-      return res.status(403).json({ message: 'No active game session' });
-    }
-
-    // Verify time limit wasn't exceeded
-    const actualTimeSpent = Math.floor((Date.now() - session.startedAt) / 1000);
-    if (game.timeLimit > 0 && actualTimeSpent > game.timeLimit + 5) { // 5 second grace period
-      gameSessions.delete(sessionKey);
-      return res.status(403).json({ message: 'Time limit exceeded' });
-    }
-
-    // Award XP to user (only for non-admins or first completion for admins)
-    const user = await User.findById(req.user._id);
-    if (!game.hasUserCompleted(req.user._id)) {
-      user.xp += score;
-      
-      // Update level
-      const { calculateLevel } = await import('../utils/levelSystem.js');
-      user.level = calculateLevel(user.xp);
-      
-      await user.save();
-    }
-
-    // Record completion
-    await game.addCompletion(req.user._id, score, actualTimeSpent);
-
-    // Clean up session
-    gameSessions.delete(sessionKey);
-
-    res.json({
-      message: 'Score submitted successfully',
-      xpAwarded: !game.hasUserCompleted(req.user._id) ? score : 0,
-      totalXP: user.xp,
-      level: user.level
-    });
-  } catch (error) {
-    console.error('Error submitting score:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Admin: Get all games
-router.get('/admin/all', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const games = await Game.find().sort({ createdAt: -1 });
-    res.json(games);
-  } catch (error) {
-    console.error('Error fetching games:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Admin: Create game
-router.post('/admin', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const game = new Game(req.body);
-    await game.save();
-    res.status(201).json(game);
-  } catch (error) {
-    console.error('Error creating game:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Admin: Update game
-router.put('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const game = await Game.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-    
-    res.json(game);
-  } catch (error) {
-    console.error('Error updating game:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Admin: Delete game
-router.delete('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const game = await Game.findByIdAndDelete(req.params.id);
-    
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-    
-    res.json({ message: 'Game deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting game:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-export default router;
-
-
-admingames
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import api from '../../utils/api';
-
-const AdminGames = () => {
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingGame, setEditingGame] = useState(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    gameType: 'crossword',
-    difficulty: 'medium',
-    maxXP: 200,
-    timeLimit: 0,
-    content: {}
-  });
-
-  useEffect(() => {
-    fetchGames();
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchGames = async () => {
+  const fetchUserData = async () => {
     try {
-      const response = await api.get('/games/admin/all');
-      setGames(response.data);
+      const userRes = await api.get('/auth/user');
+      setUser(userRes.data);
+
+      // Fetch training stats
+      try {
+        const statsRes = await api.get('/training-logs/stats');
+        setStats(statsRes.data);
+      } catch (error) {
+        console.log('Training logs not available yet');
+      }
     } catch (error) {
-      console.error('Error fetching games:', error);
-      alert('Error loading games');
+      console.error('Error fetching user data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreate = () => {
-    setEditingGame(null);
-    setFormData({
-      title: '',
-      description: '',
-      gameType: 'crossword',
-      difficulty: 'medium',
-      maxXP: 200,
-      timeLimit: 0,
-      content: {}
-    });
-    setShowModal(true);
+  const calculateLevelProgress = () => {
+    if (!user) return 0;
+    const currentLevelXP = (user.level - 1) * 100;
+    const nextLevelXP = user.level * 100;
+    const progress = ((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+    return Math.min(Math.max(progress, 0), 100);
   };
 
-  const handleEdit = (game) => {
-    setEditingGame(game);
-    setFormData({
-      title: game.title,
-      description: game.description,
-      gameType: game.gameType,
-      difficulty: game.difficulty,
-      maxXP: game.maxXP,
-      timeLimit: game.timeLimit,
-      content: game.content,
-      isActive: game.isActive
-    });
-    setShowModal(true);
-  };
-
-  const handleDelete = async (gameId) => {
-    if (window.confirm('Are you sure you want to delete this game?')) {
-      try {
-        await api.delete(`/games/admin/${gameId}`);
-        fetchGames();
-        alert('Game deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting game:', error);
-        alert('Error deleting game');
-      }
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  // ✅ LOG COMPLETION FORM CLICK
+  const handleCompletionFormClick = async () => {
     try {
-      if (editingGame) {
-        await api.put(`/games/admin/${editingGame._id}`, formData);
-        alert('Game updated successfully!');
-      } else {
-        await api.post('/games/admin/create', formData);
-        alert('Game created successfully!');
-      }
-      setShowModal(false);
-      fetchGames();
+      // Log the activity
+      await api.post('/activity/log', {
+        action: 'completion_form_accessed',
+        details: {
+          accessedFrom: 'homepage',
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      // Navigate to completion form
+      navigate('/completion-form');
     } catch (error) {
-      console.error('Error saving game:', error);
-      alert('Error saving game');
-    }
-  };
-
-  const getContentTemplate = (gameType) => {
-    switch (gameType) {
-      case 'crossword':
-        return JSON.stringify({
-          grid: [
-            ['Q', 'U', 'A', 'L', 'I', 'T', 'Y', null, null, null]
-          ],
-          clues: {
-            across: [{ number: 1, row: 0, col: 0, answer: 'QUALITY', clue: 'ISO 9001 focus (7)' }],
-            down: []
-          }
-        }, null, 2);
-      case 'wordle':
-        return JSON.stringify({
-          words: [
-            { word: 'AUDIT', hint: 'Systematic examination' }
-          ]
-        }, null, 2);
-      case 'quickquiz':
-        return JSON.stringify({
-          questions: [
-            {
-              question: 'What does IMS stand for?',
-              options: ['Integrated Management System', 'Other', 'Other', 'Other'],
-              correctAnswer: 0,
-              points: 10
-            }
-          ]
-        }, null, 2);
-      default:
-        return '{}';
+      console.error('Error logging completion form access:', error);
+      // Still navigate even if logging fails
+      navigate('/completion-form');
     }
   };
 
@@ -1437,242 +106,349 @@ const AdminGames = () => {
 
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)' }}>🎮 MANAGE GAMES</h1>
-        <button onClick={handleCreate} className="retro-btn">+ CREATE GAME</button>
-      </div>
+      {/* User Profile Card */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="retro-card"
+          style={{
+            marginBottom: '40px',
+            background: 'linear-gradient(135deg, var(--primary-navy) 0%, var(--bright-blue) 100%)',
+            color: 'white'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '20px' }}>
+            <div style={{ flex: 1 }}>
+              <h1 style={{ fontSize: '28px', marginBottom: '10px' }}>
+                Welcome back, {user.username}! 👋
+              </h1>
+              <p style={{ fontSize: '12px', opacity: 0.9, marginBottom: '20px' }}>
+                {user.email}
+              </p>
 
-      <div className="retro-card" style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', fontSize: '11px' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-              <th style={{ padding: '15px', textAlign: 'left' }}>Title</th>
-              <th style={{ padding: '15px', textAlign: 'left' }}>Type</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Difficulty</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Max XP</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Status</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {games.map(game => (
-              <tr key={game._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td style={{ padding: '15px' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{game.title}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-medium)' }}>{game.description}</div>
-                </td>
-                <td style={{ padding: '15px', textTransform: 'capitalize' }}>{game.gameType}</td>
-                <td style={{ padding: '15px', textAlign: 'center', textTransform: 'capitalize' }}>{game.difficulty}</td>
-                <td style={{ padding: '15px', textAlign: 'center', color: 'var(--bright-blue)', fontWeight: 'bold' }}>
-                  {game.maxXP}
-                </td>
-                <td style={{ padding: '15px', textAlign: 'center' }}>
-                  <span style={{
-                    padding: '5px 10px',
-                    background: game.isActive ? 'var(--success-green)' : 'var(--text-medium)',
-                    color: 'white',
-                    fontSize: '9px',
-                    fontWeight: 'bold',
-                    borderRadius: '3px'
-                  }}>
-                    {game.isActive ? 'ACTIVE' : 'INACTIVE'}
+              {/* Level Progress */}
+              <div style={{ marginBottom: '15px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                    LEVEL {user.level}
                   </span>
-                </td>
-                <td style={{ padding: '15px', textAlign: 'center' }}>
-                  <button
-                    onClick={() => handleEdit(game)}
-                    className="retro-btn secondary"
-                    style={{ fontSize: '10px', padding: '8px 12px', marginRight: '5px' }}
-                  >
-                    EDIT
-                  </button>
-                  <button
-                    onClick={() => handleDelete(game._id)}
-                    className="retro-btn secondary"
-                    style={{ fontSize: '10px', padding: '8px 12px' }}
-                  >
-                    DELETE
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {games.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-medium)' }}>
-            No games found. Create your first game!
-          </div>
-        )}
-      </div>
-
-      {showModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.7)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px',
-          overflowY: 'auto'
-        }}>
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="retro-card"
-            style={{ maxWidth: '800px', width: '100%', maxHeight: '90vh', overflowY: 'auto', margin: '20px' }}
-          >
-            <h2 style={{ fontSize: '18px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-              {editingGame ? 'EDIT GAME' : 'CREATE GAME'}
-            </h2>
-
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                  style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                  Description *
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  required
-                  rows={3}
-                  style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Game Type *
-                  </label>
-                  <select
-                    value={formData.gameType}
-                    onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
-                    style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
-                  >
-                    <option value="crossword">Crossword</option>
-                    <option value="wordle">Wordle</option>
-                    <option value="quickquiz">Quick Quiz</option>
-                  </select>
+                  <span style={{ fontSize: '11px' }}>
+                    {user.xp} XP
+                  </span>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Difficulty
-                  </label>
-                  <select
-                    value={formData.difficulty}
-                    onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                    style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
-                  >
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
+                <div style={{
+                  width: '100%',
+                  height: '20px',
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '10px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${calculateLevelProgress()}%`,
+                    height: '100%',
+                    background: 'var(--success-green)',
+                    transition: 'width 0.3s ease'
+                  }} />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Max XP
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.maxXP}
-                    onChange={(e) => setFormData({ ...formData, maxXP: parseInt(e.target.value) })}
-                    min="0"
-                    style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Time (sec)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.timeLimit}
-                    onChange={(e) => setFormData({ ...formData, timeLimit: parseInt(e.target.value) })}
-                    min="0"
-                    style={{ width: '100%', padding: '10px', fontSize: '12px', border: '2px solid var(--border-color)' }}
-                  />
+                <div style={{ fontSize: '10px', marginTop: '5px', opacity: 0.8 }}>
+                  {user.level * 100 - user.xp} XP to Level {user.level + 1}
                 </div>
               </div>
 
-              {editingGame && (
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', fontSize: '11px', fontWeight: 'bold' }}>
-                    <input
-                      type="checkbox"
-                      checked={formData.isActive}
-                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                      style={{ marginRight: '10px' }}
-                    />
-                    Active
-                  </label>
+              {/* User Stats */}
+              {stats && (
+                <div style={{ display: 'flex', gap: '20px', fontSize: '11px' }}>
+                  <div>
+                    <span style={{ opacity: 0.8 }}>Completed:</span>
+                    <strong style={{ marginLeft: '5px' }}>{stats.totalCompleted}</strong>
+                  </div>
+                  <div>
+                    <span style={{ opacity: 0.8 }}>Badges:</span>
+                    <strong style={{ marginLeft: '5px' }}>{user.badges?.length || 0}</strong>
+                  </div>
                 </div>
               )}
+            </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>
-                  Game Content (JSON) *
-                </label>
-                <textarea
-                  value={typeof formData.content === 'string' ? formData.content : JSON.stringify(formData.content, null, 2)}
-                  onChange={(e) => {
-                    try {
-                      const parsed = JSON.parse(e.target.value);
-                      setFormData({ ...formData, content: parsed });
-                    } catch {
-                      setFormData({ ...formData, content: e.target.value });
-                    }
-                  }}
-                  placeholder={getContentTemplate(formData.gameType)}
-                  rows={15}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    fontSize: '11px',
-                    fontFamily: 'monospace',
-                    border: '2px solid var(--border-color)',
-                    background: 'var(--bg-light)'
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="submit" className="retro-btn" style={{ flex: 1 }}>
-                  {editingGame ? 'UPDATE GAME' : 'CREATE GAME'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="retro-btn secondary"
-                  style={{ flex: 1 }}
-                >
-                  CANCEL
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
+            {/* User Role Badge */}
+            <div style={{
+              padding: '10px 20px',
+              background: user.role === 'admin' ? 'var(--error-red)' : 'rgba(255,255,255,0.2)',
+              borderRadius: '3px',
+              fontSize: '11px',
+              fontWeight: 'bold'
+            }}>
+              {user.role === 'admin' ? '👑 ADMIN' : '👤 USER'}
+            </div>
+          </div>
+        </motion.div>
       )}
+
+      {/* ✅ COMPLETION FORM LINK - WITH LOGGING */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="retro-card"
+        style={{
+          marginBottom: '40px',
+          background: 'linear-gradient(135deg, var(--success-green) 0%, #27ae60 100%)',
+          color: 'white',
+          cursor: 'pointer'
+        }}
+        onClick={handleCompletionFormClick}
+        whileHover={{ scale: 1.02 }}
+      >
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>📋</div>
+          <h2 style={{ fontSize: '20px', marginBottom: '10px', fontWeight: 'bold' }}>
+            Submit Completion Form
+          </h2>
+          <p style={{ fontSize: '12px', opacity: 0.9 }}>
+            Click here to submit your training completion form
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Carousel */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="retro-card"
+        style={{
+          marginBottom: '40px',
+          padding: '0',
+          overflow: 'hidden',
+          position: 'relative',
+          minHeight: '300px'
+        }}
+      >
+        {/* Slides */}
+        {carouselSlides.map((slide, index) => (
+          <div
+            key={index}
+            style={{
+              display: index === currentSlide ? 'flex' : 'none',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '60px 40px',
+              background: `linear-gradient(135deg, ${slide.color} 0%, var(--primary-navy) 100%)`,
+              color: 'white',
+              textAlign: 'center',
+              minHeight: '300px'
+            }}
+          >
+            <div style={{ fontSize: '80px', marginBottom: '20px' }}>
+              {slide.icon}
+            </div>
+            <h2 style={{ fontSize: '28px', marginBottom: '15px', fontWeight: 'bold' }}>
+              {slide.title}
+            </h2>
+            <p style={{ fontSize: '14px', opacity: 0.9, maxWidth: '500px' }}>
+              {slide.description}
+            </p>
+          </div>
+        ))}
+
+        {/* Carousel Controls */}
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: '10px'
+        }}>
+          {carouselSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: index === currentSlide ? 'white' : 'rgba(255,255,255,0.4)',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: '20px',
+        marginBottom: '40px'
+      }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="retro-card"
+          onClick={() => navigate('/topics')}
+          style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 20px' }}
+          whileHover={{ scale: 1.05 }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '15px' }}>📚</div>
+          <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+            Training Topics
+          </h3>
+          <p style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
+            Complete topics to earn XP and badges
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="retro-card"
+          onClick={() => navigate('/games')}
+          style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 20px' }}
+          whileHover={{ scale: 1.05 }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '15px' }}>🎮</div>
+          <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+            Games
+          </h3>
+          <p style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
+            Test your knowledge with fun games
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="retro-card"
+          onClick={() => navigate('/leaderboard')}
+          style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 20px' }}
+          whileHover={{ scale: 1.05 }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '15px' }}>🏆</div>
+          <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '10px' }}>
+            Leaderboard
+          </h3>
+          <p style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
+            See how you rank against others
+          </p>
+        </motion.div>
+      </div>
+
+      {/* User Manual Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="retro-card"
+        style={{ marginBottom: '40px' }}
+      >
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '20px' }}>
+          📖 USER MANUAL - How to Claim XP
+        </h2>
+
+        <div style={{ fontSize: '12px', lineHeight: '1.8', color: 'var(--text-dark)' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-navy)' }}>
+              1. Complete Training Topics
+            </h3>
+            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
+              <li>Navigate to "Training Topics" from the menu</li>
+              <li>Select a topic to begin training</li>
+              <li>Read the content carefully</li>
+              <li>Answer the mandatory question correctly to earn <strong>50 XP</strong> and a <strong>badge</strong></li>
+              <li>Answer all 4 bonus questions correctly to earn an additional <strong>50 XP</strong></li>
+              <li><strong>Total possible per topic: 100 XP</strong></li>
+            </ul>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-navy)' }}>
+              2. Play Games
+            </h3>
+            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
+              <li>Go to "Games" section</li>
+              <li>Choose from Text Twist, Wordle, Quick Quiz, or Hangman</li>
+              <li>Each game has different XP rewards (50-250 XP)</li>
+              <li>You can only earn XP once per game</li>
+              <li>Admins can replay games but won't earn XP again</li>
+            </ul>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-navy)' }}>
+              3. Level Up System
+            </h3>
+            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
+              <li>Every 100 XP = 1 Level</li>
+              <li>Level 1: 0-99 XP</li>
+              <li>Level 2: 100-199 XP</li>
+              <li>Level 3: 200-299 XP... and so on</li>
+              <li>Track your progress in the user profile section</li>
+            </ul>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-navy)' }}>
+              4. Badges & Achievements
+            </h3>
+            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
+              <li>Earn a badge for each completed training topic (mandatory question)</li>
+              <li>Badges can be re-earned after yearly reset</li>
+              <li>Badge count increments each time you re-earn the same badge</li>
+              <li>View all your badges in your profile</li>
+            </ul>
+          </div>
+
+          <div style={{
+            padding: '15px',
+            background: 'var(--bg-light)',
+            border: '3px solid var(--bright-blue)',
+            marginTop: '20px'
+          }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--bright-blue)' }}>
+              💡 Pro Tips
+            </h3>
+            <ul style={{ paddingLeft: '20px', fontSize: '11px' }}>
+              <li>Complete all mandatory questions to collect all badges</li>
+              <li>Aim for bonus questions to maximize XP</li>
+              <li>Play games for additional XP and fun</li>
+              <li>Check the leaderboard to see your ranking</li>
+              <li>Training logs show your complete history</li>
+            </ul>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };
 
-export default AdminGames;
+export default Home;
+
+
+
+const handleCompletionFormClick = async () => {
+    try {
+      // Log the activity
+      await api.post('/activity/log', {
+        action: 'completion_form_accessed',
+        details: {
+          accessedFrom: 'homepage',
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+      // Navigate to completion form
+      navigate('/completion-form');
+    } catch (error) {
+      console.error('Error logging completion form access:', error);
+      // Still navigate even if logging fails
+      navigate('/completion-form');
+    }
+  };
+ 
