@@ -43,7 +43,7 @@ router.get('/play/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ message: 'This game is not active' });
         }
 
-        const hasCompleted = game.hasUserCompleted(req.user._id);
+        const hasCompleted = game.hasUserCompleted(req.user._id && req.user.role !== 'admin');
 
         if (hasCompleted) {
             return res.status(403).json({

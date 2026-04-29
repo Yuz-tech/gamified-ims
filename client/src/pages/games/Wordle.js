@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from '../../utils/api';
 
 const Wordle = () => {
@@ -16,6 +16,7 @@ const Wordle = () => {
   const [maxAttempts] = useState(6);
   const [loading, setLoading] = useState(true);
   const [startTime] = useState(Date.now());
+  const [isValidating, setIsValidating] = useState(false);
 
   useEffect(() => {
     fetchGame();
@@ -24,7 +25,7 @@ const Wordle = () => {
   useEffect(() => {
     const handleKeyboard = (e) => {
       if (gameOver) return;
-      
+
       if (e.key === 'Enter') {
         submitGuess();
       } else if (e.key === 'Backspace') {
@@ -45,17 +46,19 @@ const Wordle = () => {
       const response = await api.get(`/games/play/${id}`);
       const gameData = response.data;
       setGame(gameData);
-      
+
       const words = gameData.content.words;
       const randomWord = words[Math.floor(Math.random() * words.length)];
+
       setTargetWord(randomWord.word.toUpperCase());
+
       setHint(randomWord.hint);
       setGuesses([]);
       setCurrentGuess('');
       setGameOver(false);
       setWon(false);
     } catch (error) {
-      console.error('Error fetching game:', error);
+      console.error('Error fetching game: ', error);
       if (error.response?.status === 403) {
         alert('You have already completed this game!');
         navigate('/games');
@@ -70,7 +73,7 @@ const Wordle = () => {
 
   const handleKeyPress = (letter) => {
     if (gameOver) return;
-    
+
     if (letter === 'BACKSPACE') {
       setCurrentGuess(prev => prev.slice(0, -1));
     } else if (letter === 'ENTER') {
@@ -86,6 +89,15 @@ const Wordle = () => {
       return;
     }
 
+    setIsValidating(true);
+    const isValidWord = await validateWord(currentGuess);
+    setIsValidating(false);
+
+    if (!isValidWord) {
+      alert('Not a valid English word!');
+      return;
+    }
+
     const newGuesses = [...guesses, currentGuess];
     setGuesses(newGuesses);
     setCurrentGuess('');
@@ -97,6 +109,16 @@ const Wordle = () => {
     } else if (newGuesses.length >= maxAttempts) {
       setGameOver(true);
       await submitScore(false, newGuesses.length);
+    }
+  };
+
+  const validateWord = async (word) => {
+    try {
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
+      return response.ok;
+    } catch (error) {
+      console.error('Error validating word: ', error);
+      return true;
     }
   };
 
@@ -116,7 +138,7 @@ const Wordle = () => {
         timeSpent: timeTaken
       });
     } catch (error) {
-      console.error('Error submitting score:', error);
+      console.error('Error submitting score: ', error);
     }
   };
 
@@ -137,33 +159,29 @@ const Wordle = () => {
     return (
       <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '10px' }}>
         {letters.map((letter, idx) => (
-          <div
-            key={idx}
-            style={{
-              width: '50px',
-              height: '50px',
-              border: '3px solid var(--primary-navy)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: 'white',
-              background: isActive ? 'var(--bright-blue)' : getLetterColor(letter, idx, guess)
-            }}
+          <div key={idx} style={{
+            width: '50px',
+            height: '50px',
+            border: '3px solid var(--primary-navy)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: 'white',
+            background: isActive ? 'var(--bright-blue)' : getLetterColor(letter, idx, guess)
+          }}
           >
             {letter}
           </div>
         ))}
         {isActive && Array(emptySlots).fill(0).map((_, idx) => (
-          <div
-            key={`empty-${idx}`}
-            style={{
-              width: '50px',
-              height: '50px',
-              border: '3px solid var(--border-color)',
-              background: 'white'
-            }}
+          <div key={`empty-${idx}`} style={{
+            width: '50px',
+            height: '50px',
+            border: '3px solid var(--border-color)',
+            background: 'white'
+          }}
           />
         ))}
       </div>
@@ -182,15 +200,11 @@ const Wordle = () => {
         {rows.map((row, rowIdx) => (
           <div key={rowIdx} style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '5px' }}>
             {row.map(key => (
-              <button
-                key={key}
-                onClick={() => handleKeyPress(key)}
-                className="retro-btn secondary"
-                style={{
-                  padding: key.length > 1 ? '10px 8px' : '10px 15px',
-                  fontSize: '10px',
-                  minWidth: key.length > 1 ? '80px' : '40px'
-                }}
+              <button key={key} onClick={() => handleKeyPress(key)} className="retro-btn secondary" style={{
+                padding: key.length > 1 ? '10px 8px' : '10px 15px',
+                fontSize: '10px',
+                minWidth: key.length > 1 ? '80px' : '40px'
+              }}
               >
                 {key === 'BACKSPACE' ? '⌫' : key}
               </button>
@@ -204,7 +218,7 @@ const Wordle = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING GAME...</div>
+        <div className="loading neon-text">Loading...</div>
       </div>
     );
   }
@@ -213,8 +227,10 @@ const Wordle = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: 'var(--error-red)' }}>Game Not Found</h2>
-          <button onClick={() => navigate('/games')} className="retro-btn">BACK TO GAMES</button>
+          <h2 style={{ color: 'var(--error-red)' }}>Game not Found</h2>
+          <button onClick={() => navigate('/games')} className="retro-btn">
+            Back to Games
+          </button>
         </div>
       </div>
     );
@@ -223,7 +239,7 @@ const Wordle = () => {
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        ← BACK TO GAMES
+        Back to Games
       </button>
 
       <motion.div
@@ -233,7 +249,7 @@ const Wordle = () => {
         style={{ maxWidth: '600px', margin: '0 auto' }}
       >
         <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px', textAlign: 'center' }}>
-          📝 {game.title}
+          {game.title}
         </h1>
         <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '20px', textAlign: 'center' }}>
           {game.description}
@@ -248,7 +264,9 @@ const Wordle = () => {
               marginBottom: '30px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>HINT</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '5px' }}>
+                HINT
+              </div>
               <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary-navy)' }}>{hint}</div>
               <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginTop: '5px' }}>
                 (5 letters)
@@ -264,30 +282,38 @@ const Wordle = () => {
             {Array(maxAttempts - guesses.length - (gameOver ? 0 : 1)).fill(0).map((_, idx) => (
               <div key={`empty-row-${idx}`} style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '10px' }}>
                 {Array(5).fill(0).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      border: '2px solid var(--border-color)',
-                      background: 'white'
-                    }}
+                  <div key={i} style={{
+                    width: '50px',
+                    height: '50px',
+                    border: '2px solid var(--border-color)',
+                    background: 'white'
+                  }}
                   />
                 ))}
               </div>
             ))}
 
             <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '11px', color: 'var(--text-medium)' }}>
-              Attempts: {guesses.length} / {maxAttempts}
+              {isValidating ? (
+                <span style={{ color: 'var(--bright-blue)', fontWeight: 'bold' }}>
+                  Validating word...
+                </span>
+              ) : (
+                <>
+                Attempts: {guesses.length} / {maxAttempts}
+                </>
+              )}
             </div>
 
             {renderKeyboard()}
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>{won ? '🎉' : '😢'}</div>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>
+              {won ? '🎉' : '😢'}
+            </div>
             <h2 style={{ fontSize: '24px', color: won ? 'var(--success-green)' : 'var(--error-red)', marginBottom: '20px' }}>
-              {won ? 'YOU WON!' : 'GAME OVER'}
+              {won ? 'You Won!' : 'Game Over'}
             </h2>
             <div style={{ fontSize: '14px', marginBottom: '10px' }}>
               The word was: <strong style={{ color: 'var(--primary-navy)' }}>{targetWord}</strong>
@@ -298,7 +324,9 @@ const Wordle = () => {
               </div>
             )}
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => navigate('/games')} className="retro-btn">BACK TO GAMES</button>
+              <button onClick={() => navigate('/games')} className="retro-btn">
+                Back to Games
+              </button>
             </div>
           </div>
         )}

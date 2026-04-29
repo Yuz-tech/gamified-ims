@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import api from "../../utils/api";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import api from '../../utils/api';
 
 const TextTwist = () => {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ const TextTwist = () => {
   const [currentWord, setCurrentWord] = useState(null);
   const [scrambledLetters, setScrambledLetters] = useState([]);
   const [currentInput, setCurrentInput] = useState('');
-  const [foundWords, setFoundWords] = useState('');
+  const [foundWords, setFoundWords] = useState([]);
   const [timeLeft, setTimeLeft] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -38,23 +38,24 @@ const TextTwist = () => {
       const response = await api.get(`/games/play/${id}`);
       const gameData = response.data;
       setGame(gameData);
-
+      
+      // Pick random word from the list
       const words = gameData.content.words;
       const randomWord = words[Math.floor(Math.random() * words.length)];
       setCurrentWord(randomWord);
-
+      
+      // Scramble the main word
       const letters = randomWord.mainWord.split('');
-
       setScrambledLetters(shuffleArray([...letters]));
-
+      
       setTimeLeft(gameData.timeLimit || 120);
     } catch (error) {
-      console.error('Error fetching game: ', error);
+      console.error('Error fetching game:', error);
       if (error.response?.status === 403) {
-        alert('You have already completed this game :<');
+        alert('You have already completed this game!');
         navigate('/games');
       } else {
-        alert('Error loading games');
+        alert('Error loading game');
         navigate('/games');
       }
     } finally {
@@ -81,6 +82,7 @@ const TextTwist = () => {
   const handleLetterClick = (letter, index) => {
     if (currentInput.length < currentWord.mainWord.length) {
       setCurrentInput(currentInput + letter);
+      // Remove letter from available (visually)
       const newLetters = [...scrambledLetters];
       newLetters[index] = null;
       setScrambledLetters(newLetters);
@@ -89,6 +91,7 @@ const TextTwist = () => {
 
   const handleClear = () => {
     setCurrentInput('');
+    // Reshuffle letters instead of showing them in order
     setScrambledLetters(shuffleArray([...currentWord.mainWord.split('')]));
   };
 
@@ -100,7 +103,8 @@ const TextTwist = () => {
     }
 
     const upperInput = currentInput.toUpperCase();
-
+    
+    // Check if already found
     if (foundWords.includes(upperInput)) {
       setMessage('Already found!');
       setTimeout(() => setMessage(''), 2000);
@@ -108,20 +112,23 @@ const TextTwist = () => {
       return;
     }
 
-    const allValidWords = [currentWord.mainWord, ...currentWord.subWords];
+    // Check if valid word
+    const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
     if (allValidWords.includes(upperInput)) {
       setFoundWords([...foundWords, upperInput]);
-      setMessage('Correct!');
+      setMessage('✓ Correct!');
       setTimeout(() => setMessage(''), 1000);
-
+      
+      // Check if found main word
       if (upperInput === currentWord.mainWord) {
         endGame(true);
       }
     } else {
-      setMessage('Not a valid word!');
+      setMessage('✗ Not a valid word!');
       setTimeout(() => setMessage(''), 2000);
     }
-
+    
+    // Always reshuffle after submitting (correct or wrong)
     handleClear();
   };
 
@@ -132,11 +139,12 @@ const TextTwist = () => {
 
   const endGame = async (foundMainWord = false) => {
     setGameOver(true);
-
-    const allValidWords = [currentWord.mainWord, ...currentWord.subWords];
+    
+    const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
     const percentage = Math.round((foundWords.length / allValidWords.length) * 100);
     let score = Math.round((percentage / 100) * game.maxXP);
-
+    
+    // Bonus if found main word
     if (foundMainWord || foundWords.includes(currentWord.mainWord)) {
       score = game.maxXP;
     }
@@ -150,20 +158,20 @@ const TextTwist = () => {
         timeSpent: timeTaken
       });
     } catch (error) {
-      console.error('Error submitting score: ', error);
+      console.error('Error submitting score:', error);
     }
   };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}: ${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">Loading...</div>
+        <div className="loading neon-text">LOADING GAME...</div>
       </div>
     );
   }
@@ -172,31 +180,29 @@ const TextTwist = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: 'var(--error-red)' }}>Game not found</h2>
-          <button onClick={() => navigate('/games')} className="retro-btn">
-            Back to Games
-          </button>
+          <h2 style={{ color: 'var(--error-red)' }}>Game Not Found</h2>
+          <button onClick={() => navigate('/games')} className="retro-btn">BACK TO GAMES</button>
         </div>
       </div>
     );
   }
 
-  const allValidWords = [currentWord.mainWord, ...currentWord.subWords];
+  const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
 
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <button onClick={() => navigate('/games')} className="retro-btn secondary" style={{ marginBottom: '20px' }}>
-        Back to Games
+        ← BACK TO GAMES
       </button>
 
-      <motion.div 
-       initial={{ opacity: 0, y: 20 }}
-       animate={{ opacity: 1, y: 0 }}
-       className="retro-card"
-       style={{ maxWidth: '700px', margin: '0 auto' }}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="retro-card"
+        style={{ maxWidth: '700px', margin: '0 auto' }}
       >
         <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px', textAlign: 'center' }}>
-          {game.title}
+           {game.title}
         </h1>
         <p style={{ fontSize: '11px', color: 'var(--text-medium)', marginBottom: '30px', textAlign: 'center' }}>
           {game.description}
@@ -204,15 +210,15 @@ const TextTwist = () => {
 
         {!gameStarted ? (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}></div>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔤</div>
             <h2 style={{ fontSize: '20px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
               READY TO PLAY?
             </h2>
             <div style={{ fontSize: '12px', marginBottom: '30px', lineHeight: '1.8' }}>
-              <p>Find the main word ({currentWord.mainWord.length} letters) to win!</p>
-              <p>Form words using the scrambled letters</p>
-              <p>{formatTime(game.timeLimit || 120)} time limit</p>
-              <p>Max {game.maxXP} XP</p>
+              <p>• Form words using the scrambled letters</p>
+              <p>• Find the main word ({currentWord.mainWord.length} letters) to win!</p>
+              <p>• {formatTime(game.timeLimit || 120)} time limit</p>
+              <p>• Max {game.maxXP} XP</p>
             </div>
             <button onClick={startGame} className="retro-btn" style={{ fontSize: '14px', padding: '15px 30px' }}>
               START GAME
@@ -230,7 +236,7 @@ const TextTwist = () => {
                 fontSize: '16px',
                 borderRadius: '3px'
               }}>
-                {formatTime(timeLeft)}
+                 {formatTime(timeLeft)}
               </div>
               <div style={{
                 padding: '10px 20px',
@@ -309,13 +315,13 @@ const TextTwist = () => {
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
               <button onClick={handleSubmitWord} className="retro-btn" style={{ flex: 1 }}>
-                SUBMIT WORD
+                ✓ SUBMIT WORD
               </button>
               <button onClick={handleClear} className="retro-btn secondary" style={{ flex: 1 }}>
                 CLEAR
               </button>
               <button onClick={handleTwist} className="retro-btn secondary" style={{ flex: 1 }}>
-                TWIST
+                🔄 TWIST
               </button>
             </div>
 
@@ -326,14 +332,16 @@ const TextTwist = () => {
               </h3>
               <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                 {foundWords.map((word, idx) => (
-                  <span key={idx} style={{
-                    padding: '5px 10px',
-                    background: word === currentWord.mainWord ? 'var(--success-green)' : 'var(--bright-blue)',
-                    color: 'white',
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    borderRadius: '3px'
-                  }}
+                  <span
+                    key={idx}
+                    style={{
+                      padding: '5px 10px',
+                      background: word === currentWord.mainWord ? 'var(--success-green)' : 'var(--bright-blue)',
+                      color: 'white',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      borderRadius: '3px'
+                    }}
                   >
                     {word}
                   </span>
@@ -343,10 +351,52 @@ const TextTwist = () => {
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>
+              {foundWords.includes(currentWord.mainWord) ? '🎉' : '⏰'}
+            </div>
+            <h2 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
+              {foundWords.includes(currentWord.mainWord) ? 'EXCELLENT!' : 'TIME\'S UP!'}
+            </h2>
             
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '14px', marginBottom: '10px' }}>
+                You found <strong>{foundWords.length}</strong> out of <strong>{allValidWords.length}</strong> words
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
+                The main word was: <strong style={{ color: 'var(--primary-navy)' }}>{currentWord.mainWord}</strong>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '30px' }}>
+              <h3 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '10px' }}>All valid words:</h3>
+              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {allValidWords.map((word, idx) => (
+                  <span
+                    key={idx}
+                    style={{
+                      padding: '5px 10px',
+                      background: foundWords.includes(word) ? 'var(--success-green)' : 'var(--text-medium)',
+                      color: 'white',
+                      fontSize: '10px',
+                      borderRadius: '3px'
+                    }}
+                  >
+                    {word}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button onClick={() => navigate('/games')} className="retro-btn">
+                BACK TO GAMES
+              </button>
+            </div>
           </div>
         )}
       </motion.div>
     </div>
-  )
-}
+  );
+};
+
+export default TextTwist;

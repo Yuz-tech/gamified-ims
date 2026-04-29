@@ -25,18 +25,20 @@ const Games = () => {
 
   const getGameIcon = (gameType) => {
     switch (gameType) {
-      case 'crossword': return '🧩';
+      case 'texttwist': return '🧩';
       case 'wordle': return '🔤';
       case 'quickquiz': return '⚡';
+      case 'hangman': return ':(';
       default: return '🎮';
     }
   };
 
   const getGameRoute = (game) => {
     switch (game.gameType) {
-      case 'crossword': return `/games/crossword/${game._id}`;
+      case 'texttwist': return `/games/texttwist/${game._id}`;
       case 'wordle': return `/games/wordle/${game._id}`;
       case 'quickquiz': return `/games/quickquiz/${game._id}`;
+      case 'hangman': return `/games/hangman/${game._id}`;
       default: return '/games';
     }
   };
