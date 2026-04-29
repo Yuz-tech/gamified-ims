@@ -103,7 +103,7 @@ router.post('/register', async (req, res) => {
         ipAddress: req.ip,
         userAgent: req.headers['user-agent']
       },
-      expiresAt: expiresAt // ✅ THIS WAS MISSING!
+      expiresAt: expiresAt 
     });
 
     await session.save();
@@ -439,5 +439,20 @@ router.post('/award-xp', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Server error'});
   }
 });
+
+// finished training
+router.post('/finish', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found'});
+    }
+
+    await logActivity(user._id, 'finished_training', {});
+
+  } catch (error) {
+    throw error;
+  }
+})
 
 export default router;

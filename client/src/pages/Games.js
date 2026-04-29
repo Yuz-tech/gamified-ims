@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import api from '../utils/api';
 
 const Games = () => {
@@ -11,7 +11,7 @@ const Games = () => {
   useEffect(() => {
     fetchGames();
   }, []);
-  
+
   const fetchGames = async () => {
     try {
       const response = await api.get('/games');
@@ -25,30 +25,20 @@ const Games = () => {
 
   const getGameIcon = (gameType) => {
     switch (gameType) {
-      case 'texttwist': return '🔤';
-      case 'wordle': return '📝';
+      case 'crossword': return '🧩';
+      case 'wordle': return '🔤';
       case 'quickquiz': return '⚡';
-      case 'hangman': return '🎯';
       default: return '🎮';
     }
   };
 
-  const getGameName = (gameType) => {
-    switch (gameType) {
-      case 'texttwist': return 'Text Twist';
-      case 'wordle': return 'Wordle';
-      case 'quickquiz': return 'Quick Quiz';
-      case 'hangman': return 'Hangman';
-      default: return gameType;
+  const getGameRoute = (game) => {
+    switch (game.gameType) {
+      case 'crossword': return `/games/crossword/${game._id}`;
+      case 'wordle': return `/games/wordle/${game._id}`;
+      case 'quickquiz': return `/games/quickquiz/${game._id}`;
+      default: return '/games';
     }
-  };
-
-  const handlePlayGame = (game) => {
-    if (game.hasCompleted) {
-      alert('You have already completed this game! You cannot XP farm');
-      return;
-    }
-    navigate(`/games/${game.gameType}/${game._id}`);
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -62,33 +52,32 @@ const Games = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">Loading...</div>
+      <div style = {{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <div className='loading neon-text'>Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
+    <div className='retro-container' style={{ paddingTop: '40px' }}>
+      <div className='scanlines'></div>
+
       <motion.h1
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="neon-text"
-        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}
-      >
-        IMS AWARENESS GAMES
+        className='neon-text'
+        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}>
+          IMS AWARENESS GAMES
       </motion.h1>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
+        className='retro-card'
         style={{ marginBottom: '30px' }}
       >
         <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-dark)', textAlign: 'center' }}>
-          Test your IMS Knowledge with games! Earn XP while learning.
-          <br />
-          <strong style={{ color: 'var(--orange-accent)' }}>Note: XP Farming is not allowed.</strong>
+          Test your IMS knowledge with games! Earn XP while learning.
         </p>
       </motion.div>
 
@@ -96,15 +85,14 @@ const Games = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="retro-card"
-          style={{ textAlign: 'center', padding: '60px 20px'}}
+          className='retro-card'
+          style={{ textAlign: 'center', padding: '60px 20px' }}
         >
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>GAMES!</div>
           <h2 style={{ fontSize: '18px', color: 'var(--text-medium)', marginBottom: '10px' }}>
             No Games Available
           </h2>
           <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>
-            Check back later for new content!
+            Check back later maybe
           </p>
         </motion.div>
       ) : (
@@ -115,48 +103,21 @@ const Games = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: game.hasCompleted ? 1 : 1.03 }}
-              className="retro-card"
-              style={{
-                cursor: game.hasCompleted ? 'not-allowed' : 'pointer',
-                opacity: game.hasCompleted ? 0.6 : 1,
+              whileHover={{ scale: 1.03 }}
+              className='retro-card'
+              style={{ 
+                cursor: 'pointer',
                 position: 'relative',
-                border: game.hasCompleted ? '2px solid var(--text-medium)' : '2px solid var(--border-color)'
+                overflow: 'hidden'
               }}
-              onClick={() => handlePlayGame(game)}
+              onClick={() => navigate(getGameRoute(game))}
             >
-              {/* Completed Badge */}
-              {game.hasCompleted && (
-                <div style={{
-                  position: 'absolute',
-                  top: '-5px',
-                  right: '-5px',
-                  padding: '5px 12px',
-                  background: 'var(--success-green)',
-                  color: 'white',
-                  fontSize: '9px',
-                  fontWeight: 'bold',
-                  borderRadius: '3px',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                  zIndex: 10
-                }}>
-                  COMPLETED
-                </div>
-              )}
-
-              <div style={{ fontSize: '64px', textAlign: 'center', marginBottom: '20px' }}>
-                {getGameIcon(game.gameType)}
-              </div>
-
               <div style={{
-                fontSize: '10px',
-                color: 'var(--text-medium)',
+                fontSize: '64px',
                 textAlign: 'center',
-                marginBottom: '5px',
-                textTransform: 'uppercase',
-                letterSpacing: '1px'
+                marginBottom: '20px'
               }}>
-                {getGameName(game.gameType)}
+                {getGameIcon(game.gameType)}
               </div>
 
               <h3 style={{
@@ -189,11 +150,8 @@ const Games = () => {
                 gap: '10px',
                 marginBottom: '20px'
               }}>
-                <div style={{
-                  padding: '10px',
-                  background: 'var(--bg-light)',
-                  border: '2px solid var(--border-color)',
-                  textAlign: 'center'
+                <div style={{ 
+                  padding: '10px', background: 'var(--bg-light)', border: '2px solid var(--border-color)', textAlign: 'center'
                 }}>
                   <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
                     DIFFICULTY
@@ -222,6 +180,7 @@ const Games = () => {
                 </div>
               </div>
 
+              {/* Time Limit */}
               {game.timeLimit > 0 && (
                 <div style={{
                   padding: '8px',
@@ -236,19 +195,11 @@ const Games = () => {
                 </div>
               )}
 
-              <button className="retro-btn" style={{
-                width: '100%',
-                fontSize: '12px',
-                opacity: game.hasCompleted ? 0.5 : 1,
-                cursor: game.hasCompleted ? 'not-allowed' : 'pointer'
-              }}
-              onClick={(e) => {
+              <button className="retro-btn" style={{ width: '100%', fontSize: '12px' }} onClick={(e) => { 
                 e.stopPropagation();
-                handlePlayGame(game);
-              }}
-              disabled={game.hasCompleted}
-              >
-                {game.hasCompleted ? 'COMPLETED' : 'PLAY NOW'}
+                navigate(getGameRoute(game));
+              }}>
+                PLAY NOW
               </button>
             </motion.div>
           ))}

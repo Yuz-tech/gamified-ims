@@ -27,7 +27,8 @@ const ActivityLogs = () => {
     'game_deleted',
     'topics_bulk_toggle',
     'topic_new_toggled',
-    'yearly-reset'
+    'yearly-reset',
+    'finished_training'
   ];
 
   useEffect(() => {

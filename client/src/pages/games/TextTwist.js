@@ -10,7 +10,7 @@ const TextTwist = () => {
   const [currentWord, setCurrentWord] = useState(null);
   const [scrambledLetters, setScrambledLetters] = useState([]);
   const [currentInput, setCurrentInput] = useState('');
-  const [foundWords, setFoundWords] = useState([]);
+  const [foundWords, setFoundWords] = useState('');
   const [timeLeft, setTimeLeft] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -51,10 +51,10 @@ const TextTwist = () => {
     } catch (error) {
       console.error('Error fetching game: ', error);
       if (error.response?.status === 403) {
-        alert('You have already completed this game!');
+        alert('You have already completed this game :<');
         navigate('/games');
       } else {
-        alert('Error loading game');
+        alert('Error loading games');
         navigate('/games');
       }
     } finally {
@@ -89,7 +89,7 @@ const TextTwist = () => {
 
   const handleClear = () => {
     setCurrentInput('');
-    setScrambledLetters(currentWord.mainWord.split(''));
+    setScrambledLetters(shuffleArray([...currentWord.mainWord.split('')]));
   };
 
   const handleSubmitWord = () => {
@@ -108,7 +108,7 @@ const TextTwist = () => {
       return;
     }
 
-    const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
+    const allValidWords = [currentWord.mainWord, ...currentWord.subWords];
     if (allValidWords.includes(upperInput)) {
       setFoundWords([...foundWords, upperInput]);
       setMessage('Correct!');
@@ -133,7 +133,7 @@ const TextTwist = () => {
   const endGame = async (foundMainWord = false) => {
     setGameOver(true);
 
-    const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
+    const allValidWords = [currentWord.mainWord, ...currentWord.subWords];
     const percentage = Math.round((foundWords.length / allValidWords.length) * 100);
     let score = Math.round((percentage / 100) * game.maxXP);
 
@@ -173,13 +173,15 @@ const TextTwist = () => {
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div style={{ textAlign: 'center' }}>
           <h2 style={{ color: 'var(--error-red)' }}>Game not found</h2>
-          <button onClick={() => navigate('/games')} className="retro-btn">Back to Games</button>
+          <button onClick={() => navigate('/games')} className="retro-btn">
+            Back to Games
+          </button>
         </div>
       </div>
     );
   }
 
-  const allValidWords = [currentWord.mainWord, ...currentWord.subwords];
+  const allValidWords = [currentWord.mainWord, ...currentWord.subWords];
 
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
@@ -187,11 +189,11 @@ const TextTwist = () => {
         Back to Games
       </button>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="retro-card"
-        style={{ maxWidth: '700px', margin: '0 auto'}}
+      <motion.div 
+       initial={{ opacity: 0, y: 20 }}
+       animate={{ opacity: 1, y: 0 }}
+       className="retro-card"
+       style={{ maxWidth: '700px', margin: '0 auto' }}
       >
         <h1 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '10px', textAlign: 'center' }}>
           {game.title}
@@ -202,17 +204,18 @@ const TextTwist = () => {
 
         {!gameStarted ? (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔤</div>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}></div>
             <h2 style={{ fontSize: '20px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-              Ready to Play?
+              READY TO PLAY?
             </h2>
             <div style={{ fontSize: '12px', marginBottom: '30px', lineHeight: '1.8' }}>
-              <p>Form words using the scrambled letters</p>
               <p>Find the main word ({currentWord.mainWord.length} letters) to win!</p>
+              <p>Form words using the scrambled letters</p>
               <p>{formatTime(game.timeLimit || 120)} time limit</p>
+              <p>Max {game.maxXP} XP</p>
             </div>
             <button onClick={startGame} className="retro-btn" style={{ fontSize: '14px', padding: '15px 30px' }}>
-              Start Game
+              START GAME
             </button>
           </div>
         ) : !gameOver ? (
@@ -241,7 +244,7 @@ const TextTwist = () => {
               </div>
             </div>
 
-            {/* Current input display */}
+            {/* Current Input Display */}
             <div style={{
               padding: '20px',
               background: 'var(--bg-light)',
@@ -284,8 +287,12 @@ const TextTwist = () => {
               border: '2px solid var(--border-color)'
             }}>
               {scrambledLetters.map((letter, index) => (
-                <button key={index} onClick={() => letter && handleLetterClick(letter, index)}
-                  disabled={!letter} className="retro-btn" style={{
+                <button
+                  key={index}
+                  onClick={() => letter && handleLetterClick(letter, index)}
+                  disabled={!letter}
+                  className="retro-btn"
+                  style={{
                     width: '50px',
                     height: '50px',
                     fontSize: '24px',
@@ -302,13 +309,13 @@ const TextTwist = () => {
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
               <button onClick={handleSubmitWord} className="retro-btn" style={{ flex: 1 }}>
-                Submit Word
+                SUBMIT WORD
               </button>
               <button onClick={handleClear} className="retro-btn secondary" style={{ flex: 1 }}>
                 CLEAR
               </button>
               <button onClick={handleTwist} className="retro-btn secondary" style={{ flex: 1 }}>
-                🔄 TWIST
+                TWIST
               </button>
             </div>
 
@@ -336,52 +343,10 @@ const TextTwist = () => {
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>
-              {foundWords.includes(currentWord.mainWord) ? '🎉' : '⏰'}
-            </div>
-            <h2 style={{ fontSize: '24px', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-              {foundWords.includes(currentWord.mainWord) ? 'EXCELLENT!' : 'TIME\'S UP!'}
-            </h2>
-
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '14px', marginBottom: '10px' }}>
-                You found <strong>{foundWords.length}</strong> out of <strong>{allValidWords.length}</strong> words
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-medium)' }}>
-                The main word was: <strong style={{ color: 'var(--primary-navy)' }}>{currentWord.mainWord}</strong>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '30px' }}>
-              <h3 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '10px' }}>
-                All valid words:
-              </h3>
-              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {allValidWords.map((word, idx) => (
-                  <span key={idx} style={{
-                    padding: '5px 10px',
-                    background: foundWords.includes(word) ? 'var(--success-green)' : 'var(--text-medium)',
-                    color: 'white',
-                    fontSize: '10px',
-                    borderRadius: '3px'
-                  }}
-                  >
-                    {word}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => navigate('/games')} className="retro-btn">
-                Back to Games
-              </button>
-            </div>
+            
           </div>
         )}
       </motion.div>
     </div>
-  );
-};
-
-export default TextTwist;
+  )
+}
