@@ -32,10 +32,42 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [allTopicsCompleted, setAllTopicsCompleted] = useState(false);
   const [completionFormUrl, setCompletionFormUrl] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const carouselSlides = [
+  {
+    title: "IMS Awareness Training",
+    description: "Play while learning! The gamified IMS Awareness training offers interactive quizzes and rewards.",
+    color: "var(--bright-blue)"
+  },
+  {
+    title: "Earn XP and Level Up",
+    description: "Complete topics to gain XP and advance your rank",
+    icon: "",
+    color: 'var(--orange-accent)'
+  },
+  {
+    title: "Unlock Badges",
+    description: "Collect badges through completing training topics",
+    icon: "",
+    color: "var(--success-green)"
+  },
+  {
+    title: "Play Games",
+    description: "Test your IMS knowledge with word game demos",
+    icon: "",
+    color: "var(--primary-navy)"
+  }
+];
 
   useEffect(() => {
     fetchData();
     fetchCompletionFormUrl();
+    const interval = setInterval(() => {
+    setCurrentSlide(prev => (prev+1)%carouselSlides.length);
+  }, 4000);
+
+  return () => clearInterval(interval);
   }, [user]);
 
   const fetchCompletionFormUrl = async () => {
@@ -113,7 +145,6 @@ const handleFinishClick = () => {
   api.post('/auth/finish');
 };
 
-
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <div className="scanlines"></div>
@@ -170,7 +201,6 @@ const handleFinishClick = () => {
         }}>
           始
         </button>
-
       </motion.div>
 
       {/* Stats */}
@@ -272,6 +302,68 @@ const handleFinishClick = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Carousel */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className='retro-card'
+        style={{
+          marginBottom: '40px',
+          padding: '0',
+          overflow: 'hidden',
+          position: 'relative',
+          minHeight: '300px'
+        }}
+      >
+        {carouselSlides.map((slide, index) => (
+          <div key={index} style={{
+            display: index === currentSlide ? 'flex' : 'none',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '60px 40px',
+            background: `linear-gradient(135deg, ${slide.color} 0%, var(--primary-navy) 100%)`,
+            color: 'white',
+            textAlign: 'center',
+            minHeight: '300px'
+          }}
+          >
+            <div style={{ fontSize: '80px', marginBottom: '20px' }}>
+              {slide.icon}
+            </div>
+            <h2 style={{ fontSize: '28px', marginBottom: '15px', fontWeight: 'bold' }}>
+              {slide.title}
+            </h2>
+            <p style={{ fontSize: '14px', opacity: 0.9, maxWidth: '500px' }}>
+              {slide.description}
+            </p>
+          </div>
+        ))}
+
+        {/* Controls */}
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: '10px'
+        }}>
+          {carouselSlides.map((_, index) => (
+            <button key={index} onClick={() => setCurrentSlide(index)} style={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              background: index === currentSlide ? 'white' : 'rgba(255, 255, 255, 0.4)',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            />
+          ))}
+        </div>
+      </motion.div>
 
       {/* Badge Gallery */}
       <motion.div

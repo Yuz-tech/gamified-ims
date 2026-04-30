@@ -63,7 +63,7 @@ const Footer = () => {
                     color: '#55e8f2'
                 }}>
                     <div style={{ marginBottom: '10px', lineHeight: '1.7' }}>
-                        © {new Date().getFullYear()} Advanced World Solutions, Inc. All rights reserved.
+                        © {new Date().getFullYear()} AWS, Inc. All rights reserved.
                     </div>
                     <div>
                         Version 1.0 developed by Yuz the Intern
