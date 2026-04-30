@@ -108,6 +108,12 @@ const Home = () => {
   const xpNeededForLevel = nextLevelXP - currentLevelXP;
   const progressToNextLevel = (xpIntoLevel / xpNeededForLevel) * 100;
 
+// Frontend: add inside component scope
+const handleFinishClick = () => {
+  api.post('/auth/finish');
+};
+
+
   return (
     <div className="retro-container" style={{ paddingTop: '40px' }}>
       <div className="scanlines"></div>
@@ -134,7 +140,9 @@ const Home = () => {
               target="_blank"
               rel="noopener noreferrer"
               className='retro-btn'
-              style={{ display: 'inline-block', textDecoration: 'none', width: '100%', textAlign: 'center', backgroundColor: '#36f805' }}>
+              style={{ display: 'inline-block', textDecoration: 'none', width: '100%', textAlign: 'center', backgroundColor: '#36f805' }}
+              onClick={handleFinishClick}  
+            >
                 Fill out completion form
               </a>
           </motion.div>

@@ -443,16 +443,10 @@ router.post('/award-xp', authenticateToken, async (req, res) => {
 // finished training
 router.post('/finish', authenticateToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found'});
-    }
-
-    await logActivity(user._id, 'finished_training', {});
-
+    await logActivity(req.user._id, 'finished_training', {}, req);
   } catch (error) {
-    throw error;
+    console.error('Error: ', error);
   }
-})
+});
 
 export default router;

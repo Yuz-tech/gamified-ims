@@ -77,11 +77,6 @@ const TopicDetail = () => {
       top: 0
     });
 
-    // const noteEl = document.getElementById("note");
-    // if (noteEl) {
-    //   noteEl.style.display = "none"; 
-    // }
-
   };
 
   const handleStartBonus = () => {
