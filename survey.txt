@@ -1,0 +1,18 @@
+The Gamified IMS Awareness training is a proposed system that gamifies the current IMS Awareness training of AWS, Inc. The system is a web application created using a MERN stack.
+Following the tech stack, the platform makes use of MongoDB as its centralized database, Express JS for middleware routing, ReactJS for the frontend, and NodeJS for the backend.
+A simplified login and auth system is used with bcryptjs as the encryption scheme for password security. The purpose of the gamified system is to introduce a new method of enhancing awareness 
+among employees regarding IMS awareness, company standards, and proper actions. 
+
+The main feature is the training module that introduces the different IMS Awareness topics. The module includes provision of the IMS reference manual and policy videos that encompasses details of a topic. 
+Each topic has a corresponding mandatory question that needs to be answered to deem a topic complete. Upon answering a mandatory question correctly, users will be awarded XP and a badge. To finish the annual IMS 
+awareness training, users must simply complete all topics.
+
+The whole gamified concept starts with enhanced user engagement. Leaning more towards a non-traditinal method, the gamified platform offers features similar to gamified applications. 
+Experience Points (XP) and a leveling scheme introduces competence among users. It's easy. Earn rewards while learning. The philosophy of achieving something can help motivate users to engage with the game in intended ways.
+The platform also structures the user's journey. 
+
+According to Satoru Iwata, "...games are meant to be just one thing: Fun!"
+
+Incorporating interactivity in learning is generally more effective than passive learning. The system adds active engagement that fosters better understanding of the topic and long-term retention.
+
+The system also provides real-time feedback, 
