@@ -18,7 +18,7 @@ const createAdmin = async () => {
     });
 
     await admin.save();
-    console.log('✅ Admin created!');
+    console.log('Admin created!');
     console.log('Username: admin');
     console.log('Password: admin123');
     process.exit(0);

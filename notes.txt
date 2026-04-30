@@ -1,9 +1,2 @@
-1. finished training logs -> routes/api && auth.js && pages/home.js
-2. edit games, cannot add words and add a comma; there is no more crossword game
-3. add carousel, show current user model and home page
-4. user manual (claim xp) -> end of the page
-
-TextTwist.js:154 
- POST http://192.168.232.247:5000/api/games/submit-score 403 (Forbidden)
-installHook.js:1 Error submitting score: AxiosError: Request failed with status code 403
-    at async endGame (TextTwist.js:154:1)
+1. show home.js badge routes and user models, fixed badges display
+2. games not as smooth for some reason

@@ -47,7 +47,6 @@ const Achievements = () => {
     const userBadge = user?.badges?.find(b => b.topicId === topic._id);
     const badgeCount = userBadge?.badgeCount || 0;
     const isCompleted = user?.completedTopics?.some(ct => ct.topicId === topic._id);
-    // const isEarned = userBadge?.earnedAt && new Date(userBadge.earnedAt).getFullYear === currentYear;
     const isEarned = userBadge; // old one
 
     return {
@@ -64,9 +63,9 @@ const Achievements = () => {
     };
   });
 
-  const filteredBadges = badges.filter(badge => {
-    if (filter === 'earned') return badge.isEarned;
-    if (filter === 'locked') return !badge.isEarned;
+  const filteredBadges = badges.filter(badges => {
+    if (filter === 'earned') return badges.isEarned;
+    if (filter === 'locked') return !badges.isEarned;
     return true;
   });
 

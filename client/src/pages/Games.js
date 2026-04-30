@@ -69,7 +69,7 @@ const Games = () => {
         animate={{ y: 0, opacity: 1 }}
         className='neon-text'
         style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}>
-          IMS AWARENESS GAMES
+          IMS AWARENESS GAMES (DEMO)
       </motion.h1>
 
       <motion.div

@@ -75,7 +75,7 @@ const UserManual = () => {
                             <li>Mandatory Question: 100 XP</li>
                             <li>Bonus Question: 50 XP each</li>
                         </ul>
-                        <p style={{ marginBottom: '15px' }}>
+                        <div style={{ marginBottom: '15px' }}>
                             <strong>Level Thresholds:</strong><br />
                             <p>Each level requires progressively more XP. </p><br />
                             <p>Pre-defined thresholds (1-17): </p>
@@ -89,13 +89,13 @@ const UserManual = () => {
                             <p><strong>Formula:</strong> </p>
                             <p>XP = 7600 + (1300 + (currentLevel - 17) * 150)</p>
                             <p>Example: </p>
-                            <p>Level 17 ➝ 7600 + {1300 + [(17 - 17) * 150]} = 8900 XP </p>
-                            <p>Level 18 ➝ 7600 + {1300 + [(18-17) * 150]} = 9050 XP </p> <br />
+                            <p>Level 17 ➝ {`7600 + {1300 + [ (17 - 17) * 150 ]} = 8900 XP`} </p>
+                            <p>Level 18 ➝ {`7600 + {1300 + [ (18 - 17) * 150 ]} = 9050 XP`} </p> <br />
 
                             <p>Levels past the pre-defined thresholds (Lvl 17+) are scalable. This design ensures early levels are easier to achieve, while higher levels become progressively harder, creating a natural difficulty curve</p><br />
                             <p>...for a ✨<i>challenging</i>✨ experience. (¬_¬") </p>
                             
-                        </p>
+                        </div>
                     </div>
                 </section>
 
