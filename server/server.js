@@ -23,26 +23,8 @@ const app = express();
 
 // CORS Config
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      'http://0.0.0.0:3000',
-      'http://0.0.0.0:5000',
-      'http://0.0.0.0:5173',
-      'http://0.0.0.0:27017',
-      process.env.FRONTEND_URL,
-      '0.0.0.0:3000'
-    ].filter(Boolean);
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, true);
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200
+  origin: process.env.FRONTEND_URL,
+  credentials: true
 };
 
 // Middleware
