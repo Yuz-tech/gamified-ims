@@ -22,13 +22,17 @@ dotenv.config();
 const app = express();
 
 // CORS Config
-const corsOptions = {
-  origin: process.env.FRONTEND_URL,
-  credentials: true
-};
+// const corsOptions = {
+//   origin: process.env.FRONTEND_URL,
+//   'https://project-bmx8j-18se0wq9k-yuz-techs-projects.vercel.app',
+//   credentials: true
+// };
 
 // Middleware
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
