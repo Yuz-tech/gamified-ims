@@ -688,13 +688,13 @@ const Topics = () => {
                         fontSize: '8px',
                         padding: '5px 10px',
                         marginRight: '5px',
-                        background: topic.isNew ? '#001f4a' : '#1f8f00',
-                        color: topic.isNew ? 'white' : undefined,
+                        background: topic.isNew ? 'red' : 'green',
+                        color: '#ffffff',
                         border: topic.isNew ? '2px solid #ef4444' : undefined
                       }}
                       title={topic.isNew ? 'Mark as NOT new' : 'Mark As New'}
                       >
-                        {topic.isNew ? 'UMAN' : 'MAN'}
+                        NEW
                       </button>
 
                     </td>
