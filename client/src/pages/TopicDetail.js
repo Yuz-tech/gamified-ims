@@ -153,7 +153,7 @@ const TopicDetail = () => {
 
       // Show results for n seconds then return home
       setTimeout(() => {
-        navigate('/topics');
+        setCurrentStage(null);
       }, 6000);
     } catch (error) {
       alert(error.response?.data?.message || 'Error submitting bonus');
