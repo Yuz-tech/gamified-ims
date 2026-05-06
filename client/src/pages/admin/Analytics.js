@@ -183,21 +183,6 @@ const Analytics = () => {
                         {analytics?.avgLevel || 0}
                     </div>
                 </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="retro-card"
-                    style={{ textAlign: 'center' }}
-                >
-                    <div style={{ fontSize: '10px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-                        TOTAL BADGES
-                    </div>
-                    <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--secondary-pink)' }}>
-                        {analytics?.totalBadges || 0}
-                    </div>
-                </motion.div>
             </div>
 
             {/* Charts Grid */}

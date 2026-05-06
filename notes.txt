@@ -1,2 +1,0 @@
-1. show home.js badge routes and user models, fixed badges display
-2. games not as smooth for some reason

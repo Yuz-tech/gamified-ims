@@ -301,9 +301,6 @@ const Players = () => {
                                         <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
                                             XP
                                         </th>
-                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
-                                            Badges
-                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -372,20 +369,6 @@ const Players = () => {
                                             </td>
                                             <td style={{ padding: '15px 10px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', color: 'var(--orange-accent)' }}>
                                                 {player.xp.toLocaleString()}
-                                            </td>
-                                            <td style={{ padding: '15px 10px', textAlign: 'center', fontSize: '12px' }}>
-                                                <span style={{
-                                                    display: 'inline-block',
-                                                    padding: '5px 12px',
-                                                    background: 'rgba(16, 185, 129, 0.1)',
-                                                    border: '2px solid var(--success-green)',
-                                                    color: 'var(--success-green)',
-                                                    borderRadius: '20px',
-                                                    fontSize: '11px',
-                                                    fontWeight: 'bold'
-                                                }}>
-                                                    {player.badgeCount || 0}
-                                                </span>
                                             </td>
                                         </motion.tr>
                                     ))}
