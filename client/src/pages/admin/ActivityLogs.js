@@ -96,6 +96,21 @@ const ActivityLogs = () => {
     a.click();
   };
 
+  const handleCleanUp = async () => {
+    if (!window.confirm("Are you sure you want to clear all activity logs? This cannot be undone by the way.")) {
+      return;
+    }
+
+    try {
+      await api.delete('/admin/activity-logs');
+      setLogs([]);
+      alert("Activity logs have been cleared");  
+    } catch (error) {
+      console.error('Error cleaning up logs: ', error);
+      alert('Failed to clean up logs');
+    }
+  };
+
   return (
     <div style={{ paddingTop: '0' }}>
       <div className="scanlines"></div>
@@ -227,6 +242,20 @@ const ActivityLogs = () => {
             disabled={logs.length === 0}
           >
             EXPORT CSV
+          </button>
+          <button
+            onClick={handleCleanUp}
+            className="retro-btn"
+            style={{ 
+              background: '#ff0b44',
+              borderColor: '#ff0b44',
+              flex: 1,
+              minWidth: '150px',
+              color: 'white'
+            }}
+            disabled={logs.length === 0}
+          >
+            CLEAN UP LOGS
           </button>
         </div>
       </motion.div>

@@ -248,6 +248,15 @@ router.get('/activity-logs', async (req, res) => {
   }
 });
 
+router.delete('/activity-logs', async (req, res) => {
+  try {
+    const result = await ActivityLog.deleteMany({});
+    res.status(200).json({ message: 'All activity logs cleaned up' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to clear activity logs' });
+  }
+});
+
 // Get statistics
 router.get('/statistics', async (req, res) => {
   try {
