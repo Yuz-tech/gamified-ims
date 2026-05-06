@@ -19,11 +19,6 @@ const gameSchema = new mongoose.Schema({
         required: true,
         enum: ['easy', 'medium', 'hard']
     },
-    maxXP: {
-        type: Number,
-        required: true,
-        default: 100
-    },
     timeLimit: {
         type: Number,
         default: 0

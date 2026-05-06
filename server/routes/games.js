@@ -6,23 +6,17 @@ import { logActivity } from '../utils/logger.js';
 
 const router = express.Router();
 
-// GET all games w/ completion status
+// GET all games 
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const games = await Game.find({ isActive: true })
-            .select('title description gameType difficulty maxXP timeLimit')
-            .sort({ createdAt: -1 });
-        
-        const gamesWithStatus = games.map(game => {
-            const hasCompleted = game.hasUserCompleted(req.user._id);
-            return {
-                ...game.toObject(),
-                hasCompleted,
-                canPlay: !hasCompleted
-            };
-        });
+        const { gameType, difficulty, isActive } = req.query;
+        const filter = {};
+        if (gameType) filter.gameType = gameType;
+        if (difficulty) filter.difficulty = difficulty;
+        if (isActive !== undefined) filter.isActive = isActive === 'true';
 
-        res.json(gamesWithStatus);
+        const games = await Game.find(filter);
+        res.json(games);
     } catch (error) {
         console.error('Error fetching games: ', error);
         res.status(500).json({ message: 'Server error' });
@@ -32,90 +26,39 @@ router.get('/', authenticateToken, async (req, res) => {
 // GET single game 
 router.get('/play/:id', authenticateToken, async (req, res) => {
     try {
-        const gameId = req.params.id;
-        const game = await Game.findById(gameId);
-
-        if (!game) {
-            return res.status(404).json({ message: 'Game not found' });
-        }
-
-        if (!game.isActive) {
-            return res.status(403).json({ message: 'This game is not active' });
-        }
-
-        const hasCompleted = game.hasUserCompleted(req.user._id && req.user.role !== 'admin');
-
-        if (hasCompleted) {
-            return res.status(403).json({
-                message: 'You have already completed this game and earned XP from it',
-                hasCompleted: true
-            });
-        }
-
-        res.json({
-            ...game.toObject(),
-            hasCompleted: false,
-            canPlay: true
-        });
+        const game = await Game.findById(req.params.id);
+        if (!game) return res.status(404).json({ error: 'Game not found' });
+        res.json(game);
     } catch (error) {
         console.error('Error fetching game: ', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 
-// Submit score
-// Player can only play the game once to avoid XP farming hehe
-router.post('/submit-score', authenticateToken, async (req, res) => {
+// Mark completion
+router.post('/:id/complete', authenticateToken, async (req, res) => {
     try {
-        const { gameId, gameType, score, timeSpent } = req.body;
+        const { userId, score, timeSpent } = req.body;
+        const game = await Game.findById(req.params.id);
+        if (!game) return res.status(404).json({ error: 'Game not found' });
 
-        const game = await Game.findById(gameId);
-        if (!game) {
-            return res.status(404).json({ message: 'Game not found' });
-        }
-
-        // Check if already completed
-        if (game.hasUserCompleted(req.user._id) && req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'You have already completed this game' });
-        }
-
-        // Verify user session
-        const sessionKey = `${req.user._id}-${game._id}`;
-        const session = gameSessions.get(sessionKey);
-
-        if (!session) {
-            return res.status(403).json({ message: 'No active game session' });
-        }
-
-        const actualTimeSpent = Math.floor((Date.now() - session.startedAt) / 1000);
-        if (game.timeLimit > 0 && actualTimeSpent > game.timeLimit + 5) {
-            gameSessions.delete(sessionKey);
-            return res.status(403).json({ message: 'Time limit exceeded' });
-        }
-
-        const user = await User.findById(req.user._id);
-        if (!game.hasUserCompleted(req.user._id)) {
-            user.xp += score;
-
-            const { calculateLevel } = await import('../utils/levelSystem.js');
-            user.level = calculateLevel(user.xp);
-
-            await user.save();
-        }
-
-        await game.addCompletion(req.user._id, score, actualTimeSpent);
-
-        gameSessions.delete(sessionKey);
-
-        res.json({
-            message: 'Score submitted',
-            xpAwarded: !game.hasUserCompleted(req.user._id) ? score : 0,
-            totalXP: user.xp,
-            level: user.level
-        });
+        await game.addCompletion(userId, score, timeSpent);
+        res.json({ message: 'Completion recorded', game });
     } catch (error) {
-        console.error('Error submitting score: ', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// user completion check
+router.get('/:id/completed/:userId', authenticateToken, async (req, res) => {
+    try {
+        const game = await Game.findById(req.params.id);
+        if (!game) return res.status(404).json({ error: 'Game not found' });
+
+        const completed = game.hasUserCompleted(req.params.userId);
+        res.json({ completed });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
@@ -141,30 +84,9 @@ router.get('/admin/all', authenticateToken, isAdmin, async (req, res) => {
 // CREATE game
 router.post('/admin/create', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const { title, description, gameType, difficulty, maxXP, timeLimit, content } = req.body;
-
-        const game = new Game({
-            title,
-            description,
-            gameType,
-            difficulty,
-            maxXP,
-            timeLimit,
-            content
-        });
-
+        const game = new Game(req.body);
         await game.save();
-
-        await logActivity(req.user._id, 'game_created', {
-            gameId: game._id,
-            title: game.title,
-            gameType: game.gameType
-        }, req);
-
-        res.json({
-            message: 'Game created successfully',
-            game
-        });
+        res.status(201).json(game);
     } catch (error) {
         console.error('Error creating game: ', error);
         res.status(500).json({ message: 'Server error' });
@@ -174,36 +96,9 @@ router.post('/admin/create', authenticateToken, isAdmin, async (req, res) => {
 // UPDATE game
 router.put('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const gameId = req.params.id;
-        const { title, description, difficulty, maxXP, timeLimit, content, isActive } = req.body;
-
-        const game = await Game.findByIdAndUpdate(
-            gameId,
-            {
-                title,
-                description,
-                difficulty,
-                maxXP,
-                timeLimit,
-                content,
-                isActive
-            },
-            { new: true }
-        );
-
-        if (!game) {
-            return res.status(404).json({ message: 'Game not found' });
-        }
-
-        await logActivity(req.user._id, 'game_updated', {
-            gameId: game._id,
-            title: game.title
-        }, req);
-
-        res.json({
-            message: 'Game updated successfully',
-            game
-        });
+        const game = await Game.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!game) return res.status(404).json({ error: 'Game not found' });
+        res.json(game);
     } catch (error) {
         console.error('Error updating game: ', error);
         res.status(500).json({ message: 'Server error' });
@@ -213,23 +108,22 @@ router.put('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
 // DELETE game
 router.delete('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const gameId = req.params.id;
-
-        const game = await Game.findByIdAndDelete(gameId);
-
-        if (!game) {
-            return res.status(404).json({ message: 'Game not found' });
-        }
-
-        await logActivity(req.user._id, 'game_deleted', {
-            gameId: game._id,
-            title: game.title
-        }, req);
-
-        res.json({ message: 'Game deleted successfully' });
+        const game = await Game.findByIdAndDelete(req.params.id);
+        if (!game) return res.status(404).json({ error: 'Game not found' });
+        res.json({ message: 'Game deleted' });
     } catch (error) {
         console.error('Error deleting game: ', error);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.get('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const game = await Game.findById(req.params.id).populate('completions.userId', 'username');
+        if (!game) return res.status(404).json({ error: 'Game not found' });
+        res.json(game.completions);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

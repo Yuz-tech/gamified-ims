@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { motion } from "framer-motion";
 import api from '../utils/api';
 
 const Games = () => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [newGame, setNewGame] = useState({
+    title: '',
+    description: '',
+    gameType: 'wordle',
+    difficulty: 'easy',
+    timeLimit: 0,
+    content: {}
+  });
 
   useEffect(() => {
     fetchGames();
@@ -14,6 +22,7 @@ const Games = () => {
 
   const fetchGames = async () => {
     try {
+      setLoading(true);
       const response = await api.get('/games');
       setGames(response.data);
     } catch (error) {
@@ -23,36 +32,27 @@ const Games = () => {
     }
   };
 
-  const getGameIcon = (gameType) => {
-    switch (gameType) {
-      case 'texttwist': return '🧩';
-      case 'wordle': return '🔤';
-      case 'quickquiz': return '⚡';
-      case 'hangman': return ':(';
-      default: return '🎮';
+  const createGame = async () => {
+    try {
+      await api.post('/games', newGame);
+      setNewGame({ title: '', description: '', gameType: 'wordle', difficulty: 'easy', timeLimit: 0, content: {} });
+      fetchGames();
+    } catch (error) {
+      console.error('Error creating game: ', error);
     }
   };
 
-  const getGameRoute = (game) => {
-    switch (game.gameType) {
-      case 'texttwist': return `/games/texttwist/${game._id}`;
-      case 'wordle': return `/games/wordle/${game._id}`;
-      case 'quickquiz': return `/games/quickquiz/${game._id}`;
-      case 'hangman': return `/games/hangman/${game._id}`;
-      default: return '/games';
+  const deleteGame = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this game?')) return;
+    try {
+      await api.delete(`/games/${id}`);
+      fetchGames();
+    } catch (error) {
+      console.error('Error deleting game: ', error);
     }
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'easy': return 'var(--success-green)';
-      case 'medium': return 'var(--orange-accent)';
-      case 'hard': return 'var(--error-red)';
-      default: return 'var(--text-medium)';
-    }
-  };
-
-  if (loading) {
+if (loading) {
     return (
       <div style = {{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div className='loading neon-text'>Loading...</div>
@@ -61,150 +61,76 @@ const Games = () => {
   }
 
   return (
-    <div className='retro-container' style={{ paddingTop: '40px' }}>
-      <div className='scanlines'></div>
-
-      <motion.h1
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className='neon-text'
-        style={{ fontSize: '28px', marginBottom: '40px', textAlign: 'center', color: 'var(--primary-navy)' }}>
-          IMS AWARENESS GAMES (DEMO)
-      </motion.h1>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className='retro-card'
-        style={{ marginBottom: '30px' }}
-      >
-        <p style={{ fontSize: '12px', lineHeight: '1.6', color: 'var(--text-dark)', textAlign: 'center' }}>
-          Test your IMS knowledge with games! Earn XP while learning.
-        </p>
-      </motion.div>
-
-      {games.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className='retro-card'
-          style={{ textAlign: 'center', padding: '60px 20px' }}
-        >
-          <h2 style={{ fontSize: '18px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-            No Games Available
-          </h2>
-          <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>
-            Check back later maybe
-          </p>
-        </motion.div>
+    <div className='retro-container'>
+      <h2 className='neon-text'>IMS Awareness Games!</h2>
+      {loading ? (
+        <p>Loading games...</p>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-          {games.map((game, index) => (
-            <motion.div
-              key={game._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.03 }}
-              className='retro-card'
-              style={{ 
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-              onClick={() => navigate(getGameRoute(game))}
-            >
-              <div style={{
-                fontSize: '64px',
-                textAlign: 'center',
-                marginBottom: '20px'
-              }}>
-                {getGameIcon(game.gameType)}
-              </div>
+        games.map((game) => (
+          <div key={game.id} className='retro-card pixel-corners'>
+            <h3>{game.title}</h3>
+            <p>{game.description}</p>
+            <p>Type: {game.gameType} | Difficulty: {game.difficulty}</p>
 
-              <h3 style={{
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: 'var(--primary-navy)',
-                marginBottom: '10px',
-                textAlign: 'center',
-                minHeight: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                {game.title}
-              </h3>
-
-              <p style={{
-                fontSize: '11px',
-                color: 'var(--text-medium)',
-                marginBottom: '20px',
-                textAlign: 'center',
-                minHeight: '40px'
-              }}>
-                {game.description}
-              </p>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '10px',
-                marginBottom: '20px'
-              }}>
-                <div style={{ 
-                  padding: '10px', background: 'var(--bg-light)', border: '2px solid var(--border-color)', textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                    DIFFICULTY
-                  </div>
-                  <div style={{
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    color: getDifficultyColor(game.difficulty),
-                    textTransform: 'uppercase'
-                  }}>
-                    {game.difficulty}
-                  </div>
-                </div>
-                <div style={{
-                  padding: '10px',
-                  background: 'var(--bg-light)',
-                  border: '2px solid var(--border-color)',
-                  textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '9px', color: 'var(--text-medium)', marginBottom: '5px' }}>
-                    MAX XP
-                  </div>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
-                    {game.maxXP}
-                  </div>
-                </div>
-              </div>
-
-              {/* Time Limit */}
-              {game.timeLimit > 0 && (
-                <div style={{
-                  padding: '8px',
-                  background: 'var(--orange-accent)',
-                  color: 'white',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  marginBottom: '15px'
-                }}>
-                  {Math.floor(game.timeLimit / 60)}:{(game.timeLimit % 60).toString().padStart(2, '0')} Time Limit
-                </div>
-              )}
-
-              <button className="retro-btn" style={{ width: '100%', fontSize: '12px' }} onClick={(e) => { 
-                e.stopPropagation();
-                navigate(getGameRoute(game));
-              }}>
-                PLAY NOW
+            <div style={{ marginTop: '10px' }}>
+              <button className='retro-btn secondary' onClick={() => alert('Play')}>
+                PLAY
               </button>
-            </motion.div>
-          ))}
+              {user?.role === 'admin' && (
+                <button className='retro-btn danger' onClick={() => deleteGame(game._id)} style={{ marginLeft: '10px' }}>
+                  DELETE
+                </button>
+              )}
+            </div>
+          </div>
+        )))
+      }
+
+      {user?.role === 'admin' && (
+        <div className='retro-card pixel-corners'>
+          <h3>CREATE NEW GAME</h3>
+          <input
+            className='retro-input'
+            placeholder='Title'
+            value={newGame.title}
+            onChange={(e) => setNewGame({ ...newGame, title: e.target.value })}
+          />
+          <textarea
+            className='retro-input'
+            placeholder='Description'
+            value={newGame.description}
+            onChange={(e) => setNewGame({ ...newGame, description: e.target.value })}
+          />
+          <select
+            className='retro-input'
+            value={newGame.gameType}
+            onChange={(e) => setNewGame({ ...newGame, gameType: e.target.value })}
+          >
+            <option value="texttwist">TextTwist</option>
+            <option value="wordle">Wordle</option>
+            <option value="quickquiz">QuickQuiz</option>
+            <option value="hangman">Hangman</option>
+          </select>
+          <select
+            className='retro-input'
+            value={newGame.difficulty}
+            onChange={(e) => setNewGame({ ...newGame, difficulty: e.target.value })}
+          >
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+          <input
+            className='retro-input'
+            type='number'
+            placeholder='Time Limit (seconds)'
+            value={newGame.timeLimit}
+            onChange={(e) => setNewGame({ ...newGame, timeLimit: Number(e.target.value) })}
+          />
+
+          <button className='retro-btn' onClick={createGame} style={{ margin: '10px' }}>
+            Create Game
+          </button>
         </div>
       )}
     </div>
