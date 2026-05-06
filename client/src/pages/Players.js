@@ -295,10 +295,10 @@ const Players = () => {
                                         <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
                                             Players
                                         </th>
-                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
+                                        <th style={{ padding: '15px 10px', textAlign: 'center', fontSize: '12px', color: '#FFFFFF' }}>
                                             Level
                                         </th>
-                                        <th style={{ padding: '15px 10px', textAlign: 'left', fontSize: '12px', color: '#FFFFFF' }}>
+                                        <th style={{ padding: '15px 10px', textAlign: 'center', fontSize: '12px', color: '#FFFFFF' }}>
                                             XP
                                         </th>
                                     </tr>
