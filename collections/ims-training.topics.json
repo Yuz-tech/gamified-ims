@@ -2,12 +2,12 @@
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983edd"
   },
-  "title": "ISO 9001",
+  "title": "ISO 9001 Overview",
   "description": "An internationally recognized standard for quality management systems.",
   "documentUrl": "https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view",
   "videoUrl": "https://drive.google.com/file/d/1YCSSdoBZeaBXdPF36QUdZJiu1d5lHJC0/view?usp=sharing",
   "badgeImage": "/uploads/badges/iso9001.png",
-  "badgeName": "The Standard Setter",
+  "badgeName": "THE STANDARD SETTER",
   "badgeDescription": "Mastered ISO 9001 Quality Management",
   "questions": [
     {
@@ -92,20 +92,21 @@
     "$date": "2026-03-19T08:35:57.448Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:14.691Z"
   },
-  "priority": 1
+  "priority": 1,
+  "isNew": false
 },
 {
   "_id": {
     "$oid": "69bbb56dc40a44e6cd983ee3"
   },
-  "title": "ISO 27001",
+  "title": "ISO 27001 Intro",
   "description": "An international standard that provides a framework for information security management systems or ISMS.",
   "documentUrl": "https://drive.google.com/file/d/YOUR_DOCUMENT_ID/view",
   "videoUrl": "https://drive.google.com/file/d/1AZZdQfRFbqVFwG6qshj_eWhxw_2ZzZ_u/view?usp=sharing",
   "badgeImage": "/uploads/badges/iso 27001.png",
-  "badgeName": "Information Warden",
+  "badgeName": "INFORMATION WARDEN",
   "badgeDescription": "Completed ISO 27001 Training",
   "questions": [
     {
@@ -190,9 +191,10 @@
     "$date": "2026-03-19T08:35:57.450Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:13.051Z"
   },
-  "priority": 2
+  "priority": 2,
+  "isNew": false
 },
 {
   "_id": {
@@ -203,7 +205,7 @@
   "documentUrl": "https://docs.google.com/document/d/13GfB0MJY0kYVRzOVdxqEbDNn4-DpvFGLAe3qbzngMno/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1Gdl4WrlAr6ggWDTaBFp8em3tvHeaC8aw/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915787022-682440122.png",
-  "badgeName": "統合",
+  "badgeName": "MANAGEMENT MYRMIDON",
   "badgeDescription": "Mastered Integrated Management Systems",
   "questions": [
     {
@@ -288,9 +290,10 @@
     "$date": "2026-03-19T08:35:57.451Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:44:18.051Z"
+    "$date": "2026-04-23T06:04:33.068Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -301,7 +304,7 @@
   "documentUrl": "https://docs.google.com/document/d/1zXO1DQ3YDgOrOFcoqSzys5zclC2ox1FO7v9Xlrt3LEA/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1VLbnRBGJGSno-oXpXIazENT2k0zPtJIb/view?usp=sharing",
   "badgeImage": "/uploads/badges/internet acceptable use.png",
-  "badgeName": "Chivalrous Net Surfer",
+  "badgeName": "CHIVALROUS NET SURFER",
   "badgeDescription": "Mastered Internet Use Guidelines",
   "questions": [
     {
@@ -386,9 +389,10 @@
     "$date": "2026-03-19T08:35:57.451Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:17.786Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -399,7 +403,7 @@
   "documentUrl": "https://docs.google.com/document/d/1gcxOMPvc7vCKgBHit4RP1bNiVTprD2hdrWYfC8zARmM/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1gOhIw7EuxQtrq2XNegq87VShgxcvgriC/view?usp=sharing",
   "badgeImage": "/uploads/badges/anti malware badge.png",
-  "badgeName": "Malware Vanquisher",
+  "badgeName": "MALWARE MERCENARY",
   "badgeDescription": "Completed Anti-Malware Training",
   "questions": [
     {
@@ -484,9 +488,10 @@
     "$date": "2026-03-19T08:35:57.451Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:19.075Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -497,7 +502,7 @@
   "documentUrl": "https://docs.google.com/document/d/1QCVAxgvSKq5cz1RMH9SiU1Jpt-OZjDuGswx1gK3_NgU/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/15uacYOudaxH476A_x8Fks_yNTKie41wa/view?usp=sharing",
   "badgeImage": "/uploads/badges/access control badge.png",
-  "badgeName": "Control Commander",
+  "badgeName": "CONTROL COMMANDER",
   "badgeDescription": "Mastered Access Control Principles",
   "questions": [
     {
@@ -582,9 +587,10 @@
     "$date": "2026-03-19T08:35:57.451Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-05-05T06:58:56.074Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -595,7 +601,7 @@
   "documentUrl": "https://docs.google.com/document/d/1soaIX11RWkl0-4Q1zNJCtvNUfUNSnPyLEtufkApwd84/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1_H_HSbvS-HyDACs23SqR1V-jmqOSI49b/view?usp=sharing",
   "badgeImage": "/uploads/badges/network access.png",
-  "badgeName": "Network Marauder",
+  "badgeName": "NETWORK NOBLEMAN",
   "badgeDescription": "Network Access Policy",
   "questions": [
     {
@@ -680,9 +686,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:28.751Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -693,7 +700,7 @@
   "documentUrl": "https://docs.google.com/document/d/1xPpSApfzHsmRaRy7x6SbdaA-k8fVM94nvrCCmYsHWac/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1T0N0Qi6RpIxP7sqiXuAj4I161aPBVILu/view?usp=sharing",
   "badgeImage": "/uploads/badges/data protection and privacy.png",
-  "badgeName": "The Keeper",
+  "badgeName": "THE KEEPER",
   "badgeDescription": "Data Protection & Privacy",
   "questions": [
     {
@@ -778,9 +785,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:02.639Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -791,7 +799,7 @@
   "documentUrl": "https://docs.google.com/document/d/1f4aKPdCk2P_Ppmxnjv-UjACkj1lLCptxXwFInGZmweI/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1b9YzUuqFY6QfA3Y9BTNFSKCdqVVCE8EI/view?usp=sharing",
   "badgeImage": "/uploads/badges/cryptographic control.png",
-  "badgeName": "Cipher Marauder",
+  "badgeName": "CIPHER MARAUDER",
   "badgeDescription": "Completed Cryptography Training",
   "questions": [
     {
@@ -876,9 +884,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:03:59.082Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -889,7 +898,7 @@
   "documentUrl": "https://docs.google.com/document/d/1oV2mTrDpQTi-KOzarUGJRkN8fSszSGXPQ7T9ZzkQhZ4/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1UqjSg01oELSdh9cDF58Gq8N0RnKZVT9s/view?usp=sharing",
   "badgeImage": "/uploads/badges/cloud service.png",
-  "badgeName": "Cloud Maestro",
+  "badgeName": "CLOUD MAESTRO",
   "badgeDescription": "Cloud Service Policy",
   "questions": [
     {
@@ -974,9 +983,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:32:02.451Z"
+    "$date": "2026-04-23T06:03:56.135Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1072,9 +1082,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:01.083Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1085,7 +1096,7 @@
   "documentUrl": "https://docs.google.com/document/d/1kjpCF1-76-O04wM5Js-P2-I8lsnv1RFZPgZK1P76cKc/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/19XeCHPKN7EcqA23no2haUVCWyrvwruMx/view?usp=sharing",
   "badgeImage": "/uploads/badges/secure coding.png",
-  "badgeName": "THE BUG BLOCKER",
+  "badgeName": "BUG BASTION",
   "badgeDescription": "Completed Secure Coding Training",
   "questions": [
     {
@@ -1170,9 +1181,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:39.695Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1183,7 +1195,7 @@
   "documentUrl": "https://docs.google.com/document/d/1djJzd7SUxixEEW-ggnfZrLX9T_r48DVP0JRSC6HsgK0/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1AEIggeiYVxJKFxBIOOsbnSVfm7OdUCLT/view?usp=sharing",
   "badgeImage": "/uploads/badges/risk assessment.png",
-  "badgeName": "Never fret on a threat",
+  "badgeName": "NEVER FRET ON A THREAT",
   "badgeDescription": "Risk Assessment",
   "questions": [
     {
@@ -1268,9 +1280,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T07:10:32.987Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1281,7 +1294,7 @@
   "documentUrl": "https://docs.google.com/document/d/1Pa0hT06kDJsHNcwQ7nabn1UANJXVeB27HKW0wxAHf50/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1sbPMicRNYh65oYm4pEnlzTh-eybtGD92/view?usp=sharing",
   "badgeImage": "/uploads/badges/document control.png",
-  "badgeName": "Paper Trail Tactician",
+  "badgeName": "THE PAPER TRAIL TACTICIAN",
   "badgeDescription": "Mastered Document Control",
   "questions": [
     {
@@ -1366,9 +1379,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:05.972Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1379,7 +1393,7 @@
   "documentUrl": "https://docs.google.com/document/d/11YCDVly0Fd7VJqU2LjRvhtMjqzJW_SIeGrwgqgNEkOo/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1_vecTZkEQuJfIHFbIeOi8hfOL5Y1b6WW/view?usp=sharing",
   "badgeImage": "/uploads/badges/information exchange.png",
-  "badgeName": "Data Drop Disciple",
+  "badgeName": "DATA DROP DISCIPLE",
   "badgeDescription": "Mastered Secure Information Sharing",
   "questions": [
     {
@@ -1464,9 +1478,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:41:19.186Z"
+    "$date": "2026-04-23T06:04:09.189Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1477,7 +1492,7 @@
   "documentUrl": "https://docs.google.com/document/d/1TtzLkJ1ThTA5h0Sby2e1e_kJyJgrs7Sllo9c6lzA9rY/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1ZmEtWZd1u4XsOtvuN7Qg5EPzdwaYWpGo/view?usp=sharing",
   "badgeImage": "/uploads/badges/asset inventory.png",
-  "badgeName": "Inventory Guardian",
+  "badgeName": "INVENTORY GUARDIAN",
   "badgeDescription": "Completed Asset Inventory Training",
   "questions": [
     {
@@ -1562,9 +1577,10 @@
     "$date": "2026-03-19T08:35:57.452Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:11:28.172Z"
+    "$date": "2026-04-23T06:01:15.167Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1575,7 +1591,7 @@
   "documentUrl": "https://docs.google.com/document/d/1fUpuH79f6VGisrEQ2e2uTL_QEO9zqhOXkOxw8xJcoPM/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1o7HKpLzkdU63424paD_wD-SgcqV-N9Oi/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915706676-424447906.png",
-  "badgeName": "The Phisherman",
+  "badgeName": "PHISHERMAN",
   "badgeDescription": "Mastered Email Security",
   "questions": [
     {
@@ -1660,9 +1676,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:07.674Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1673,7 +1690,7 @@
   "documentUrl": "https://docs.google.com/document/d/1HNsOoFHNNSFJoBJKrHngYYtysXvBduXn3xdqmjcsHf0/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/17FVq8d2KbpJTrA76iOUBQgvJus8ILaMj/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915830298-353442160.png",
-  "badgeName": "Limitless Labeler",
+  "badgeName": "LIMITLESS LABELER",
   "badgeDescription": "Mastered Information Asset Classifications",
   "questions": [
     {
@@ -1758,9 +1775,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:16.603Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1771,7 +1789,7 @@
   "documentUrl": "https://docs.google.com/document/d/1HB41yaLhDtaS-tj81O2XzpIFA9_LViHqCDaqWKseigU/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1zhUqRyUfYVIh1eXg022q6LNacPenrYUJ/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915850627-268301406.png",
-  "badgeName": "The Off-site Bee",
+  "badgeName": "THE OUTLAW",
   "badgeDescription": "Completed Telework Security Training",
   "questions": [
     {
@@ -1856,9 +1874,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:47:41.527Z"
+    "$date": "2026-04-30T03:30:17.802Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1869,7 +1888,7 @@
   "documentUrl": "https://docs.google.com/document/d/1WNtCD906BoKwUC5-BQjHbyYU4qHVxWPne0Z6I35SsvQ/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1PYXh9-SEXYrwEoo8e79WC0wHRqy2EhX3/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915870707-54042348.png",
-  "badgeName": "The Rapid Reporter",
+  "badgeName": "REPORTER ROGUE",
   "badgeDescription": "Mastered Incident Response",
   "questions": [
     {
@@ -1954,9 +1973,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:42:16.951Z"
+    "$date": "2026-04-23T06:04:35.228Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -1967,7 +1987,7 @@
   "documentUrl": "https://docs.google.com/document/d/1gp6jRPJk4kZtVyBp0wSx9nbqazwQlhtjAcYnQLXGi0o/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1TA_EuAAawhMB7uKucYCfjYCBAvyffYRz/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915896391-827434731.png",
-  "badgeName": "Skill issue",
+  "badgeName": "AWARENESS ARCANIST",
   "badgeDescription": "Completed Training Policy",
   "questions": [
     {
@@ -2052,9 +2072,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:44.729Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -2065,7 +2086,7 @@
   "documentUrl": "https://docs.google.com/document/d/1o5sHW2BP6UaEyiNA7PtJcAhjQW-nvjE3aAOb0buXmek/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1iyXSSf5DyHqvTsHHCtiLGOJIz3KyhYMh/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915917975-722797561.png",
-  "badgeName": "Boundary Bandit",
+  "badgeName": "BOUNDARY BARON",
   "badgeDescription": "Mastered Secured Area Policy",
   "questions": [
     {
@@ -2150,9 +2171,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:46:06.881Z"
+    "$date": "2026-04-23T06:04:30.099Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -2163,7 +2185,7 @@
   "documentUrl": "https://docs.google.com/document/d/1DhTp46NvExZzsCZluRnu4IWCZ04goHbmLBnKCPCbp_I/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1A9YNEG-fqNMMO1356L9kArnkHZvrvS_U/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915753306-421128591.png",
-  "badgeName": "Disposal Dog",
+  "badgeName": "DISPOSAL DRUID",
   "badgeDescription": "Completed Secure Disposal Training",
   "questions": [
     {
@@ -2248,9 +2270,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:04.315Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -2261,7 +2284,7 @@
   "documentUrl": "https://docs.google.com/document/d/1RYn0DqqB6Ox212G6ExjDP36Yg203LaRDuevuwH29tAc/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1XvU-e-K9m3h3e8g3Pmka5NtKRsTM3Hu-/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915958151-947816681.png",
-  "badgeName": "Maintenance Mindset",
+  "badgeName": "MAGNUS MAINTENANCE",
   "badgeDescription": "Completed Preventive Maintenance Training",
   "questions": [
     {
@@ -2346,9 +2369,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T07:10:31.480Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -2359,7 +2383,7 @@
   "documentUrl": "https://docs.google.com/document/d/1Pq8I2f-eR6HWCQ6v_d6zCBJNgsUXXBb2g4OgiAhFcvw/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/13O41oJv0OmW6kuRhXFzuHQqebTpzTTiR/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915977070-738922353.png",
-  "badgeName": "The Radiant Reserve",
+  "badgeName": "THE RADIANT RESERVE",
   "badgeDescription": "Finished training the backup policy",
   "questions": [
     {
@@ -2444,9 +2468,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:12:56.773Z"
+    "$date": "2026-04-23T06:03:53.532Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -2457,7 +2482,7 @@
   "documentUrl": "https://docs.google.com/document/d/1dOtKvcNU3uf29uTHAAC6XN08DmJmR2bj2_aqx5fbeS0/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1TOSZZSxlsYurS_AzshwXCtC9HLVXu1By/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915810741-308826273.png",
-  "badgeName": "The Regulator",
+  "badgeName": "THE REGULATOR",
   "badgeDescription": "Finished training the Software Regulation policy",
   "questions": [
     {
@@ -2542,9 +2567,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:46:56.034Z"
+    "$date": "2026-04-23T06:03:57.592Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -2555,7 +2581,7 @@
   "documentUrl": "https://docs.google.com/document/d/1h3TJxsEJE7YhuGij7w_l_xYsAaT1PBypibC2e9nFhwg/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1wtM-FnCx0PQuwk5rDoPC5Bbt-3uCB84x/view?usp=sharing",
   "badgeImage": "/uploads/badges/time sync.png",
-  "badgeName": "The Sync Sense",
+  "badgeName": "THE SYNC SENSE",
   "badgeDescription": "Time Synchronization",
   "questions": [
     {
@@ -2640,9 +2666,10 @@
     "$date": "2026-03-19T08:35:57.453Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:43.075Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 },
 {
   "_id": {
@@ -2653,7 +2680,7 @@
   "documentUrl": "https://docs.google.com/document/d/11SIIQ3HmVGQdtGeoqpsHHjKLuidpaecJ6BuNq8IWo1k/edit?usp=sharing",
   "videoUrl": "https://drive.google.com/file/d/1t7G2hgo-sM8tglkwIBcK_0pN29GOT3fV/view?usp=sharing",
   "badgeImage": "/uploads/badges/badge-1774915631127-682121355.png",
-  "badgeName": "Credential Craftsman",
+  "badgeName": "CREDENTIAL CONJURER",
   "badgeDescription": "Mastered Password Management",
   "questions": [
     {
@@ -2738,7 +2765,8 @@
     "$date": "2026-03-19T08:35:57.454Z"
   },
   "updatedAt": {
-    "$date": "2026-04-15T08:08:58.515Z"
+    "$date": "2026-04-23T06:04:46.436Z"
   },
-  "priority": 999
+  "priority": 999,
+  "isNew": false
 }]
