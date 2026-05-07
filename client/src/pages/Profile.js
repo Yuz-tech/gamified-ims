@@ -19,18 +19,10 @@ const Profile = () => {
     });
 
     const avatarOptions = [
-        '/avatars/bumblebee.png',
-        '/avatars/optimum pride.png',
-        '/avatars/luffy.jpg',
-        '/avatars/goku.jpg',
-        '/avatars/pikachu.png',
-        '/avatars/baymax.png',
-        '/avatars/charm.jpg',
-        '/avatars/bulb.jpg',
-        '/avatars/squirtle.png',
-        '/avatars/jake.png',
-        '/avatars/yoshi.png',
-        '/avatars/stitch.png'
+        '/avatars/hachi.png',
+        '/avatars/hachikun.png',
+        '/avatars/hachihead.png',
+        '/avatars/hachikun2.png'
     ];
 
     useEffect(() => {
