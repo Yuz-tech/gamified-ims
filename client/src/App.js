@@ -12,7 +12,7 @@ import Players from './pages/Players';
 import Games from './pages/Games';
 import TextTwist from './pages/games/TextTwist';
 import Wordle from './pages/games/Wordle';
-import QuickQuiz from './pages/games/QuickQuiz';
+import MiniQuiz from './pages/games/MiniQuiz';
 import Hangman from './pages/games/Hangman';
 import AdminGames from './pages/admin/AdminGames';
 import Footer from './components/Footer';
@@ -199,10 +199,10 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/games/quickquiz/:id"
+          path="/games/MiniQuiz/:id"
           element={
             <ProtectedRoute>
-              <QuickQuiz />
+              <MiniQuiz />
             </ProtectedRoute>
           }
         />

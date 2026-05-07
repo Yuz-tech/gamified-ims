@@ -1,37 +1,50 @@
 import mongoose from 'mongoose';
 
-const gameSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true
-    },
-    description: {
-        type: String,
-        required: true
-    },
+const Game = new mongoose.Schema({
+  name: { type: String, required: [true, 'Game name required'], trim: true, maxlength: 50 },
+  slug: { type: String, required: [true, 'Game slug required'], unique: true, lowercase: true, trim: true },
+  description: String,
+  thumbnail: String,
+  
+  configs: [{
+    title: { type: String, required: true, trim: true },
     gameType: {
-        type: String,
-        required: true,
-        enum: ['texttwist', 'wordle', 'quickquiz', 'hangman']
+      type: String,
+      enum: ['miniquiz', 'wordle', 'hangman', 'texttwist'],
+      required: true
     },
-    timeLimit: {
-        type: Number,
-        default: 0
-    },
-    isActive: {
-        type: Boolean,
-        default: true
-    },
-    content: {
-        type: mongoose.Schema.Types.Mixed,
-        required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    topicId: { type: mongoose.Schema.Types.ObjectId, ref: 'Topic', required: true },
+    
+    // Game data - ONLY required for matching gameType
+    data: {
+      wordle: {
+        targetWord: { type: String, uppercase: true, match: /^[A-Z]{5}$/ }, // Remove required
+        maxGuesses: { type: Number, default: 5 }
+      },
+      hangman: {
+        targetWord: String, // Remove required
+        maxWrong: { type: Number, default: 6 },
+        hint: String
+      },
+      texttwist: {
+        scrambledLetters: { type: String, uppercase: true }, // Remove required
+        validWords: [String]
+      },
+      miniquiz: {
+        questions: [{
+          question: String,
+          options: [String],
+          correctAnswer: String
+        }]
+      }
     }
-});
+  }],
+  
+  isActive: { type: Boolean, default: true }
+}, { timestamps: true });
 
-const Game = mongoose.model('Game', gameSchema);
+Game.index({ slug: 1 });
+Game.index({ 'configs.gameType': 1 });
+Game.index({ 'configs.topicId': 1 });
 
-export default Game;
+export default mongoose.model('Game', Game);

@@ -1,138 +1,111 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { motion } from "framer-motion";
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 
 const Games = () => {
-  const { user } = useAuth();
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newGame, setNewGame] = useState({
-    title: '',
-    description: '',
-    gameType: 'wordle',
-    difficulty: 'easy',
-    timeLimit: 0,
-    content: {}
-  });
+  const [gameTypes, setGameTypes] = useState([]);
+  const [selectedType, setSelectedType] = useState('all');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchGames();
+    loadGames();
   }, []);
 
-  const fetchGames = async () => {
+  const loadGames = async () => {
     try {
-      setLoading(true);
       const response = await api.get('/games');
       setGames(response.data);
+      
+      // Extract unique game types
+      const types = response.data.map(game => 
+        game.configs.map(config => config.gameType)
+      ).flat().filter((type, i, arr) => arr.indexOf(type) === i);
+      setGameTypes(['all', ...types]);
+      
     } catch (error) {
-      console.error('Error fetching games: ', error);
+      console.error('Failed to load games:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const createGame = async () => {
-    try {
-      await api.post('/games', newGame);
-      setNewGame({ title: '', description: '', gameType: 'wordle', difficulty: 'easy', timeLimit: 0, content: {} });
-      fetchGames();
-    } catch (error) {
-      console.error('Error creating game: ', error);
-    }
+  const filteredGames = selectedType === 'all' 
+    ? games 
+    : games.filter(game => 
+        game.configs.some(config => config.gameType === selectedType)
+      );
+
+  const playGame = (gameSlug, config) => {
+    navigate(`/games/${config.gameType}/${gameSlug}`);
   };
 
-  const deleteGame = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this game?')) return;
-    try {
-      await api.delete(`/games/${id}`);
-      fetchGames();
-    } catch (error) {
-      console.error('Error deleting game: ', error);
-    }
-  };
-
-if (loading) {
+  if (loading) {
     return (
-      <div style = {{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className='loading neon-text'>Loading...</div>
+      <div className="retro-container" style={{ textAlign: 'center', padding: '100px 20px' }}>
+        <div className="loading neon-text" style={{ fontSize: '24px' }}>LOADING GAMES...</div>
       </div>
     );
   }
 
   return (
-    <div className='retro-container'>
-      <h2 className='neon-text'>IMS Awareness Games!</h2>
-      {loading ? (
-        <p>Loading games...</p>
-      ) : (
-        games.map((game) => (
-          <div key={game.id} className='retro-card pixel-corners'>
-            <h3>{game.title}</h3>
-            <p>{game.description}</p>
-            <p>Type: {game.gameType} | Difficulty: {game.difficulty}</p>
-
-            <div style={{ marginTop: '10px' }}>
-              <button className='retro-btn secondary' onClick={() => alert('Play')}>
-                PLAY
-              </button>
-              {user?.role === 'admin' && (
-                <button className='retro-btn danger' onClick={() => deleteGame(game._id)} style={{ marginLeft: '10px' }}>
-                  DELETE
-                </button>
-              )}
-            </div>
-          </div>
-        )))
-      }
-
-      {user?.role === 'admin' && (
-        <div className='retro-card pixel-corners'>
-          <h3>CREATE NEW GAME</h3>
-          <input
-            className='retro-input'
-            placeholder='Title'
-            value={newGame.title}
-            onChange={(e) => setNewGame({ ...newGame, title: e.target.value })}
-          />
-          <textarea
-            className='retro-input'
-            placeholder='Description'
-            value={newGame.description}
-            onChange={(e) => setNewGame({ ...newGame, description: e.target.value })}
-          />
-          <select
-            className='retro-input'
-            value={newGame.gameType}
-            onChange={(e) => setNewGame({ ...newGame, gameType: e.target.value })}
-          >
-            <option value="texttwist">TextTwist</option>
-            <option value="wordle">Wordle</option>
-            <option value="quickquiz">QuickQuiz</option>
-            <option value="hangman">Hangman</option>
-          </select>
-          <select
-            className='retro-input'
-            value={newGame.difficulty}
-            onChange={(e) => setNewGame({ ...newGame, difficulty: e.target.value })}
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-          <input
-            className='retro-input'
-            type='number'
-            placeholder='Time Limit (seconds)'
-            value={newGame.timeLimit}
-            onChange={(e) => setNewGame({ ...newGame, timeLimit: Number(e.target.value) })}
-          />
-
-          <button className='retro-btn' onClick={createGame} style={{ margin: '10px' }}>
-            Create Game
-          </button>
+    <div className="retro-container">
+      <div className="retro-card pixel-corners">
+        <h1 className="neon-text">🎮 IMS TRAINING GAMES</h1>
+        <p>Test your workplace safety &amp; compliance knowledge!</p>
+        
+        {/* Filter Buttons */}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '30px' }}>
+          {gameTypes.map(type => (
+            <button
+              key={type}
+              className={`retro-btn ${selectedType === type ? '' : 'secondary'}`}
+              onClick={() => setSelectedType(type)}
+            >
+              {type === 'all' ? 'ALL GAMES' : type.toUpperCase()}
+            </button>
+          ))}
         </div>
-      )}
+
+        {/* Games Grid */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', 
+          gap: '20px' 
+        }}>
+          {filteredGames.map((game) => (
+            <div key={game._id} className="retro-card pixel-corners">
+              <h3>{game.name}</h3>
+              <p className="text-light">{game.description}</p>
+              
+              <div style={{ marginTop: '20px' }}>
+                {game.configs.map((config, index) => (
+                  <div key={index} style={{ marginBottom: '15px' }}>
+                    <div className="badge-info" style={{ marginBottom: '10px' }}>
+                      {config.title} ({config.gameType.toUpperCase()})
+                    </div>
+                    <button
+                      className="retro-btn"
+                      style={{ width: '100%' }}
+                      onClick={() => playGame(game.slug, config)}
+                    >
+                      🎮 PLAY {config.gameType.toUpperCase()}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredGames.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <h2 className="neon-text">No games found</h2>
+            <p>Try another filter or contact admin</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
