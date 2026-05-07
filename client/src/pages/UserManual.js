@@ -196,7 +196,7 @@ const UserManual = () => {
                 {/* Support */}
                 <section>
                 <h2 style={{ fontSize: '18px', color: 'var(--secondary-pink)', marginBottom: '20px' }}>
-                    ❓HELP
+                    HELP
                 </h2>
                 <div style={{ fontSize: '11px', lineHeight: '1.8', color: 'var(--text-dark)' }}>
                     <p>
@@ -207,6 +207,11 @@ const UserManual = () => {
                     Further information can be found at the footer of every page.
                     </p>
                 </div>
+                </section>
+                <section>
+                    <div style={{ marginTop: '12px', textAlign: 'right', fontSize: '2px', lineHeight: '1.8', color: 'var(--text-light)' }}>
+                        <p>Crack the egg 7 times and a new game opens</p>
+                    </div>
                 </section>
             </motion.div>
         </div>
