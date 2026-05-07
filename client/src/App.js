@@ -199,7 +199,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/games/MiniQuiz/:id"
+          path="/games/miniquiz/:id"
           element={
             <ProtectedRoute>
               <MiniQuiz />
