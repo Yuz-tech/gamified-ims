@@ -19,11 +19,18 @@ const Profile = () => {
     });
 
     const avatarOptions = [
+<<<<<<< .merge_file_ORcRXV
         '/avatars/hachikun.png',
         '/avatars/hachihead.png',
         '/avatars/hachi.png',
         '/avatars/hachikun2.png',
         '/avatars/hachikun3.png',
+=======
+        '/avatars/hachi.png',
+        '/avatars/hachikun.png',
+        '/avatars/hachihead.png',
+        '/avatars/hachikun2.png'
+>>>>>>> .merge_file_P2hENK
     ];
 
     useEffect(() => {

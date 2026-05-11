@@ -166,8 +166,9 @@ const Navbar = () => {
                 justifyContent: 'center',
                 background: 'var(--bg-medium)'
               }}>
-                {user.avatar ? (
-                  <img src={getImageUrl(user.avatar)}
+                {user && user.avatar ? (
+                  <img 
+                    src={getImageUrl(user.avatar)}
                     alt={user.username}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => {
@@ -179,8 +180,6 @@ const Navbar = () => {
                   <div style={{ fontSize: '16px' }}>👤</div>
                 )}
               </div>
-              {/* <span>{user.username}</span> */}
-              
             </button>
           </div>
 
