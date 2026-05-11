@@ -1,454 +1,1203 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import api from '../utils/api';
+# 🔧 TECHNICAL DOCUMENTATION - GAMIFIED IMS TRAINING PLATFORM
 
-const Home = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [stats, setStats] = useState(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [loading, setLoading] = useState(true);
+## TABLE OF CONTENTS
 
-  const carouselSlides = [
-    {
-      title: "Master IMS Knowledge",
-      description: "Learn ISO 9001, 14001, and 45001 standards through interactive modules",
-      icon: "📚",
-      color: "var(--bright-blue)"
-    },
-    {
-      title: "Earn XP & Level Up",
-      description: "Complete topics and quizzes to gain experience points and advance your rank",
-      icon: "⚡",
-      color: "var(--orange-accent)"
-    },
-    {
-      title: "Collect Badges",
-      description: "Unlock achievement badges for completing training modules",
-      icon: "🏆",
-      color: "var(--success-green)"
-    },
-    {
-      title: "Play Games",
-      description: "Test your knowledge with fun word games and quizzes",
-      icon: "🎮",
-      color: "var(--primary-navy)"
-    }
-  ];
+1. [Project Overview](#project-overview)
+2. [System Architecture](#system-architecture)
+3. [Technology Stack](#technology-stack)
+4. [Database Schema](#database-schema)
+5. [API Endpoints](#api-endpoints)
+6. [Authentication Flow](#authentication-flow)
+7. [Frontend Structure](#frontend-structure)
+8. [Backend Structure](#backend-structure)
+9. [Setup Instructions](#setup-instructions)
+10. [Deployment Guide](#deployment-guide)
+11. [Security Considerations](#security-considerations)
+12. [Performance Optimization](#performance-optimization)
+13. [Troubleshooting](#troubleshooting)
 
-  useEffect(() => {
-    fetchUserData();
+---
+
+## 1. PROJECT OVERVIEW
+
+### Purpose
+Interactive gamified training platform for ISO Management Systems (IMS) including ISO 9001, 14001, and 45001 standards.
+
+### Key Features
+-  **Training Topics** with mandatory and bonus questions
+-  **4 Game Types**: Text Twist, Wordle, Quick Quiz, Hangman
+-  **XP & Leveling System** (100 XP = 1 level)
+-  **Badge System** with yearly reset and re-earning
+-  **Leaderboard** with rankings
+-  **Admin Panel** for content management
+-  **Training Logs** for completion history
+-  **Activity Logs** for user actions
+-  **User Profiles** with progress tracking
+
+### User Roles
+- **Admin**: Full access, content management, user management
+- **User**: Training access, games, profile viewing
+
+---
+
+## 2. SYSTEM ARCHITECTURE
+
+### Architecture Type
+**3-Tier Architecture (MVC Pattern)**
+
+```
+┌─────────────────────────────────────────────┐
+│           CLIENT (React.js)                 │
+│  - UI Components                            │
+│  - State Management                         │
+│  - Routing                                  │
+└─────────────────┬───────────────────────────┘
+                  │
+                  │ HTTPS/REST API
+                  │
+┌─────────────────▼───────────────────────────┐
+│           SERVER (Node.js/Express)          │
+│  - API Routes                               │
+│  - Business Logic                           │
+│  - Authentication/Authorization             │
+│  - Data Validation                          │
+└─────────────────┬───────────────────────────┘
+                  │
+                  │ Mongoose ODM
+                  │
+┌─────────────────▼───────────────────────────┐
+│           DATABASE (MongoDB)                │
+│  - Users Collection                         │
+│  - Topics Collection                        │
+│  - Games Collection                         │
+│  - Badges Collection                        │
+│  - Training Logs Collection                 │
+│  - Activity Logs Collection                 │
+└─────────────────────────────────────────────┘
+```
+
+### Data Flow
+
+**User Login Flow:**
+```
+User → Login Form → POST /api/auth/login
+→ Server validates credentials
+→ Generates JWT token
+→ Returns token + user data
+→ Client stores token in localStorage
+→ Client redirects to dashboard
+```
+
+**Training Completion Flow:**
+```
+User completes topic
+→ POST /api/topics/:id/submit-answers
+→ Server validates answers
+→ Awards XP and badge
+→ Creates training log entry
+→ Returns updated user data
+→ Client updates UI
+```
+
+---
+
+## 3. TECHNOLOGY STACK
+
+### Frontend
+- **Framework**: React.js 18+
+- **Routing**: React Router DOM v6
+- **HTTP Client**: Axios
+- **Animation**: Framer Motion
+- **Styling**: CSS3 (custom variables)
+- **Build Tool**: Create React App
+
+### Backend
+- **Runtime**: Node.js 16+
+- **Framework**: Express.js 4+
+- **Database ODM**: Mongoose 7+
+- **Authentication**: JWT (jsonwebtoken)
+- **Password Hashing**: bcrypt.js
+- **Environment**: dotenv
+- **CORS**: cors package
+
+### Database
+- **Database**: MongoDB 6+
+- **Hosting**: MongoDB Atlas (cloud)
+
+### Deployment
+- **Frontend**: Vercel
+- **Backend**: Render
+- **Database**: MongoDB Atlas
+
+### Development Tools
+- **Version Control**: Git/GitHub
+- **Package Manager**: npm
+- **Code Editor**: VS Code (recommended)
+- **API Testing**: Postman/Thunder Client
+
+---
+
+## 4. DATABASE SCHEMA
+
+### 4.1 USER MODEL
+
+```javascript
+{
+  _id: ObjectId,
+  username: String (required, unique),
+  email: String (required, unique),
+  password: String (required, hashed),
+  role: String (enum: ['user', 'admin'], default: 'user'),
+  xp: Number (default: 0),
+  level: Number (default: 1),
+  
+  completedTopics: [{
+    topicId: ObjectId (ref: 'Topic'),
+    mandatoryCompleted: Boolean,
+    bonusCompleted: Boolean,
+    bonusCorrect: Number,
+    completedAt: Date
+  }],
+  
+  badges: [{
+    topicId: ObjectId (ref: 'Topic'),
+    badgeName: String,
+    badgeImage: String,
+    badgeCount: Number (default: 1),  // Increments on re-earn
+    earnedAt: Date
+  }],
+  
+  createdAt: Date (default: Date.now)
+}
+
+// Indexes:
+- username: unique
+- email: unique
+- xp: 1 (for leaderboard queries)
+```
+
+### 4.2 TOPIC MODEL
+
+```javascript
+{
+  _id: ObjectId,
+  title: String (required),
+  description: String,
+  content: String (required, HTML supported),
+  category: String,
+  difficulty: String (enum: ['easy', 'medium', 'hard']),
+  badgeName: String (required),
+  badgeImage: String (required),
+  
+  questions: [{
+    question: String (required),
+    options: [String] (4 options),
+    correctAnswer: Number (0-3),
+    isMandatory: Boolean (default: false)
+  }],
+  
+  isActive: Boolean (default: true),
+  order: Number (for sorting),
+  createdAt: Date (default: Date.now),
+  updatedAt: Date
+}
+
+// Constraints:
+- 1 mandatory question per topic
+- 4 bonus questions per topic
+- Questions array has exactly 5 questions
+
+// Indexes:
+- isActive: 1
+- order: 1
+```
+
+### 4.3 GAME MODEL
+
+```javascript
+{
+  _id: ObjectId,
+  title: String (required),
+  description: String (required),
+  gameType: String (enum: ['texttwist', 'wordle', 'quickquiz', 'hangman'], required),
+  difficulty: String (enum: ['easy', 'medium', 'hard'], required),
+  maxXP: Number (required, default: 100),
+  timeLimit: Number (seconds, 0 = no limit),
+  isActive: Boolean (default: true),
+  
+  content: Mixed {
+    // Text Twist
+    words: [{
+      mainWord: String,
+      subwords: [String]
+    }],
     
-    // Auto-advance carousel
-    const interval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % carouselSlides.length);
-    }, 5000);
+    // Wordle
+    words: [{
+      word: String (5 letters),
+      hint: String
+    }],
     
-    return () => clearInterval(interval);
-  }, []);
+    // Quick Quiz
+    questions: [{
+      question: String,
+      options: [String] (4 options),
+      correctAnswer: Number (0-3),
+      points: Number (default: 10)
+    }],
+    
+    // Hangman
+    words: [{
+      word: String (phrase allowed),
+      hint: String,
+      category: String
+    }]
+  },
+  
+  completions: [{
+    userId: ObjectId (ref: 'User'),
+    score: Number,
+    timeSpent: Number (seconds),
+    completedAt: Date (default: Date.now)
+  }],
+  
+  createdAt: Date (default: Date.now)
+}
 
-  const fetchUserData = async () => {
-    try {
-      const userRes = await api.get('/auth/user');
-      setUser(userRes.data);
+// Virtual Property:
+completionCount: completions.length
 
-      // Fetch training stats
-      try {
-        const statsRes = await api.get('/training-logs/stats');
-        setStats(statsRes.data);
-      } catch (error) {
-        console.log('Training logs not available yet');
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+// Methods:
+hasUserCompleted(userId): Boolean
+addCompletion(userId, score, timeSpent): Promise
 
-  const calculateLevelProgress = () => {
-    if (!user) return 0;
-    const currentLevelXP = (user.level - 1) * 100;
-    const nextLevelXP = user.level * 100;
-    const progress = ((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
-    return Math.min(Math.max(progress, 0), 100);
-  };
+// Indexes:
+- gameType: 1
+- isActive: 1
+```
 
-  // ✅ LOG COMPLETION FORM CLICK
-  const handleCompletionFormClick = async () => {
-    try {
-      // Log the activity
-      await api.post('/activity/log', {
-        action: 'completion_form_accessed',
-        details: {
-          accessedFrom: 'homepage',
-          timestamp: new Date().toISOString()
-        }
-      });
-      
-      // Navigate to completion form
-      navigate('/completion-form');
-    } catch (error) {
-      console.error('Error logging completion form access:', error);
-      // Still navigate even if logging fails
-      navigate('/completion-form');
-    }
-  };
+### 4.4 BADGE MODEL
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <div className="loading neon-text">LOADING...</div>
-      </div>
-    );
+```javascript
+{
+  _id: ObjectId,
+  name: String (required),
+  description: String,
+  imageUrl: String,
+  topicId: ObjectId (ref: 'Topic', required),
+  year: Number (required),  // For yearly tracking
+  badgeCount: Number (default: 0),  // Total users who earned this badge this year
+  isActive: Boolean (default: true),
+  createdAt: Date (default: Date.now)
+}
+
+// Compound Index:
+- topicId + year: unique
+```
+
+### 4.5 TRAINING LOG MODEL
+
+```javascript
+{
+  _id: ObjectId,
+  userId: ObjectId (ref: 'User', required),
+  topicId: ObjectId (ref: 'Topic', required),
+  topicTitle: String (required),
+  xpEarned: Number (required),
+  mandatoryCompleted: Boolean (default: false),
+  bonusCompleted: Boolean (default: false),
+  badgeEarned: Boolean (default: false),
+  completedAt: Date (default: Date.now)
+}
+
+// Indexes:
+- userId + completedAt: -1 (for user history queries)
+```
+
+### 4.6 ACTIVITY LOG MODEL
+
+```javascript
+{
+  _id: ObjectId,
+  userId: ObjectId (ref: 'User', required),
+  action: String (required),
+  details: Mixed (optional),
+  ipAddress: String,
+  userAgent: String,
+  timestamp: Date (default: Date.now)
+}
+
+// Indexes:
+- userId + timestamp: -1
+- action: 1
+```
+
+---
+
+## 5. API ENDPOINTS
+
+### 5.1 AUTHENTICATION ENDPOINTS
+
+#### POST /api/auth/register
+**Purpose**: Register new user
+
+**Request Body**:
+```json
+{
+  "username": "string (3-30 chars)",
+  "email": "string (valid email)",
+  "password": "string (min 6 chars)"
+}
+```
+
+**Response (201)**:
+```json
+{
+  "token": "jwt_token_string",
+  "user": {
+    "_id": "user_id",
+    "username": "username",
+    "email": "email",
+    "role": "user",
+    "xp": 0,
+    "level": 1
   }
+}
+```
 
-  return (
-    <div className="retro-container" style={{ paddingTop: '40px' }}>
-      {/* User Profile Card */}
-      {user && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="retro-card"
-          style={{
-            marginBottom: '40px',
-            background: 'linear-gradient(135deg, var(--primary-navy) 0%, var(--bright-blue) 100%)',
-            color: 'white'
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '20px' }}>
-            <div style={{ flex: 1 }}>
-              <h1 style={{ fontSize: '28px', marginBottom: '10px' }}>
-                Welcome back, {user.username}! 👋
-              </h1>
-              <p style={{ fontSize: '12px', opacity: 0.9, marginBottom: '20px' }}>
-                {user.email}
-              </p>
+**Errors**:
+- 400: Validation error (missing fields, invalid format)
+- 409: User already exists
 
-              {/* Level Progress */}
-              <div style={{ marginBottom: '15px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
-                    LEVEL {user.level}
-                  </span>
-                  <span style={{ fontSize: '11px' }}>
-                    {user.xp} XP
-                  </span>
-                </div>
-                <div style={{
-                  width: '100%',
-                  height: '20px',
-                  background: 'rgba(255,255,255,0.2)',
-                  borderRadius: '10px',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    width: `${calculateLevelProgress()}%`,
-                    height: '100%',
-                    background: 'var(--success-green)',
-                    transition: 'width 0.3s ease'
-                  }} />
-                </div>
-                <div style={{ fontSize: '10px', marginTop: '5px', opacity: 0.8 }}>
-                  {user.level * 100 - user.xp} XP to Level {user.level + 1}
-                </div>
-              </div>
+---
 
-              {/* User Stats */}
-              {stats && (
-                <div style={{ display: 'flex', gap: '20px', fontSize: '11px' }}>
-                  <div>
-                    <span style={{ opacity: 0.8 }}>Completed:</span>
-                    <strong style={{ marginLeft: '5px' }}>{stats.totalCompleted}</strong>
-                  </div>
-                  <div>
-                    <span style={{ opacity: 0.8 }}>Badges:</span>
-                    <strong style={{ marginLeft: '5px' }}>{user.badges?.length || 0}</strong>
-                  </div>
-                </div>
-              )}
-            </div>
+#### POST /api/auth/login
+**Purpose**: User login
 
-            {/* User Role Badge */}
-            <div style={{
-              padding: '10px 20px',
-              background: user.role === 'admin' ? 'var(--error-red)' : 'rgba(255,255,255,0.2)',
-              borderRadius: '3px',
-              fontSize: '11px',
-              fontWeight: 'bold'
-            }}>
-              {user.role === 'admin' ? '👑 ADMIN' : '👤 USER'}
-            </div>
-          </div>
-        </motion.div>
-      )}
+**Request Body**:
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
 
-      {/* ✅ COMPLETION FORM LINK - WITH LOGGING */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="retro-card"
-        style={{
-          marginBottom: '40px',
-          background: 'linear-gradient(135deg, var(--success-green) 0%, #27ae60 100%)',
-          color: 'white',
-          cursor: 'pointer'
-        }}
-        onClick={handleCompletionFormClick}
-        whileHover={{ scale: 1.02 }}
-      >
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>📋</div>
-          <h2 style={{ fontSize: '20px', marginBottom: '10px', fontWeight: 'bold' }}>
-            Submit Completion Form
-          </h2>
-          <p style={{ fontSize: '12px', opacity: 0.9 }}>
-            Click here to submit your training completion form
-          </p>
-        </div>
-      </motion.div>
+**Response (200)**:
+```json
+{
+  "token": "jwt_token_string",
+  "user": {
+    "_id": "user_id",
+    "username": "username",
+    "email": "email",
+    "role": "user|admin",
+    "xp": 100,
+    "level": 2,
+    "badges": []
+  }
+}
+```
 
-      {/* Carousel */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="retro-card"
-        style={{
-          marginBottom: '40px',
-          padding: '0',
-          overflow: 'hidden',
-          position: 'relative',
-          minHeight: '300px'
-        }}
-      >
-        {/* Slides */}
-        {carouselSlides.map((slide, index) => (
-          <div
-            key={index}
-            style={{
-              display: index === currentSlide ? 'flex' : 'none',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '60px 40px',
-              background: `linear-gradient(135deg, ${slide.color} 0%, var(--primary-navy) 100%)`,
-              color: 'white',
-              textAlign: 'center',
-              minHeight: '300px'
-            }}
-          >
-            <div style={{ fontSize: '80px', marginBottom: '20px' }}>
-              {slide.icon}
-            </div>
-            <h2 style={{ fontSize: '28px', marginBottom: '15px', fontWeight: 'bold' }}>
-              {slide.title}
-            </h2>
-            <p style={{ fontSize: '14px', opacity: 0.9, maxWidth: '500px' }}>
-              {slide.description}
-            </p>
-          </div>
-        ))}
+**Errors**:
+- 400: Invalid credentials
+- 404: User not found
 
-        {/* Carousel Controls */}
-        <div style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          gap: '10px'
-        }}>
-          {carouselSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              style={{
-                width: '12px',
-                height: '12px',
-                borderRadius: '50%',
-                background: index === currentSlide ? 'white' : 'rgba(255,255,255,0.4)',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-            />
-          ))}
-        </div>
-      </motion.div>
+---
 
-      {/* Quick Actions */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '20px',
-        marginBottom: '40px'
-      }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="retro-card"
-          onClick={() => navigate('/topics')}
-          style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 20px' }}
-          whileHover={{ scale: 1.05 }}
-        >
-          <div style={{ fontSize: '48px', marginBottom: '15px' }}>📚</div>
-          <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '10px' }}>
-            Training Topics
-          </h3>
-          <p style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
-            Complete topics to earn XP and badges
-          </p>
-        </motion.div>
+#### GET /api/auth/user
+**Purpose**: Get current user profile
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="retro-card"
-          onClick={() => navigate('/games')}
-          style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 20px' }}
-          whileHover={{ scale: 1.05 }}
-        >
-          <div style={{ fontSize: '48px', marginBottom: '15px' }}>🎮</div>
-          <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '10px' }}>
-            Games
-          </h3>
-          <p style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
-            Test your knowledge with fun games
-          </p>
-        </motion.div>
+**Headers**: 
+```
+Authorization: Bearer <token>
+```
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="retro-card"
-          onClick={() => navigate('/leaderboard')}
-          style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 20px' }}
-          whileHover={{ scale: 1.05 }}
-        >
-          <div style={{ fontSize: '48px', marginBottom: '15px' }}>🏆</div>
-          <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '10px' }}>
-            Leaderboard
-          </h3>
-          <p style={{ fontSize: '11px', color: 'var(--text-medium)' }}>
-            See how you rank against others
-          </p>
-        </motion.div>
-      </div>
+**Response (200)**:
+```json
+{
+  "_id": "user_id",
+  "username": "username",
+  "email": "email",
+  "role": "user",
+  "xp": 250,
+  "level": 3,
+  "completedTopics": [...],
+  "badges": [...]
+}
+```
 
-      {/* User Manual Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="retro-card"
-        style={{ marginBottom: '40px' }}
-      >
-        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--primary-navy)', marginBottom: '20px' }}>
-          📖 USER MANUAL - How to Claim XP
-        </h2>
+**Errors**:
+- 401: Unauthorized (no token or invalid token)
 
-        <div style={{ fontSize: '12px', lineHeight: '1.8', color: 'var(--text-dark)' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-              1. Complete Training Topics
-            </h3>
-            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
-              <li>Navigate to "Training Topics" from the menu</li>
-              <li>Select a topic to begin training</li>
-              <li>Read the content carefully</li>
-              <li>Answer the mandatory question correctly to earn <strong>50 XP</strong> and a <strong>badge</strong></li>
-              <li>Answer all 4 bonus questions correctly to earn an additional <strong>50 XP</strong></li>
-              <li><strong>Total possible per topic: 100 XP</strong></li>
-            </ul>
-          </div>
+---
 
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-              2. Play Games
-            </h3>
-            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
-              <li>Go to "Games" section</li>
-              <li>Choose from Text Twist, Wordle, Quick Quiz, or Hangman</li>
-              <li>Each game has different XP rewards (50-250 XP)</li>
-              <li>You can only earn XP once per game</li>
-              <li>Admins can replay games but won't earn XP again</li>
-            </ul>
-          </div>
+### 5.2 TOPICS ENDPOINTS
 
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-              3. Level Up System
-            </h3>
-            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
-              <li>Every 100 XP = 1 Level</li>
-              <li>Level 1: 0-99 XP</li>
-              <li>Level 2: 100-199 XP</li>
-              <li>Level 3: 200-299 XP... and so on</li>
-              <li>Track your progress in the user profile section</li>
-            </ul>
-          </div>
+#### GET /api/topics
+**Purpose**: Get all active topics
 
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-navy)' }}>
-              4. Badges & Achievements
-            </h3>
-            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
-              <li>Earn a badge for each completed training topic (mandatory question)</li>
-              <li>Badges can be re-earned after yearly reset</li>
-              <li>Badge count increments each time you re-earn the same badge</li>
-              <li>View all your badges in your profile</li>
-            </ul>
-          </div>
+**Headers**: Authorization required
 
-          <div style={{
-            padding: '15px',
-            background: 'var(--bg-light)',
-            border: '3px solid var(--bright-blue)',
-            marginTop: '20px'
-          }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--bright-blue)' }}>
-              💡 Pro Tips
-            </h3>
-            <ul style={{ paddingLeft: '20px', fontSize: '11px' }}>
-              <li>Complete all mandatory questions to collect all badges</li>
-              <li>Aim for bonus questions to maximize XP</li>
-              <li>Play games for additional XP and fun</li>
-              <li>Check the leaderboard to see your ranking</li>
-              <li>Training logs show your complete history</li>
-            </ul>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
+**Response (200)**:
+```json
+[
+  {
+    "_id": "topic_id",
+    "title": "ISO 9001 Introduction",
+    "description": "...",
+    "category": "Quality Management",
+    "difficulty": "easy",
+    "badgeName": "ISO 9001 Expert",
+    "badgeImage": "badge_url",
+    "hasCompleted": false,
+    "hasMandatory": false,
+    "hasBonus": false
+  }
+]
+```
 
-export default Home;
+---
 
+#### GET /api/topics/:id
+**Purpose**: Get specific topic with questions
 
+**Headers**: Authorization required
 
-const handleCompletionFormClick = async () => {
-    try {
-      // Log the activity
-      await api.post('/activity/log', {
-        action: 'completion_form_accessed',
-        details: {
-          accessedFrom: 'homepage',
-          timestamp: new Date().toISOString()
-        }
-      });
-      
-      // Navigate to completion form
-      navigate('/completion-form');
-    } catch (error) {
-      console.error('Error logging completion form access:', error);
-      // Still navigate even if logging fails
-      navigate('/completion-form');
+**Response (200)**:
+```json
+{
+  "_id": "topic_id",
+  "title": "ISO 9001 Introduction",
+  "content": "<HTML content>",
+  "questions": [
+    {
+      "question": "What does QMS stand for?",
+      "options": ["A", "B", "C", "D"],
+      "isMandatory": true
     }
-  };
- 
+  ],
+  "badgeName": "ISO 9001 Expert",
+  "badgeImage": "url"
+}
+```
+
+**Note**: `correctAnswer` field is NOT sent to client
+
+**Errors**:
+- 404: Topic not found
+
+---
+
+#### POST /api/topics/:id/submit-answers
+**Purpose**: Submit quiz answers and get results
+
+**Headers**: Authorization required
+
+**Request Body**:
+```json
+{
+  "answers": [0, 2, 1, 3, 0]  // Array of answer indices (0-3)
+}
+```
+
+**Response (200)**:
+```json
+{
+  "correctCount": 4,
+  "totalQuestions": 5,
+  "mandatoryCompleted": true,
+  "bonusCompleted": false,
+  "bonusCorrect": 3,
+  "xpEarned": 50,
+  "totalXP": 300,
+  "leveledUp": false,
+  "newLevel": 3,
+  "badge": {
+    "earned": true,
+    "isReEarned": false,
+    "badgeCount": 1,
+    "badgeName": "ISO 9001 Expert",
+    "badgeImage": "url"
+  }
+}
+```
+
+**Business Logic**:
+- Mandatory correct: +50 XP + Badge
+- All 4 bonus correct: +50 XP
+- Badge count increments if re-earned after yearly reset
+- Creates training log entry
+
+---
+
+### 5.3 GAMES ENDPOINTS
+
+#### GET /api/games
+**Purpose**: Get all active games with completion status
+
+**Headers**: Authorization required
+
+**Response (200)**:
+```json
+[
+  {
+    "_id": "game_id",
+    "title": "IMS Word Twist",
+    "description": "...",
+    "gameType": "texttwist",
+    "difficulty": "medium",
+    "maxXP": 200,
+    "timeLimit": 180,
+    "completionCount": 15,
+    "hasCompleted": false
+  }
+]
+```
+
+---
+
+#### GET /api/games/play/:id
+**Purpose**: Get game data for playing
+
+**Headers**: Authorization required
+
+**Response (200)**:
+```json
+{
+  "_id": "game_id",
+  "title": "IMS Word Twist",
+  "description": "...",
+  "gameType": "texttwist",
+  "maxXP": 200,
+  "timeLimit": 180,
+  "content": {
+    "words": [
+      {
+        "mainWord": "QUALITY",
+        "subwords": ["QUILT", "QUIT", "LIT"]
+      }
+    ]
+  }
+}
+```
+
+**Errors**:
+- 403: Already completed (only for non-admin users)
+- 404: Game not found
+
+---
+
+#### POST /api/games/submit-score
+**Purpose**: Submit game score
+
+**Headers**: Authorization required
+
+**Request Body**:
+```json
+{
+  "gameId": "game_id",
+  "gameType": "texttwist",
+  "score": 150,
+  "timeSpent": 145
+}
+```
+
+**Response (200)**:
+```json
+{
+  "message": "Score submitted successfully",
+  "xpAwarded": 150,
+  "totalXP": 450,
+  "level": 5,
+  "isReplay": false
+}
+```
+
+**Business Logic**:
+- XP only awarded on first completion
+- Admins can replay but don't earn XP again
+- Records completion in game.completions array
+
+---
+
+### 5.4 LEADERBOARD ENDPOINTS
+
+#### GET /api/leaderboard
+**Purpose**: Get top users by XP
+
+**Headers**: Authorization required
+
+**Query Parameters**:
+- `limit` (optional, default: 100)
+- `skip` (optional, default: 0)
+
+**Response (200)**:
+```json
+{
+  "leaderboard": [
+    {
+      "_id": "user_id",
+      "username": "user1",
+      "xp": 1000,
+      "level": 11,
+      "badgeCount": 5,
+      "rank": 1
+    }
+  ],
+  "currentUser": {
+    "rank": 15,
+    "xp": 350,
+    "level": 4
+  }
+}
+```
+
+---
+
+### 5.5 TRAINING LOGS ENDPOINTS
+
+#### GET /api/training-logs
+**Purpose**: Get user's training history
+
+**Headers**: Authorization required
+
+**Response (200)**:
+```json
+[
+  {
+    "_id": "log_id",
+    "userId": "user_id",
+    "topicId": "topic_id",
+    "topicTitle": "ISO 9001 Introduction",
+    "xpEarned": 100,
+    "mandatoryCompleted": true,
+    "bonusCompleted": true,
+    "badgeEarned": true,
+    "completedAt": "2025-01-15T10:30:00Z"
+  }
+]
+```
+
+---
+
+#### GET /api/training-logs/stats
+**Purpose**: Get user's training statistics
+
+**Headers**: Authorization required
+
+**Response (200)**:
+```json
+{
+  "totalCompleted": 10,
+  "totalXP": 850,
+  "badgesEarned": 8
+}
+```
+
+---
+
+### 5.6 ADMIN ENDPOINTS
+
+All admin endpoints require admin role.
+
+#### GET /api/admin/users
+**Purpose**: Get all users
+
+**Headers**: Authorization required (admin only)
+
+**Response (200)**:
+```json
+[
+  {
+    "_id": "user_id",
+    "username": "user1",
+    "email": "user1@example.com",
+    "role": "user",
+    "xp": 500,
+    "level": 6,
+    "createdAt": "2025-01-01T00:00:00Z"
+  }
+]
+```
+
+---
+
+#### POST /api/admin/yearly-reset
+**Purpose**: Perform yearly reset (preserves badges)
+
+**Headers**: Authorization required (admin only)
+
+**Response (200)**:
+```json
+{
+  "message": "Yearly reset completed successfully",
+  "usersReset": 50,
+  "note": "User badges and badge counts have been preserved"
+}
+```
+
+**What it does**:
+- Clears `completedTopics` array
+- Resets `xp` to 0
+- Resets `level` to 1
+- PRESERVES `badges` array (including badgeCount)
+
+---
+
+#### POST /api/topics/admin
+**Purpose**: Create new topic
+
+**Headers**: Authorization required (admin only)
+
+**Request Body**:
+```json
+{
+  "title": "ISO 14001 Basics",
+  "description": "...",
+  "content": "<HTML>...",
+  "category": "Environmental",
+  "difficulty": "medium",
+  "badgeName": "Environmental Expert",
+  "badgeImage": "url",
+  "questions": [
+    {
+      "question": "...",
+      "options": ["A", "B", "C", "D"],
+      "correctAnswer": 0,
+      "isMandatory": true
+    }
+    // ... 4 more questions
+  ],
+  "isActive": true,
+  "order": 1
+}
+```
+
+**Response (201)**:
+```json
+{
+  "_id": "topic_id",
+  "title": "ISO 14001 Basics",
+  // ... rest of topic data
+}
+```
+
+---
+
+## 6. AUTHENTICATION FLOW
+
+### JWT Token Structure
+
+**Payload**:
+```javascript
+{
+  _id: "user_id",
+  role: "user|admin",
+  iat: 1234567890,  // Issued at
+  exp: 1234657890   // Expires (24 hours later)
+}
+```
+
+**Token Storage**: LocalStorage (`key: "token"`)
+
+**Header Format**:
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Middleware: authenticateToken
+
+```javascript
+// Validates JWT token
+// Adds req.user with { _id, role }
+// Returns 401 if invalid
+```
+
+### Middleware: isAdmin
+
+```javascript
+// Checks if req.user.role === 'admin'
+// Returns 403 if not admin
+// Must come after authenticateToken
+```
+
+### Protected Route Pattern
+
+**Backend**:
+```javascript
+router.get('/protected', authenticateToken, (req, res) => {
+  // req.user is available
+});
+
+router.post('/admin-only', authenticateToken, isAdmin, (req, res) => {
+  // Only admins reach here
+});
+```
+
+**Frontend**:
+```javascript
+// ProtectedRoute component checks localStorage token
+// Redirects to login if no token
+// ProtectedRoute with adminOnly prop checks user.role
+```
+
+---
+
+## 7. FRONTEND STRUCTURE
+
+### Directory Structure
+
+```
+client/
+├── public/
+│   ├── index.html
+│   └── images/
+├── src/
+│   ├── components/
+│   │   ├── ProtectedRoute.js
+│   │   ├── Navbar.js
+│   │   └── Footer.js
+│   ├── pages/
+│   │   ├── Home.js
+│   │   ├── Login.js
+│   │   ├── Register.js
+│   │   ├── Topics.js
+│   │   ├── TopicDetail.js
+│   │   ├── Games.js
+│   │   ├── games/
+│   │   │   ├── TextTwist.js
+│   │   │   ├── Wordle.js
+│   │   │   ├── QuickQuiz.js
+│   │   │   └── Hangman.js
+│   │   ├── Leaderboard.js
+│   │   ├── Profile.js
+│   │   ├── TrainingLogs.js
+│   │   └── admin/
+│   │       ├── AdminDashboard.js
+│   │       ├── AdminUsers.js
+│   │       ├── AdminTopics.js
+│   │       └── AdminGames.js
+│   ├── utils/
+│   │   ├── api.js (axios configuration)
+│   │   └── helpers.js
+│   ├── styles/
+│   │   └── App.css
+│   ├── App.js
+│   └── index.js
+└── package.json
+```
+
+### Key Components
+
+**ProtectedRoute.js**:
+- Checks localStorage for token
+- Redirects to /login if no token
+- Supports adminOnly prop for admin routes
+
+**App.js**:
+- Sets up React Router
+- Defines all routes
+- Wraps protected routes with ProtectedRoute
+
+**api.js**:
+- Configures axios instance
+- Sets baseURL from environment variable
+- Adds Authorization header interceptor
+
+---
+
+## 8. BACKEND STRUCTURE
+
+### Directory Structure
+
+```
+server/
+├── models/
+│   ├── User.js
+│   ├── Topic.js
+│   ├── Game.js
+│   ├── Badge.js
+│   ├── TrainingLog.js
+│   └── ActivityLog.js
+├── routes/
+│   ├── auth.js
+│   ├── topics.js
+│   ├── games.js
+│   ├── leaderboard.js
+│   ├── trainingLogs.js
+│   ├── admin.js
+│   └── activity.js
+├── middleware/
+│   ├── auth.js (authenticateToken, isAdmin)
+│   └── errorHandler.js
+├── utils/
+│   ├── levelSystem.js
+│   ├── badgeHelper.js
+│   └── logger.js
+├── .env (not in git)
+├── .env.example
+├── .gitignore
+├── index.js (entry point)
+└── package.json
+```
+
+### Key Files
+
+**index.js**:
+- Express app setup
+- Middleware configuration (CORS, JSON parser)
+- Route mounting
+- MongoDB connection
+- Server start
+
+**levelSystem.js**:
+```javascript
+export function calculateLevel(xp) {
+  return Math.floor(xp / 100) + 1;
+}
+```
+
+**badgeHelper.js**:
+- awardBadgeToUser(userId, topicId, badgeName, badgeImage)
+- Handles badge re-earning (increments badgeCount)
+- Updates both User.badges and Badge.badgeCount
+
+---
+
+## 9. SETUP INSTRUCTIONS
+
+### Prerequisites
+- Node.js 16+ installed
+- MongoDB Atlas account (or local MongoDB)
+- Git installed
+- Code editor (VS Code recommended)
+
+### Step 1: Clone Repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/gamified-ims.git
+cd gamified-ims
+```
+
+### Step 2: Setup Backend
+
+```bash
+cd server
+npm install
+
+# Create .env file
+cp .env.example .env
+
+# Edit .env with your values:
+# MONGODB_URI=mongodb+srv://...
+# JWT_SECRET=your_secret_key
+# PORT=5000
+```
+
+### Step 3: Setup Frontend
+
+```bash
+cd ../client
+npm install
+
+# Create .env file
+cp .env.example .env
+
+# Edit .env:
+# REACT_APP_API_URL=http://localhost:5000/api
+```
+
+### Step 4: Seed Database (Optional)
+
+```bash
+cd ../server
+node seedGames.js  # Seeds 8 sample games
+```
+
+### Step 5: Run Development Servers
+
+**Terminal 1 - Backend:**
+```bash
+cd server
+npm run dev
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd client
+npm start
+```
+
+### Step 6: Create Admin Account
+
+Navigate to http://localhost:3000/register and create an account.
+
+Then manually update in MongoDB:
+```javascript
+db.users.updateOne(
+  { email: "admin@example.com" },
+  { $set: { role: "admin" } }
+)
+```
+
+---
+
+## 10. DEPLOYMENT GUIDE
+
+See separate deployment documents:
+- DEPLOYMENT_STEP_1.md - Preparation
+- DEPLOYMENT_STEP_2.md - MongoDB Atlas
+- DEPLOYMENT_STEP_3.md - Render (Backend)
+- DEPLOYMENT_STEP_4.md - Vercel (Frontend)
+
+---
+
+## 11. SECURITY CONSIDERATIONS
+
+### 11.1 Implemented Security Measures
+
+ **Password Security**:
+- Passwords hashed with bcrypt (10 salt rounds)
+- Never store plain text passwords
+
+ **Authentication**:
+- JWT tokens with 24-hour expiration
+- Token verification on protected routes
+
+ **Authorization**:
+- Role-based access control (user/admin)
+- Admin-only routes protected
+
+ **Input Validation**:
+- Required fields validated
+- Email format validation
+- Password length requirements
+
+ **Environment Variables**:
+- Sensitive data in .env (not in git)
+- Different configs for dev/prod
+
+ **CORS**:
+- Configured for specific frontend origin
+- Credentials enabled for cookies
+
+### 11.2 Additional Recommendations
+
+🔒 **To Implement**:
+- Rate limiting (prevent brute force)
+- Input sanitization (prevent XSS)
+- HTTPS in production (Vercel/Render handle this)
+- MongoDB injection prevention (Mongoose handles)
+- Session management improvements
+- Password strength requirements
+- Account lockout after failed attempts
+
+---
+
+## 12. PERFORMANCE OPTIMIZATION
+
+### 12.1 Database Optimizations
+
+ **Indexes Created**:
+- User: username (unique), email (unique), xp
+- Topic: isActive, order
+- Game: gameType, isActive
+- Badge: topicId + year (compound)
+- TrainingLog: userId + completedAt
+
+### 12.2 Query Optimizations
+
+ **Implemented**:
+- Lean queries where applicable
+- Projection (select specific fields)
+- Limit results (leaderboard pagination)
+
+### 12.3 Frontend Optimizations
+
+ **Implemented**:
+- Lazy loading components
+- Debounced search inputs
+- Image optimization
+- Minification in production build
+
+### 12.4 Caching Strategies
+
+💡 **To Implement**:
+- Redis for session caching
+- CDN for static assets
+- Browser caching headers
+- API response caching
+
+---
+
+## 13. TROUBLESHOOTING
+
+### Common Issues
+
+**Issue**: "MongooseError: Operation buffering timed out"
+**Solution**: Check MongoDB connection string, verify IP whitelist
+
+**Issue**: "CORS Error"
+**Solution**: Verify CLIENT_URL in backend .env matches frontend URL
+
+**Issue**: "401 Unauthorized"
+**Solution**: Check token in localStorage, verify token hasn't expired
+
+**Issue**: "Cannot find module"
+**Solution**: Run `npm install` in both client and server
+
+**Issue**: "Port 5000 already in use"
+**Solution**: Kill process on port 5000 or change PORT in .env
+
+---
+
+## APPENDIX A: XP & LEVELING FORMULA
+
+```javascript
+XP per Level = 100
+Level = floor(Total XP / 100) + 1
+
+Examples:
+0-99 XP = Level 1
+100-199 XP = Level 2
+200-299 XP = Level 3
+1000-1099 XP = Level 11
+```
+
+---
+
+## APPENDIX B: XP Awards
+
+| Activity | XP Awarded |
+|----------|-----------|
+| Mandatory Question Correct | 50 XP |
+| All 4 Bonus Questions Correct | 50 XP |
+| Text Twist Game | 0-200 XP (based on performance) |
+| Wordle Game | 0-150 XP (based on attempts) |
+| Quick Quiz Game | 0-200 XP (based on score) |
+| Hangman Game | 0-150 XP (based on wrong guesses) |
+
+---
+
+## APPENDIX C: Environment Variables Reference
+
+### Backend (.env)
+```env
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname
+JWT_SECRET=random_long_secret_string
+NODE_ENV=development|production
+CLIENT_URL=http://localhost:3000 (dev) or https://app.vercel.app (prod)
+PORT=5000
+```
+
+### Frontend (.env)
+```env
+REACT_APP_API_URL=http://localhost:5000/api (dev) or https://api.onrender.com/api (prod)
+```
+
+---
+
+**END OF TECHNICAL DOCUMENTATION**
+
+*Last Updated: 2025*
+*Version: 1.0*
