@@ -38,25 +38,26 @@ const Home = () => {
   {
     title: "IMS Awareness Training",
     description: "Play while learning! The gamified IMS Awareness training offers interactive quizzes and rewards.",
-    color: "var(--bright-blue)"
+    color: "var(--bright-blue)",
+    imageRef: <img src='/imgrefs/walotwo.png' alt="bg-carousel1" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   },
   {
     title: "Earn XP and Level Up",
     description: "Complete topics to gain XP and advance your rank",
-    icon: "",
-    color: 'var(--orange-accent)'
+    color: 'var(--orange-accent)',
+    imageRef: <img src='/imgrefs/fox.png' alt="bg-carousel2" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   },
   {
     title: "Unlock Badges",
     description: "Collect badges through completing training topics",
-    icon: "",
-    color: "var(--success-green)"
+    color: "var(--success-green)",
+    imageRef: <img src='/imgrefs/nichan.png' alt="bg-carousel3" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   },
   {
-    title: "Play Games",
+    title: "Rise above colleagues",
     description: "Test your IMS knowledge with word game demos",
-    icon: "",
-    color: "var(--primary-navy)"
+    color: "var(--primary-navy)",
+    imageRef: <img src='/imgrefs/noir.png' alt="bg-carousel3" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   }
 ];
 
@@ -329,8 +330,8 @@ const handleFinishClick = () => {
             minHeight: '300px'
           }}
           >
-            <div style={{ fontSize: '80px', marginBottom: '20px' }}>
-              {slide.icon}
+            <div>
+              {slide.imageRef}
             </div>
             <h2 style={{ fontSize: '28px', marginBottom: '15px', fontWeight: 'bold' }}>
               {slide.title}
