@@ -12,7 +12,6 @@ import Players from './pages/Players';
 import Games from './pages/Games';
 import TextTwist from './pages/games/TextTwist';
 import Wordle from './pages/games/Wordle';
-import MiniQuiz from './pages/games/MiniQuiz';
 import Hangman from './pages/games/Hangman';
 import AdminGames from './pages/admin/AdminGames';
 import Footer from './components/Footer';
@@ -195,14 +194,6 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <Wordle />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/games/miniquiz/:id"
-          element={
-            <ProtectedRoute>
-              <MiniQuiz />
             </ProtectedRoute>
           }
         />

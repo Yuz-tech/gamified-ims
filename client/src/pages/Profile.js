@@ -20,9 +20,12 @@ const Profile = () => {
 
     const avatarOptions = [
         '/avatars/hachi.png',
-        '/avatars/hachikun.png',
+        '/avatars/mascot.png',
         '/avatars/hachihead.png',
-        '/avatars/hachikun2.png'
+        '/avatars/epta.png',
+        '/avatars/kitsune.png',
+        '/avatars/nichan.png',
+        '/avatars/yuk.png'
     ];
 
     useEffect(() => {
