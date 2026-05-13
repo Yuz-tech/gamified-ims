@@ -102,7 +102,7 @@ const Players = () => {
                             textAlign: 'center',
                             border: '3px solid var(--orange-accent)',
                             background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, var(--bg-light) 100%',
-                            marginTop: '20px'
+                            marginTop: '40px'
                           }}
                         >
 

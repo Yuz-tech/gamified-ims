@@ -37,26 +37,27 @@ const Home = () => {
   const carouselSlides = [
   {
     title: "IMS Awareness Training",
-    description: "Play while learning! The gamified IMS Awareness training offers interactive quizzes and rewards.",
-    color: "var(--bright-blue)"
+    description: "Play while learning!",
+    color: "var(--bright-blue)",
+    imageRef: <img src='/imgrefs/walotwo.png' alt="bg-carousel1" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   },
   {
     title: "Earn XP and Level Up",
-    description: "Complete topics to gain XP and advance your rank",
-    icon: "",
-    color: 'var(--orange-accent)'
+    description: "Complete topics and advance your rank",
+    color: 'var(--orange-accent)',
+    imageRef: <img src='/imgrefs/una.png' alt="bg-carousel2" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   },
   {
     title: "Unlock Badges",
-    description: "Collect badges through completing training topics",
-    icon: "",
-    color: "var(--success-green)"
+    description: "Collect badges through completing topics",
+    color: "var(--success-green)",
+    imageRef: <img src='/imgrefs/nichan.png' alt="bg-carousel3" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   },
   {
-    title: "Play Games",
-    description: "Test your IMS knowledge with word game demos",
-    icon: "",
-    color: "var(--primary-navy)"
+    title: "Rise above colleagues",
+    description: "Be on top of the leaderboard",
+    color: "#ffe524",
+    imageRef: <img src='/imgrefs/hachi.png' alt="bg-carousel3" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   }
 ];
 
@@ -329,8 +330,8 @@ const handleFinishClick = () => {
             minHeight: '300px'
           }}
           >
-            <div style={{ fontSize: '80px', marginBottom: '20px' }}>
-              {slide.icon}
+            <div>
+              {slide.imageRef}
             </div>
             <h2 style={{ fontSize: '28px', marginBottom: '15px', fontWeight: 'bold' }}>
               {slide.title}
