@@ -1,4 +1,0 @@
-1. IP addresses of the following:
-.env files
-server.js
-
