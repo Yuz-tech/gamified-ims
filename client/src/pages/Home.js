@@ -45,7 +45,7 @@ const Home = () => {
     title: "Earn XP and Level Up",
     description: "Complete topics to gain XP and advance your rank",
     color: 'var(--orange-accent)',
-    imageRef: <img src='/imgrefs/fox.png' alt="bg-carousel2" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
+    imageRef: <img src='/imgrefs/una.png' alt="bg-carousel2" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   },
   {
     title: "Unlock Badges",
@@ -57,7 +57,7 @@ const Home = () => {
     title: "Rise above colleagues",
     description: "Test your IMS knowledge with word game demos",
     color: "var(--primary-navy)",
-    imageRef: <img src='/imgrefs/noir.png' alt="bg-carousel3" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
+    imageRef: <img src='/avatars/hachikun3.png' alt="bg-carousel3" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   }
 ];
 

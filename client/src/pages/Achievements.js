@@ -106,22 +106,6 @@ const Achievements = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '20px' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-                Badges Earned
-              </div>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--bright-blue)' }}>
-                {earnedCount} / {totalCount}
-              </div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
-                COMPLETION
-              </div>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--success-green)' }}>
-                {completionPercentage}%
-              </div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-medium)', marginBottom: '10px' }}>
                 CURRENT PROGRESS
               </div>
               <div style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--orange-accent)'}}>
