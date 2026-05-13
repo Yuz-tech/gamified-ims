@@ -56,7 +56,7 @@ const Home = () => {
   {
     title: "Rise above colleagues",
     description: "Test your IMS knowledge with word game demos",
-    color: "var(--primary-navy)",
+    color: "white",
     imageRef: <img src='/avatars/hachikun3.png' alt="bg-carousel3" style={{ maxWidth: '500px', maxHeight: '250px', objectFit: 'contain' }} />
   }
 ];
