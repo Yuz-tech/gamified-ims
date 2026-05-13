@@ -21,44 +21,17 @@ dotenv.config();
 
 const app = express();
 
-// CORS Config
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      'http://192.168.232.247:3000',
-      'http://192.168.232.247:5000',
-      'http://192.168.232.247:5173',
-      'http://192.168.232.247:27017',
-      process.env.FRONTEND_URL,
-      '192.168.232.247:3000'
-    ].filter(Boolean);
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, true);
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
 // Middleware
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-  app.get('*', (req,res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
-}
 
 app.set('trust proxy', true);
 
